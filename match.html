@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Card Match! 💕</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        background-color: #fde8f0;
+        font-family: "Courier New", Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        min-height: 100vh;
+        color: #c2185b;
+      }
+
+      .back-tab {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        background: #f5c800;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem;
+        font-weight: bold;
+        letter-spacing: 0.1em;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        border: 2px solid #e91e8c;
+        box-shadow: 0 0 10px #ffb6d9;
+        z-index: 10;
+      }
+
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+
+      h1 {
+        font-size: 1.8rem;
+        font-weight: normal;
+        letter-spacing: 0.15em;
+        margin-top: 3.5rem;
+      }
+
+      .info {
+        display: flex;
+        gap: 2rem;
+        font-size: 0.9rem;
+        letter-spacing: 0.08em;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.6rem;
+        width: min(400px, 94vw);
+      }
+
+      .card {
+        aspect-ratio: 1;
+        cursor: pointer;
+        perspective: 600px;
+      }
+
+      .card-inner {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.4s;
+        border-radius: 0.75rem;
+      }
+
+      .card.flipped .card-inner,
+      .card.matched .card-inner {
+        transform: rotateY(180deg);
+      }
+
+      .card-front, .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        border: 3px solid #e91e8c;
+        box-shadow: 0 0 8px #ffb6d9;
+      }
+
+      .card-front {
+        background: #f5c800;
+        color: #e91e8c;
+        font-size: 1.4rem;
+      }
+
+      .card-back {
+        background: #fff0f5;
+        transform: rotateY(180deg);
+      }
+
+      .card.matched .card-back {
+        background: #ffe0f0;
+        border-color: #f5c800;
+        box-shadow: 0 0 12px #f5c800;
+      }
+
+      .btn {
+        background: #f5c800;
+        border: 2px solid #e91e8c;
+        border-radius: 0.5rem;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.9rem;
+        font-weight: bold;
+        padding: 0.5rem 1.2rem;
+        cursor: pointer;
+        letter-spacing: 0.08em;
+      }
+
+      .btn:hover { background: #e91e8c; color: #fff; }
+
+      #message {
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        min-height: 1.5rem;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>💕 match!</h1>
+    <div class="info">
+      <span>moves: <strong id="moves">0</strong></span>
+      <span>pairs: <strong id="pairs">0</strong> / 8</span>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div id="message"></div>
+    <button class="btn" id="restart">🔄 new game</button>
+
+    <script>
+      const emojis = ['🐥','💕','🐍','🌸','⭐','🎨','🦆','🍕'];
+      let cards = [...emojis, ...emojis];
+      let flipped = [];
+      let matched = 0;
+      let moves = 0;
+      let locked = false;
+
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function build() {
+        matched = 0;
+        moves = 0;
+        flipped = [];
+        locked = false;
+        document.getElementById('moves').textContent = 0;
+        document.getElementById('pairs').textContent = 0;
+        document.getElementById('message').textContent = '';
+
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        shuffle(cards).forEach((emoji, i) => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.dataset.emoji = emoji;
+          card.innerHTML = `
+            <div class="card-inner">
+              <div class="card-front">💗</div>
+              <div class="card-back">${emoji}</div>
+            </div>`;
+          card.addEventListener('click', () => flip(card));
+          grid.appendChild(card);
+        });
+      }
+
+      function flip(card) {
+        if (locked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+        card.classList.add('flipped');
+        flipped.push(card);
+
+        if (flipped.length === 2) {
+          locked = true;
+          moves++;
+          document.getElementById('moves').textContent = moves;
+
+          if (flipped[0].dataset.emoji === flipped[1].dataset.emoji) {
+            flipped[0].classList.add('matched');
+            flipped[1].classList.add('matched');
+            matched++;
+            document.getElementById('pairs').textContent = matched;
+            flipped = [];
+            locked = false;
+            if (matched === 8) {
+              document.getElementById('message').textContent = `🎉 you won in ${moves} moves! amazing!!`;
+            }
+          } else {
+            setTimeout(() => {
+              flipped[0].classList.remove('flipped');
+              flipped[1].classList.remove('flipped');
+              flipped = [];
+              locked = false;
+            }, 900);
+          }
+        }
+      }
+
+      document.getElementById('restart').addEventListener('click', build);
+      build();
+    </script>
+  </body>
+</html>
