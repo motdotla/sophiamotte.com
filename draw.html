@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Draw! 🎨</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        background-color: #fde8f0;
+        font-family: "Courier New", Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        min-height: 100vh;
+      }
+
+      .back-tab {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        background: #f5c800;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem;
+        font-weight: bold;
+        letter-spacing: 0.1em;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        border: 2px solid #e91e8c;
+        box-shadow: 0 0 10px #ffb6d9;
+        z-index: 10;
+      }
+
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+
+      h1 {
+        font-size: 1.8rem;
+        font-weight: normal;
+        color: #c2185b;
+        letter-spacing: 0.15em;
+        margin-top: 3.5rem;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .colors {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .color-btn {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        cursor: pointer;
+        transition: transform 0.1s;
+      }
+
+      .color-btn:hover, .color-btn.active {
+        border-color: #fff;
+        transform: scale(1.2);
+        box-shadow: 0 0 6px #e91e8c;
+      }
+
+      .size-btns {
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+      }
+
+      .size-btn {
+        background: #fff0f5;
+        border: 2px solid #e91e8c;
+        border-radius: 0.4rem;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+        cursor: pointer;
+      }
+
+      .size-btn.active, .size-btn:hover {
+        background: #e91e8c;
+        color: #fff;
+      }
+
+      .action-btn {
+        background: #f5c800;
+        border: 2px solid #e91e8c;
+        border-radius: 0.4rem;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 0.3rem 0.7rem;
+        cursor: pointer;
+        letter-spacing: 0.05em;
+      }
+
+      .action-btn:hover { background: #e91e8c; color: #fff; }
+
+      canvas {
+        border: 3px solid #e91e8c;
+        border-radius: 0.75rem;
+        box-shadow: 0 0 20px #ffb6d9;
+        background: #fff;
+        cursor: crosshair;
+        touch-action: none;
+        width: min(500px, 94vw);
+        height: min(500px, 94vw);
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>🎨 draw!</h1>
+
+    <div class="toolbar">
+      <div class="colors">
+        <button class="color-btn active" style="background:#e91e8c" data-color="#e91e8c"></button>
+        <button class="color-btn" style="background:#f5c800" data-color="#f5c800"></button>
+        <button class="color-btn" style="background:#ff6b6b" data-color="#ff6b6b"></button>
+        <button class="color-btn" style="background:#a855f7" data-color="#a855f7"></button>
+        <button class="color-btn" style="background:#3b82f6" data-color="#3b82f6"></button>
+        <button class="color-btn" style="background:#22c55e" data-color="#22c55e"></button>
+        <button class="color-btn" style="background:#f97316" data-color="#f97316"></button>
+        <button class="color-btn" style="background:#000000" data-color="#000000"></button>
+        <button class="color-btn" style="background:#ffffff;border:2px solid #e91e8c;" data-color="#ffffff"></button>
+      </div>
+      <div class="size-btns">
+        <button class="size-btn" data-size="4">S</button>
+        <button class="size-btn active" data-size="10">M</button>
+        <button class="size-btn" data-size="20">L</button>
+        <button class="size-btn" data-size="40">XL</button>
+      </div>
+      <button class="action-btn" id="clear-btn">🗑 clear</button>
+    </div>
+
+    <canvas id="canvas" width="500" height="500"></canvas>
+
+    <script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      let painting = false;
+      let color = '#e91e8c';
+      let size = 10;
+
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const src = e.touches ? e.touches[0] : e;
+        return {
+          x: (src.clientX - rect.left) * scaleX,
+          y: (src.clientY - rect.top) * scaleY
+        };
+      }
+
+      function startDraw(e) {
+        e.preventDefault();
+        painting = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = size;
+      }
+
+      function draw(e) {
+        e.preventDefault();
+        if (!painting) return;
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      }
+
+      function stopDraw(e) {
+        painting = false;
+      }
+
+      canvas.addEventListener('mousedown', startDraw);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDraw);
+      canvas.addEventListener('mouseleave', stopDraw);
+      canvas.addEventListener('touchstart', startDraw, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stopDraw);
+
+      document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          color = btn.dataset.color;
+        });
+      });
+
+      document.querySelectorAll('.size-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          size = parseInt(btn.dataset.size);
+        });
+      });
+
+      document.getElementById('clear-btn').addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      });
+    </script>
+  </body>
+</html>

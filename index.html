@@ -94,11 +94,16 @@
         100% { transform: translateY(-105vh) scale(0.6); opacity: 0; }
       }
 
-      .play-tab {
+      .tabs {
         position: fixed;
         top: 1rem;
         left: 1rem;
         z-index: 10;
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .play-tab {
         background: #f5c800;
         color: #c2185b;
         font-family: "Courier New", Courier, monospace;
@@ -176,7 +181,10 @@
     </style>
   </head>
   <body>
-    <a class="play-tab" href="snake.html">🐍 PLAY SNAKE</a>
+    <div class="tabs">
+      <a class="play-tab" href="snake.html">🐍 PLAY SNAKE</a>
+      <a class="play-tab" href="draw.html">🎨 DRAW</a>
+    </div>
     <div class="still-hearts" aria-hidden="true">
       <span class="still-heart" style="top:5%;  left:5%;">♥</span>
       <span class="still-heart" style="top:8%;  left:50%;">♡</span>
