@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Claude's Picks! 🤖</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        background-color: #fde8f0;
+        font-family: "Courier New", Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1rem 1rem 3rem;
+        min-height: 100vh;
+        color: #c2185b;
+      }
+
+      .back-tab {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        background: #f5c800;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem;
+        font-weight: bold;
+        letter-spacing: 0.1em;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        border: 2px solid #e91e8c;
+        box-shadow: 0 0 10px #ffb6d9;
+        z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+
+      h1 {
+        font-size: 1.6rem;
+        font-weight: normal;
+        letter-spacing: 0.15em;
+        margin-top: 3.5rem;
+        text-align: center;
+      }
+
+      .subtitle {
+        font-size: 0.8rem;
+        color: #e91e8c99;
+        letter-spacing: 0.1em;
+      }
+
+      .card {
+        background: #fff0f5;
+        border: 3px solid #e91e8c;
+        border-radius: 1rem;
+        box-shadow: 0 0 14px #ffb6d9;
+        padding: 1.2rem;
+        width: min(440px, 94vw);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+        text-align: center;
+      }
+
+      .card h2 {
+        font-size: 1.1rem;
+        font-weight: normal;
+        letter-spacing: 0.1em;
+        color: #e91e8c;
+      }
+
+      .display {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #c2185b;
+        min-height: 3rem;
+        letter-spacing: 0.05em;
+      }
+
+      .btn {
+        background: #f5c800;
+        border: 2px solid #e91e8c;
+        border-radius: 0.5rem;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem;
+        font-weight: bold;
+        padding: 0.5rem 1.2rem;
+        cursor: pointer;
+        letter-spacing: 0.08em;
+      }
+      .btn:hover { background: #e91e8c; color: #fff; }
+
+      /* word scramble */
+      .scramble-word {
+        font-size: 2rem;
+        color: #e91e8c;
+        letter-spacing: 0.3em;
+      }
+
+      .guess-input {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1rem;
+        padding: 0.4rem 0.8rem;
+        border: 2px solid #e91e8c;
+        border-radius: 0.5rem;
+        color: #c2185b;
+        background: #fff0f5;
+        text-align: center;
+        width: 10rem;
+        outline: none;
+      }
+
+      .guess-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .result-msg {
+        font-size: 0.9rem;
+        min-height: 1.4rem;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>🤖 claude's favorites!</h1>
+    <p class="subtitle">~ things i love ~</p>
+
+    <!-- JOKES -->
+    <div class="card">
+      <h2>😂 jokes!</h2>
+      <p class="display" id="joke-display">click the button for a joke!</p>
+      <button class="btn" id="joke-btn">tell me a joke!</button>
+    </div>
+
+    <!-- FUN FACTS -->
+    <div class="card">
+      <h2>🌍 fun facts!</h2>
+      <p class="display" id="fact-display">click the button for a fun fact!</p>
+      <button class="btn" id="fact-btn">wow me!</button>
+    </div>
+
+    <!-- WORD SCRAMBLE -->
+    <div class="card">
+      <h2>🔤 word scramble!</h2>
+      <p style="font-size:0.8rem;color:#e91e8c99;">unscramble the word!</p>
+      <div class="scramble-word" id="scramble-display">?????</div>
+      <div class="guess-row">
+        <input class="guess-input" id="guess-input" type="text" placeholder="your guess" maxlength="12" />
+        <button class="btn" id="check-btn">check!</button>
+      </div>
+      <p class="result-msg" id="scramble-result"></p>
+      <button class="btn" id="new-word-btn">new word!</button>
+    </div>
+
+    <script>
+      const jokes = [
+        "why don't scientists trust atoms?\n\nbecause they make up everything! 😂",
+        "what do you call a sleeping dinosaur?\n\na dino-snore! 🦕",
+        "why did the math book look so sad?\n\nbecause it had too many problems! 📚",
+        "what do you call a fish without eyes?\n\na fsh! 🐟",
+        "why did the duck cross the road?\n\nto prove it wasn't a chicken! 🦆",
+        "knock knock!\nwho's there?\ncow says.\ncow says who?\nno silly — cow says MOO! 🐮",
+        "what do elves learn in school?\n\nthe elf-abet! 🧝",
+        "why can't elsa have a balloon?\n\nbecause she'll let it go! ❄️",
+        "what did the ocean say to the beach?\n\nnothing — it just waved! 🌊",
+        "why did the teddy bear say no to dessert?\n\nbecause she was already stuffed! 🧸",
+      ];
+
+      const facts = [
+        "🐙 octopuses have THREE hearts and blue blood!",
+        "🍯 honey never goes bad — they found 3000 year old honey in egypt and it was still good!",
+        "🦋 butterflies taste with their feet!",
+        "🌙 a day on venus is longer than a year on venus!",
+        "🐘 elephants are the only animals that can't jump!",
+        "🍓 strawberries are not actually berries — but bananas are!",
+        "🦈 sharks are older than trees — they've been around for 400 million years!",
+        "🌈 a group of flamingos is called a flamboyance!",
+        "🐌 snails can sleep for 3 years!",
+        "🦅 bald eagles can swim! they use their wings like oars.",
+      ];
+
+      const words = [
+        { word: 'DUCK', hint: '🦆' },
+        { word: 'HEART', hint: '💕' },
+        { word: 'SNAKE', hint: '🐍' },
+        { word: 'PAINT', hint: '🎨' },
+        { word: 'STARS', hint: '⭐' },
+        { word: 'PIZZA', hint: '🍕' },
+        { word: 'CLOUD', hint: '☁️' },
+        { word: 'FLOWER', hint: '🌸' },
+        { word: 'MUSIC', hint: '🎵' },
+        { word: 'HAPPY', hint: '😊' },
+      ];
+
+      let usedJokes = [], usedFacts = [];
+      let currentWord = '';
+
+      function getRandom(arr, used) {
+        if (used.length === arr.length) used.length = 0;
+        let item;
+        do { item = arr[Math.floor(Math.random() * arr.length)]; }
+        while (used.includes(item));
+        used.push(item);
+        return item;
+      }
+
+      document.getElementById('joke-btn').addEventListener('click', () => {
+        document.getElementById('joke-display').textContent = getRandom(jokes, usedJokes);
+      });
+
+      document.getElementById('fact-btn').addEventListener('click', () => {
+        document.getElementById('fact-display').textContent = getRandom(facts, usedFacts);
+      });
+
+      function scramble(word) {
+        const arr = word.split('');
+        do {
+          for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+          }
+        } while (arr.join('') === word);
+        return arr.join('');
+      }
+
+      function newWord() {
+        const entry = words[Math.floor(Math.random() * words.length)];
+        currentWord = entry.word;
+        document.getElementById('scramble-display').textContent = entry.hint + ' ' + scramble(currentWord);
+        document.getElementById('scramble-result').textContent = '';
+        document.getElementById('guess-input').value = '';
+      }
+
+      document.getElementById('check-btn').addEventListener('click', () => {
+        const guess = document.getElementById('guess-input').value.trim().toUpperCase();
+        const result = document.getElementById('scramble-result');
+        if (guess === currentWord) {
+          result.textContent = '🎉 yes!! you got it!!';
+          result.style.color = '#22c55e';
+        } else {
+          result.textContent = '❌ not quite — try again!';
+          result.style.color = '#e91e8c';
+        }
+      });
+
+      document.getElementById('guess-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('check-btn').click();
+      });
+
+      document.getElementById('new-word-btn').addEventListener('click', newWord);
+      newWord();
+    </script>
+  </body>
+</html>
