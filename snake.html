@@ -77,8 +77,8 @@
     <h1>🐍 snake!</h1>
     <div id="score">score: 0</div>
     <canvas id="game" width="360" height="360"></canvas>
-    <div id="message">press any arrow key to start!</div>
-    <div class="controls">arrow keys to move &nbsp;|&nbsp; eat the 💕 to grow</div>
+    <div id="message">press an arrow key or swipe to start!</div>
+    <div class="controls">swipe to move &nbsp;|&nbsp; eat the 💕 to grow</div>
 
     <script>
       const canvas = document.getElementById('game');
@@ -180,6 +180,28 @@
           if (e.key === 'ArrowRight' && dir.x !== -1) nextDir = { x: 1,  y: 0  };
         }
       });
+
+      // touch controls for phones and iPads
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      document.addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        if (!running) { init(); start(); }
+      }, { passive: true });
+
+      document.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (dx > 20  && dir.x !== -1) nextDir = { x: 1,  y: 0 };
+          if (dx < -20 && dir.x !== 1)  nextDir = { x: -1, y: 0 };
+        } else {
+          if (dy > 20  && dir.y !== -1) nextDir = { x: 0, y: 1  };
+          if (dy < -20 && dir.y !== 1)  nextDir = { x: 0, y: -1 };
+        }
+      }, { passive: true });
 
       init();
     </script>
