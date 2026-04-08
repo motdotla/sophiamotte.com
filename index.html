@@ -121,6 +121,36 @@
         color: #e91e8c99;
         letter-spacing: 0.1em;
       }
+
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-top: 1rem;
+        width: min(500px, 90vw);
+      }
+
+      .gallery-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .gallery-item img {
+        width: 100%;
+        border-radius: 1rem;
+        border: 3px solid #f5c800;
+        box-shadow: 0 0 12px #ffb6d9;
+        object-fit: cover;
+        aspect-ratio: 3/4;
+      }
+
+      .gallery-item span {
+        font-size: 0.75rem;
+        color: #e91e8c99;
+        letter-spacing: 0.08em;
+      }
     </style>
   </head>
   <body>
@@ -266,6 +296,24 @@
     </pre>
     <h1>hi, I am Sophia! 💕</h1>
     <p class="tagline">~ sophiamotte.com ~</p>
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="photos/cooking.png" alt="Sophia cooking" />
+        <span>👩‍🍳 cooking</span>
+      </div>
+      <div class="gallery-item">
+        <img src="photos/pistol-dog.png" alt="Pistol the dog" />
+        <span>🐶 pistol</span>
+      </div>
+      <div class="gallery-item">
+        <img src="photos/france.png" alt="Sophia in France" />
+        <span>🗼 france</span>
+      </div>
+      <div class="gallery-item">
+        <img src="photos/valentines.png" alt="Valentine's day" />
+        <span>💕 valentines</span>
+      </div>
+    </div>
     </div>
   </body>
 </html>
