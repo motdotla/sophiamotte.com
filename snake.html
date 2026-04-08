@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Play Snake! 🐍</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        background-color: #fde8f0;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        gap: 1rem;
+      }
+
+      .back-tab {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        background: #f5c800;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem;
+        font-weight: bold;
+        letter-spacing: 0.1em;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        border: 2px solid #e91e8c;
+        box-shadow: 0 0 10px #ffb6d9;
+      }
+
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+
+      h1 {
+        font-size: 1.8rem;
+        font-weight: normal;
+        letter-spacing: 0.15em;
+      }
+
+      #score {
+        font-size: 1rem;
+        color: #e91e8c;
+        letter-spacing: 0.1em;
+      }
+
+      canvas {
+        border: 3px solid #e91e8c;
+        border-radius: 0.75rem;
+        box-shadow: 0 0 20px #ffb6d9;
+        background: #fff0f5;
+      }
+
+      #message {
+        font-size: 1rem;
+        color: #e91e8c;
+        letter-spacing: 0.08em;
+        min-height: 1.5rem;
+      }
+
+      .controls {
+        font-size: 0.75rem;
+        color: #e91e8c99;
+        letter-spacing: 0.08em;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>🐍 snake!</h1>
+    <div id="score">score: 0</div>
+    <canvas id="game" width="360" height="360"></canvas>
+    <div id="message">press any arrow key to start!</div>
+    <div class="controls">arrow keys to move &nbsp;|&nbsp; eat the 💕 to grow</div>
+
+    <script>
+      const canvas = document.getElementById('game');
+      const ctx = canvas.getContext('2d');
+      const scoreEl = document.getElementById('score');
+      const messageEl = document.getElementById('message');
+
+      const SIZE = 20;
+      const COLS = canvas.width / SIZE;
+      const ROWS = canvas.height / SIZE;
+
+      let snake, dir, nextDir, food, score, running, loop;
+
+      function init() {
+        snake = [{ x: 9, y: 9 }, { x: 8, y: 9 }, { x: 7, y: 9 }];
+        dir = { x: 1, y: 0 };
+        nextDir = { x: 1, y: 0 };
+        score = 0;
+        scoreEl.textContent = 'score: 0';
+        placeFood();
+        running = false;
+        draw();
+      }
+
+      function placeFood() {
+        do {
+          food = {
+            x: Math.floor(Math.random() * COLS),
+            y: Math.floor(Math.random() * ROWS)
+          };
+        } while (snake.some(s => s.x === food.x && s.y === food.y));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // food
+        ctx.font = `${SIZE}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('💕', food.x * SIZE + SIZE / 2, food.y * SIZE + SIZE / 2);
+
+        // snake
+        snake.forEach((seg, i) => {
+          ctx.fillStyle = i === 0 ? '#e91e8c' : '#f5c800';
+          ctx.beginPath();
+          ctx.roundRect(seg.x * SIZE + 1, seg.y * SIZE + 1, SIZE - 2, SIZE - 2, 4);
+          ctx.fill();
+        });
+      }
+
+      function step() {
+        dir = nextDir;
+        const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+        // wall collision
+        if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
+          return gameOver();
+        }
+        // self collision
+        if (snake.some(s => s.x === head.x && s.y === head.y)) {
+          return gameOver();
+        }
+
+        snake.unshift(head);
+
+        if (head.x === food.x && head.y === food.y) {
+          score++;
+          scoreEl.textContent = `score: ${score}`;
+          placeFood();
+        } else {
+          snake.pop();
+        }
+
+        draw();
+      }
+
+      function gameOver() {
+        clearInterval(loop);
+        running = false;
+        messageEl.textContent = `game over! score: ${score} 💕 press any arrow to play again!`;
+        init();
+      }
+
+      function start() {
+        if (running) return;
+        running = true;
+        messageEl.textContent = '';
+        loop = setInterval(step, 150);
+      }
+
+      document.addEventListener('keydown', e => {
+        if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+          e.preventDefault();
+          if (!running) { init(); start(); }
+          if (e.key === 'ArrowUp'    && dir.y !== 1)  nextDir = { x: 0,  y: -1 };
+          if (e.key === 'ArrowDown'  && dir.y !== -1) nextDir = { x: 0,  y: 1  };
+          if (e.key === 'ArrowLeft'  && dir.x !== 1)  nextDir = { x: -1, y: 0  };
+          if (e.key === 'ArrowRight' && dir.x !== -1) nextDir = { x: 1,  y: 0  };
+        }
+      });
+
+      init();
+    </script>
+  </body>
+</html>

@@ -95,6 +95,29 @@
         100% { transform: translateY(-105vh) scale(0.6); opacity: 0; }
       }
 
+      .play-tab {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 10;
+        background: #f5c800;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem;
+        font-weight: bold;
+        letter-spacing: 0.1em;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        border: 2px solid #e91e8c;
+        box-shadow: 0 0 10px #ffb6d9;
+      }
+
+      .play-tab:hover {
+        background: #e91e8c;
+        color: #fff;
+      }
+
       .still-hearts {
         position: fixed;
         top: 0; left: 0;
@@ -154,6 +177,7 @@
     </style>
   </head>
   <body>
+    <a class="play-tab" href="snake.html">🐍 PLAY SNAKE</a>
     <div class="still-hearts" aria-hidden="true">
       <span class="still-heart" style="top:5%;  left:5%;">♥</span>
       <span class="still-heart" style="top:8%;  left:50%;">♡</span>
