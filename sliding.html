@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sliding Puzzle! 🧩</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #fde8f0;
+        font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 1rem; padding: 1rem; min-height: 100vh; color: #c2185b;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem;
+        background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; letter-spacing: 0.1em;
+        padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;
+        border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+      .info { font-size: 0.9rem; letter-spacing: 0.08em; }
+      .grid {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem; width: min(300px, 86vw);
+      }
+      .tile {
+        aspect-ratio: 1; background: #fff0f5;
+        border: 3px solid #e91e8c; border-radius: 0.75rem;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; font-weight: bold; cursor: pointer;
+        box-shadow: 0 0 8px #ffb6d9; transition: transform 0.1s;
+        user-select: none; color: #c2185b;
+      }
+      .tile:active { transform: scale(0.95); }
+      .tile.empty { background: #fde8f0; border-color: #fde8f0; box-shadow: none; cursor: default; }
+      .btn {
+        background: #f5c800; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; font-family: "Courier New", Courier, monospace;
+        font-size: 0.9rem; font-weight: bold; padding: 0.5rem 1.2rem;
+        cursor: pointer; letter-spacing: 0.08em;
+      }
+      .btn:hover { background: #e91e8c; color: #fff; }
+      #message { font-size: 1rem; letter-spacing: 0.05em; min-height: 1.5rem; text-align: center; }
+      .hint { font-size: 0.75rem; color: #e91e8c99; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>🧩 sliding!</h1>
+    <div class="info">moves: <strong id="moves">0</strong></div>
+    <div class="grid" id="grid"></div>
+    <div id="message"></div>
+    <p class="hint">tap a tile next to the blank to slide it!</p>
+    <button class="btn" id="shuffle-btn">🔀 shuffle!</button>
+
+    <script>
+      const emojis = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣',''];
+      let tiles = [1,2,3,4,5,6,7,8,0];
+      let moves = 0;
+
+      function render() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        tiles.forEach((val, i) => {
+          const tile = document.createElement('div');
+          tile.className = 'tile' + (val === 0 ? ' empty' : '');
+          tile.textContent = val === 0 ? '' : emojis[val - 1];
+          if (val !== 0) tile.addEventListener('click', () => tryMove(i));
+          grid.appendChild(tile);
+        });
+      }
+
+      function tryMove(i) {
+        const empty = tiles.indexOf(0);
+        const row = r => Math.floor(r / 3);
+        const col = r => r % 3;
+        const adj = (Math.abs(row(i) - row(empty)) + Math.abs(col(i) - col(empty))) === 1;
+        if (!adj) return;
+        [tiles[i], tiles[empty]] = [tiles[empty], tiles[i]];
+        moves++;
+        document.getElementById('moves').textContent = moves;
+        document.getElementById('message').textContent = '';
+        render();
+        if (tiles.join('') === '123456780') {
+          document.getElementById('message').textContent = `🎉 you solved it in ${moves} moves!!`;
+        }
+      }
+
+      function shuffle() {
+        moves = 0;
+        document.getElementById('moves').textContent = 0;
+        document.getElementById('message').textContent = '';
+        // do random valid moves to ensure solvability
+        tiles = [1,2,3,4,5,6,7,8,0];
+        for (let i = 0; i < 200; i++) {
+          const empty = tiles.indexOf(0);
+          const row = Math.floor(empty / 3), col = empty % 3;
+          const neighbors = [];
+          if (row > 0) neighbors.push(empty - 3);
+          if (row < 2) neighbors.push(empty + 3);
+          if (col > 0) neighbors.push(empty - 1);
+          if (col < 2) neighbors.push(empty + 1);
+          const pick = neighbors[Math.floor(Math.random() * neighbors.length)];
+          [tiles[empty], tiles[pick]] = [tiles[pick], tiles[empty]];
+        }
+        render();
+      }
+
+      document.getElementById('shuffle-btn').addEventListener('click', shuffle);
+      shuffle();
+    </script>
+  </body>
+</html>

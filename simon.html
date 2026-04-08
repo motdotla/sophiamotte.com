@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simon Says! 🎵</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #fde8f0;
+        font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 1.2rem; padding: 1rem; min-height: 100vh; color: #c2185b;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem;
+        background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; letter-spacing: 0.1em;
+        padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;
+        border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+      .level { font-size: 0.9rem; letter-spacing: 0.08em; }
+      .simon-grid {
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 0.8rem; width: min(300px, 80vw);
+      }
+      .simon-btn {
+        aspect-ratio: 1; border-radius: 1rem; border: 4px solid #fff;
+        cursor: pointer; opacity: 0.6; transition: opacity 0.1s;
+        box-shadow: 0 0 12px rgba(0,0,0,0.2);
+      }
+      .simon-btn.lit { opacity: 1; box-shadow: 0 0 30px currentColor; }
+      .simon-btn:active { opacity: 1; }
+      #btn0 { background: #e91e8c; color: #e91e8c; }
+      #btn1 { background: #f5c800; color: #f5c800; }
+      #btn2 { background: #3b82f6; color: #3b82f6; }
+      #btn3 { background: #22c55e; color: #22c55e; }
+      .btn {
+        background: #f5c800; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; font-family: "Courier New", Courier, monospace;
+        font-size: 0.9rem; font-weight: bold; padding: 0.5rem 1.2rem;
+        cursor: pointer; letter-spacing: 0.08em;
+      }
+      .btn:hover { background: #e91e8c; color: #fff; }
+      #message { font-size: 1rem; letter-spacing: 0.05em; min-height: 1.5rem; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>🎵 simon says!</h1>
+    <div class="level">level: <strong id="level">0</strong></div>
+    <div class="simon-grid">
+      <div class="simon-btn" id="btn0"></div>
+      <div class="simon-btn" id="btn1"></div>
+      <div class="simon-btn" id="btn2"></div>
+      <div class="simon-btn" id="btn3"></div>
+    </div>
+    <div id="message">press start and watch the pattern!</div>
+    <button class="btn" id="start-btn">▶ start!</button>
+
+    <script>
+      const btns = [0,1,2,3].map(i => document.getElementById('btn' + i));
+      let sequence = [], playerSeq = [], level = 0, accepting = false;
+
+      function light(i, duration = 400) {
+        return new Promise(res => {
+          btns[i].classList.add('lit');
+          setTimeout(() => { btns[i].classList.remove('lit'); res(); }, duration);
+        });
+      }
+
+      async function playSequence() {
+        accepting = false;
+        document.getElementById('message').textContent = 'watch carefully! 👀';
+        await new Promise(r => setTimeout(r, 600));
+        for (const i of sequence) {
+          await light(i, 500);
+          await new Promise(r => setTimeout(r, 200));
+        }
+        playerSeq = [];
+        accepting = true;
+        document.getElementById('message').textContent = 'your turn! repeat the pattern!';
+      }
+
+      async function nextLevel() {
+        level++;
+        document.getElementById('level').textContent = level;
+        sequence.push(Math.floor(Math.random() * 4));
+        await playSequence();
+      }
+
+      async function handleClick(i) {
+        if (!accepting) return;
+        await light(i, 200);
+        playerSeq.push(i);
+        const pos = playerSeq.length - 1;
+        if (playerSeq[pos] !== sequence[pos]) {
+          accepting = false;
+          document.getElementById('message').textContent = `😢 wrong! you got to level ${level}! try again!`;
+          document.getElementById('start-btn').disabled = false;
+          sequence = []; level = 0;
+          document.getElementById('level').textContent = 0;
+          return;
+        }
+        if (playerSeq.length === sequence.length) {
+          accepting = false;
+          document.getElementById('message').textContent = '🎉 correct!!';
+          await new Promise(r => setTimeout(r, 800));
+          nextLevel();
+        }
+      }
+
+      btns.forEach((btn, i) => btn.addEventListener('click', () => handleClick(i)));
+
+      document.getElementById('start-btn').addEventListener('click', () => {
+        document.getElementById('start-btn').disabled = true;
+        sequence = []; level = 0;
+        document.getElementById('level').textContent = 0;
+        nextLevel();
+      });
+    </script>
+  </body>
+</html>

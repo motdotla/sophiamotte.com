@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hangman! ✏️</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #fde8f0;
+        font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 1rem; padding: 1rem; min-height: 100vh; color: #c2185b;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem;
+        background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; letter-spacing: 0.1em;
+        padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;
+        border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+      .drawing {
+        font-size: 0.85rem; line-height: 1.4; white-space: pre;
+        color: #e91e8c; text-align: left;
+        background: #fff0f5; border: 3px solid #e91e8c;
+        border-radius: 1rem; padding: 1rem;
+        box-shadow: 0 0 10px #ffb6d9;
+      }
+      .word-display {
+        display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+      }
+      .letter-box {
+        width: 2rem; text-align: center; font-size: 1.4rem;
+        border-bottom: 3px solid #e91e8c; color: #c2185b;
+        min-height: 2rem; line-height: 2rem;
+      }
+      .wrong-letters { font-size: 0.85rem; color: #e91e8c99; letter-spacing: 0.1em; min-height: 1.5rem; }
+      .keyboard {
+        display: flex; flex-wrap: wrap; gap: 0.3rem;
+        width: min(360px, 94vw); justify-content: center;
+      }
+      .key {
+        background: #fff0f5; border: 2px solid #e91e8c; border-radius: 0.4rem;
+        color: #c2185b; font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold;
+        padding: 0.3rem 0.5rem; cursor: pointer; min-width: 2rem; text-align: center;
+      }
+      .key:hover:not(:disabled) { background: #e91e8c; color: #fff; }
+      .key:disabled { opacity: 0.3; cursor: default; }
+      .btn {
+        background: #f5c800; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; font-family: "Courier New", Courier, monospace;
+        font-size: 0.9rem; font-weight: bold; padding: 0.5rem 1.2rem;
+        cursor: pointer; letter-spacing: 0.08em;
+      }
+      .btn:hover { background: #e91e8c; color: #fff; }
+      #message { font-size: 1rem; letter-spacing: 0.05em; min-height: 1.5rem; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>✏️ hangman!</h1>
+    <pre class="drawing" id="drawing"></pre>
+    <div class="word-display" id="word-display"></div>
+    <div class="wrong-letters">wrong: <span id="wrong"></span></div>
+    <div class="keyboard" id="keyboard"></div>
+    <div id="message"></div>
+    <button class="btn" id="new-btn">🔄 new word</button>
+
+    <script>
+      const words = ['DUCK','HEART','FLOWER','RAINBOW','BUTTERFLY','CUPCAKE','DRAGON','UNICORN','PRINCESS','SUNSHINE','DOLPHIN','PENGUIN','STRAWBERRY','CHOCOLATE','SPARKLE'];
+      const stages = [
+`  +---+
+  |   |
+      |
+      |
+      |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+      |
+      |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+  |   |
+      |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+ /|   |
+      |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+ /|\\  |
+      |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+ /|\\  |
+ /    |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+ /|\\  |
+ / \\  |
+      |
+=========`];
+
+      let word, guessed, wrong, over;
+
+      function newGame() {
+        word = words[Math.floor(Math.random() * words.length)];
+        guessed = new Set();
+        wrong = 0;
+        over = false;
+        document.getElementById('wrong').textContent = '';
+        document.getElementById('message').textContent = '';
+        render();
+        buildKeyboard();
+      }
+
+      function render() {
+        document.getElementById('drawing').textContent = stages[wrong];
+        const display = document.getElementById('word-display');
+        display.innerHTML = '';
+        [...word].forEach(l => {
+          const box = document.createElement('div');
+          box.className = 'letter-box';
+          box.textContent = guessed.has(l) ? l : '';
+          display.appendChild(box);
+        });
+      }
+
+      function buildKeyboard() {
+        const kb = document.getElementById('keyboard');
+        kb.innerHTML = '';
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(l => {
+          const btn = document.createElement('button');
+          btn.className = 'key';
+          btn.textContent = l;
+          btn.addEventListener('click', () => guess(l, btn));
+          kb.appendChild(btn);
+        });
+      }
+
+      function guess(letter, btn) {
+        if (over || guessed.has(letter)) return;
+        guessed.add(letter);
+        btn.disabled = true;
+        if (word.includes(letter)) {
+          render();
+          if ([...word].every(l => guessed.has(l))) {
+            over = true;
+            document.getElementById('message').textContent = '🎉 you won!! amazing!!';
+          }
+        } else {
+          wrong++;
+          document.getElementById('wrong').textContent = [...guessed].filter(l => !word.includes(l)).join(' ');
+          render();
+          if (wrong >= 6) {
+            over = true;
+            document.getElementById('message').textContent = `😢 the word was "${word}"! try again!`;
+          }
+        }
+      }
+
+      document.addEventListener('keydown', e => {
+        const l = e.key.toUpperCase();
+        if (/^[A-Z]$/.test(l) && !over) {
+          const btn = [...document.querySelectorAll('.key')].find(b => b.textContent === l);
+          if (btn && !btn.disabled) guess(l, btn);
+        }
+      });
+
+      document.getElementById('new-btn').addEventListener('click', newGame);
+      newGame();
+    </script>
+  </body>
+</html>

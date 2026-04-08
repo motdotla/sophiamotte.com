@@ -96,11 +96,13 @@
 
       .tabs {
         position: fixed;
-        top: 1rem;
-        left: 1rem;
+        top: 0.5rem;
+        left: 0.5rem;
+        right: 0.5rem;
         z-index: 10;
         display: flex;
-        gap: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.4rem;
       }
 
       .play-tab {
@@ -182,10 +184,15 @@
   </head>
   <body>
     <div class="tabs">
-      <a class="play-tab" href="snake.html">🐍 PLAY SNAKE</a>
+      <a class="play-tab" href="snake.html">🐍 SNAKE</a>
       <a class="play-tab" href="draw.html">🎨 DRAW</a>
       <a class="play-tab" href="match.html">💕 MATCH</a>
-      <a class="play-tab" href="claude.html">🤖 CLAUDE'S FAVORITES</a>
+      <a class="play-tab" href="whack.html">🐹 WHACK</a>
+      <a class="play-tab" href="guess.html">🔢 GUESS</a>
+      <a class="play-tab" href="hangman.html">✏️ HANGMAN</a>
+      <a class="play-tab" href="simon.html">🎵 SIMON</a>
+      <a class="play-tab" href="sliding.html">🧩 SLIDING</a>
+      <a class="play-tab" href="claude.html">🤖 CLAUDE'S FAVES</a>
     </div>
     <div class="still-hearts" aria-hidden="true">
       <span class="still-heart" style="top:5%;  left:5%;">♥</span>
