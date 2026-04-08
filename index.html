@@ -21,6 +21,42 @@
         justify-content: center;
         min-height: 100vh;
         gap: 1.5rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .ducks {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        pointer-events: none;
+        opacity: 0.18;
+        font-size: 1.1rem;
+        line-height: 1.2;
+        white-space: pre;
+        overflow: hidden;
+      }
+
+      .duck {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #e91e8c;
+      }
+
+      .content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
       }
 
       .heart {
@@ -45,6 +81,99 @@
     </style>
   </head>
   <body>
+    <div class="ducks" aria-hidden="true">
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+      <div class="duck"><pre> _
+( )>
+ ||</pre></div>
+    </div>
+    <div class="content">
     <pre class="heart">
   ██████   ██████
  ████████ ████████
@@ -60,5 +189,6 @@
     </pre>
     <h1>hi, I am Sophia! 💕</h1>
     <p class="tagline">~ sophiamotte.com ~</p>
+    </div>
   </body>
 </html>
