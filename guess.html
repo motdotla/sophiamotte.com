@@ -22,6 +22,7 @@
       }
       .back-tab:hover { background: #e91e8c; color: #fff; }
       h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+      .mode-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
       .card {
         background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1rem;
         box-shadow: 0 0 14px #ffb6d9; padding: 1.5rem;
@@ -45,6 +46,7 @@
         cursor: pointer; letter-spacing: 0.08em;
       }
       .btn:hover { background: #e91e8c; color: #fff; }
+      .btn.active { background: #e91e8c; color: #fff; }
       .history { font-size: 0.8rem; color: #e91e8c99; line-height: 1.8; }
       .hint-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: center; }
       .hint-box {
@@ -54,13 +56,33 @@
         box-shadow: 0 0 8px #ffb6d9;
       }
       .hint-used { opacity: 0.4; cursor: default !important; }
+      #pick-screen { display: none; }
+      #pick-screen.visible { display: flex; }
     </style>
   </head>
   <body>
     <a class="back-tab" href="index.html">💕 GO BACK</a>
     <h1>🔢 number guess!</h1>
-    <div class="card">
-      <p>i'm thinking of a number between <strong>1</strong> and <strong>100</strong>!</p>
+
+    <div class="mode-btns">
+      <button class="btn active" id="solo-btn">🤖 vs computer</button>
+      <button class="btn" id="friend-btn">👯 play with a friend!</button>
+    </div>
+
+    <!-- friend pick screen -->
+    <div class="card" id="pick-screen">
+      <p>🤫 player 1 — pick a secret number between <strong>1</strong> and <strong>100</strong>!</p>
+      <p style="font-size:0.8rem;color:#e91e8c99;">(player 2, look away!! 👀)</p>
+      <div class="input-row">
+        <input id="pick-input" type="password" min="1" max="100" placeholder="shhh..." />
+        <button class="btn" id="pick-btn">ready!</button>
+      </div>
+      <div id="pick-error" style="font-size:0.8rem;color:#e91e8c;min-height:1rem;"></div>
+    </div>
+
+    <!-- main game card -->
+    <div class="card" id="game-card">
+      <p id="game-desc">i'm thinking of a number between <strong>1</strong> and <strong>100</strong>!</p>
       <div class="hint" id="hint">can you guess it? 🤔</div>
       <div class="tries">tries: <strong id="tries">0</strong></div>
       <div class="input-row">
@@ -75,13 +97,14 @@
         <button class="btn" id="hint3-btn">💡 hint 3</button>
       </div>
       <div class="hint-box" id="hint-box" style="display:none;"></div>
-      <button class="btn" id="new-btn">🔄 new number</button>
+      <button class="btn" id="new-btn">🔄 new game</button>
     </div>
 
     <script>
       let secret = Math.floor(Math.random() * 100) + 1;
       let tries = 0;
       let hintsUsed = 0;
+      let mode = 'solo'; // 'solo' or 'friend'
 
       function getHints() {
         const even = secret % 2 === 0 ? 'even' : 'odd';
@@ -96,7 +119,6 @@
       }
 
       function useHint(n) {
-        if (hintsUsed >= 3) return;
         const btn = document.getElementById(`hint${n}-btn`);
         if (btn.classList.contains('hint-used')) return;
         hintsUsed++;
@@ -108,8 +130,7 @@
         box.textContent = getHints()[n - 1];
       }
 
-      function newGame() {
-        secret = Math.floor(Math.random() * 100) + 1;
+      function resetGameUI() {
         tries = 0;
         hintsUsed = 0;
         document.getElementById('tries').textContent = 0;
@@ -126,6 +147,20 @@
           btn.classList.remove('hint-used');
           btn.disabled = false;
         });
+      }
+
+      function newGame() {
+        if (mode === 'friend') {
+          // go back to pick screen
+          document.getElementById('game-card').style.display = 'none';
+          document.getElementById('pick-screen').classList.add('visible');
+          document.getElementById('pick-input').value = '';
+          document.getElementById('pick-error').textContent = '';
+        } else {
+          secret = Math.floor(Math.random() * 100) + 1;
+          resetGameUI();
+          document.getElementById('game-desc').innerHTML = `i'm thinking of a number between <strong>1</strong> and <strong>100</strong>!`;
+        }
       }
 
       function guess() {
@@ -147,6 +182,45 @@
         }
         document.getElementById('guess-input').value = '';
       }
+
+      // mode switching
+      document.getElementById('solo-btn').addEventListener('click', () => {
+        mode = 'solo';
+        document.getElementById('solo-btn').classList.add('active');
+        document.getElementById('friend-btn').classList.remove('active');
+        document.getElementById('pick-screen').classList.remove('visible');
+        document.getElementById('game-card').style.display = 'flex';
+        secret = Math.floor(Math.random() * 100) + 1;
+        resetGameUI();
+        document.getElementById('game-desc').innerHTML = `i'm thinking of a number between <strong>1</strong> and <strong>100</strong>!`;
+      });
+
+      document.getElementById('friend-btn').addEventListener('click', () => {
+        mode = 'friend';
+        document.getElementById('friend-btn').classList.add('active');
+        document.getElementById('solo-btn').classList.remove('active');
+        document.getElementById('game-card').style.display = 'none';
+        document.getElementById('pick-screen').classList.add('visible');
+        document.getElementById('pick-input').value = '';
+        document.getElementById('pick-error').textContent = '';
+      });
+
+      document.getElementById('pick-btn').addEventListener('click', () => {
+        const val = parseInt(document.getElementById('pick-input').value);
+        if (!val || val < 1 || val > 100) {
+          document.getElementById('pick-error').textContent = 'pick a number between 1 and 100!';
+          return;
+        }
+        secret = val;
+        document.getElementById('pick-screen').classList.remove('visible');
+        document.getElementById('game-card').style.display = 'flex';
+        resetGameUI();
+        document.getElementById('game-desc').innerHTML = `player 1 picked a number — player 2, can you guess it?! 👀`;
+      });
+
+      document.getElementById('pick-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('pick-btn').click();
+      });
 
       document.getElementById('guess-btn').addEventListener('click', guess);
       document.getElementById('guess-input').addEventListener('keydown', e => { if (e.key === 'Enter') guess(); });
