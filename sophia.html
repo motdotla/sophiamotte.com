@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sophia! 💕</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background-color: #fde8f0;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 1.5rem; padding: 1rem 1rem 3rem;
+        min-height: 100vh;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem;
+        background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; letter-spacing: 0.1em;
+        padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;
+        border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 2rem; font-weight: normal; letter-spacing: 0.2em; margin-top: 4rem; }
+      .subtitle { font-size: 0.85rem; color: #e91e8c99; letter-spacing: 0.1em; }
+      .facts {
+        background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1rem;
+        box-shadow: 0 0 14px #ffb6d9; padding: 1.2rem 1.5rem;
+        width: min(480px, 94vw); display: flex; flex-direction: column; gap: 0.6rem;
+      }
+      .facts h2 { font-size: 1rem; font-weight: normal; letter-spacing: 0.1em; color: #e91e8c; }
+      .fact { font-size: 0.9rem; line-height: 1.6; }
+      .gallery {
+        display: grid; grid-template-columns: repeat(2, 1fr);
+        gap: 1rem; width: min(480px, 94vw);
+      }
+      .gallery img {
+        width: 100%; border-radius: 1rem;
+        border: 3px solid #f5c800; box-shadow: 0 0 12px #ffb6d9;
+        object-fit: cover; aspect-ratio: 3/4;
+      }
+      .gallery img.wide {
+        grid-column: span 2; aspect-ratio: 4/3;
+      }
+      .caption {
+        font-size: 0.75rem; color: #e91e8c99; text-align: center; letter-spacing: 0.08em;
+        grid-column: span 1;
+      }
+      .gallery-item { display: flex; flex-direction: column; gap: 0.3rem; align-items: center; }
+      .gallery-item.wide { grid-column: span 2; }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>💕 sophia!</h1>
+    <p class="subtitle">~ the girl behind the website ~</p>
+
+    <div class="facts">
+      <h2>🌟 facts about sophia</h2>
+      <p class="fact">🎂 age: 8 years old</p>
+      <p class="fact">💻 superpower: building websites and coding games!!</p>
+      <p class="fact">✈️ favorite hobby: traveling the world — been to 6 places already!</p>
+      <p class="fact">👩‍🍳 other hobby: cooking yummy food!</p>
+      <p class="fact">🐶 pets: wally (crazy puppy!) and pistol (forever in our hearts 💕)</p>
+      <p class="fact">🌸 personality: creative, adventurous, and full of love!!</p>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="photos/cooking.png" alt="Sophia cooking" />
+        <span class="caption">👩‍🍳 cooking!</span>
+      </div>
+      <div class="gallery-item">
+        <img src="photos/valentines.png" alt="Valentine's day" />
+        <span class="caption">💕 valentines day!</span>
+      </div>
+      <div class="gallery-item wide">
+        <img src="photos/france.png" alt="Sophia in France" class="wide" />
+        <span class="caption">🗼 sophia in france!</span>
+      </div>
+    </div>
+  </body>
+</html>
