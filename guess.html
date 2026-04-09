@@ -46,6 +46,14 @@
       }
       .btn:hover { background: #e91e8c; color: #fff; }
       .history { font-size: 0.8rem; color: #e91e8c99; line-height: 1.8; }
+      .hint-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: center; }
+      .hint-box {
+        background: #fff0f5; border: 2px solid #f5c800; border-radius: 0.75rem;
+        padding: 0.5rem 1rem; font-size: 0.85rem; color: #c2185b;
+        text-align: center; width: 100%; min-height: 2rem;
+        box-shadow: 0 0 8px #ffb6d9;
+      }
+      .hint-used { opacity: 0.4; cursor: default !important; }
     </style>
   </head>
   <body>
@@ -60,22 +68,64 @@
         <button class="btn" id="guess-btn">guess!</button>
       </div>
       <div class="history" id="history"></div>
+      <div style="font-size:0.85rem; color:#e91e8c99;">💡 hints left: <strong id="hints-left">3</strong></div>
+      <div class="hint-row">
+        <button class="btn" id="hint1-btn">💡 hint 1</button>
+        <button class="btn" id="hint2-btn">💡 hint 2</button>
+        <button class="btn" id="hint3-btn">💡 hint 3</button>
+      </div>
+      <div class="hint-box" id="hint-box" style="display:none;"></div>
       <button class="btn" id="new-btn">🔄 new number</button>
     </div>
 
     <script>
       let secret = Math.floor(Math.random() * 100) + 1;
       let tries = 0;
+      let hintsUsed = 0;
+
+      function getHints() {
+        const even = secret % 2 === 0 ? 'even' : 'odd';
+        const quarter = secret <= 25 ? 'between 1 and 25' : secret <= 50 ? 'between 26 and 50' : secret <= 75 ? 'between 51 and 75' : 'between 76 and 100';
+        const tens = Math.floor(secret / 10);
+        const tensHint = tens === 0 ? 'less than 10' : `the tens digit is ${tens} (so it's ${tens*10}-${tens*10+9})`;
+        return [
+          `hint 1: the number is ${even}! 🔢`,
+          `hint 2: it's ${quarter}! 📍`,
+          `hint 3: ${tensHint}! 🔍`,
+        ];
+      }
+
+      function useHint(n) {
+        if (hintsUsed >= 3) return;
+        const btn = document.getElementById(`hint${n}-btn`);
+        if (btn.classList.contains('hint-used')) return;
+        hintsUsed++;
+        btn.classList.add('hint-used');
+        btn.disabled = true;
+        document.getElementById('hints-left').textContent = 3 - hintsUsed;
+        const box = document.getElementById('hint-box');
+        box.style.display = 'block';
+        box.textContent = getHints()[n - 1];
+      }
 
       function newGame() {
         secret = Math.floor(Math.random() * 100) + 1;
         tries = 0;
+        hintsUsed = 0;
         document.getElementById('tries').textContent = 0;
         document.getElementById('hint').textContent = 'can you guess it? 🤔';
         document.getElementById('history').textContent = '';
         document.getElementById('guess-input').value = '';
         document.getElementById('guess-input').disabled = false;
         document.getElementById('guess-btn').disabled = false;
+        document.getElementById('hints-left').textContent = 3;
+        document.getElementById('hint-box').style.display = 'none';
+        document.getElementById('hint-box').textContent = '';
+        [1,2,3].forEach(n => {
+          const btn = document.getElementById(`hint${n}-btn`);
+          btn.classList.remove('hint-used');
+          btn.disabled = false;
+        });
       }
 
       function guess() {
@@ -101,6 +151,9 @@
       document.getElementById('guess-btn').addEventListener('click', guess);
       document.getElementById('guess-input').addEventListener('keydown', e => { if (e.key === 'Enter') guess(); });
       document.getElementById('new-btn').addEventListener('click', newGame);
+      document.getElementById('hint1-btn').addEventListener('click', () => useHint(1));
+      document.getElementById('hint2-btn').addEventListener('click', () => useHint(2));
+      document.getElementById('hint3-btn').addEventListener('click', () => useHint(3));
     </script>
   </body>
 </html>
