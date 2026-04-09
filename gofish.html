@@ -19,6 +19,7 @@
       }
       .back-tab:hover { background: #e91e8c; color: #fff; }
       h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+      .mode-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
       .scores { font-size: 0.85rem; color: #e91e8c99; letter-spacing: 0.05em; }
       .section { font-size: 0.8rem; color: #e91e8c99; letter-spacing: 0.08em; }
       .cards-row { display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: center; max-width: min(500px, 94vw); }
@@ -44,21 +45,46 @@
       }
       .btn:hover { background: #e91e8c; color: #fff; }
       .btn:disabled { opacity: 0.4; cursor: default; }
+      .btn.active { background: #e91e8c; color: #fff; }
       #ask-btn { display: none; }
+
+      /* pass screen */
+      #pass-screen {
+        display: none; position: fixed; inset: 0;
+        background: #fde8f0; z-index: 50;
+        flex-direction: column; align-items: center; justify-content: center;
+        gap: 1.2rem; text-align: center; padding: 2rem;
+      }
+      #pass-screen.visible { display: flex; }
+      #pass-screen h2 { font-size: 1.5rem; font-weight: normal; letter-spacing: 0.1em; }
+      #pass-screen p { font-size: 0.9rem; color: #e91e8c99; }
     </style>
   </head>
   <body>
     <a class="back-tab" href="index.html">💕 GO BACK</a>
     <h1>🐟 go fish!</h1>
-    <div class="scores">your books: <span id="your-books">0</span> &nbsp;|&nbsp; cpu books: <span id="cpu-books">0</span> &nbsp;|&nbsp; deck: <span id="deck-count">0</span></div>
 
-    <div class="section">🤖 computer's hand (<span id="cpu-count">0</span> cards)</div>
+    <div class="mode-btns">
+      <button class="btn active" id="solo-btn">🤖 vs computer</button>
+      <button class="btn" id="friend-btn">👯 play with a friend!</button>
+    </div>
+
+    <div class="scores">
+      <span id="p1-label">you</span>: <span id="your-books">0</span> books &nbsp;|&nbsp;
+      <span id="p2-label">cpu</span>: <span id="cpu-books">0</span> books &nbsp;|&nbsp;
+      deck: <span id="deck-count">0</span>
+    </div>
+
+    <div class="section" id="opponent-label">🤖 computer's hand (<span id="cpu-count">0</span> cards)</div>
     <div class="cards-row" id="cpu-hand"></div>
+
+    <div class="section"><span id="p2-books-label">cpu</span> books 📚</div>
+    <div class="cards-row" id="cpu-books-row"></div>
 
     <div class="section">your books 📚</div>
     <div class="cards-row" id="your-books-row"></div>
 
-    <div class="section">your hand — tap a card to ask for it!</div>
+    <div class="section" id="your-hand-label">your hand — tap a card to ask for it!</div>
     <div class="cards-row" id="your-hand"></div>
 
     <button class="btn" id="ask-btn">🎣 ask!</button>
@@ -66,10 +92,19 @@
     <div class="log" id="log"></div>
     <button class="btn" id="new-btn">🔄 new game</button>
 
+    <!-- pass-and-play interstitial -->
+    <div id="pass-screen">
+      <h2 id="pass-title">📱 pass to player 2!</h2>
+      <p id="pass-sub">don't peek! cover the screen while passing!</p>
+      <button class="btn" id="pass-ready-btn">i'm ready! 👀</button>
+    </div>
+
     <script>
       const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
       const SUITS = ['♥','♦','♣','♠'];
       let playerHand, cpuHand, deck, playerBooks, cpuBooks, selected, playerTurn;
+      let mode = 'solo';
+      let currentPlayer = 1; // for friend mode
 
       function makeDeck() {
         const d = [];
@@ -82,10 +117,7 @@
 
       function checkBooks(hand) {
         const books = [];
-        for (const r of RANKS) {
-          const matched = hand.filter(c => c.r === r);
-          if (matched.length === 4) books.push(r);
-        }
+        for (const r of RANKS) { if (hand.filter(c=>c.r===r).length===4) books.push(r); }
         return books;
       }
 
@@ -98,21 +130,26 @@
         el.innerHTML = msg + '<br>' + el.innerHTML;
       }
 
+      function settle(hand, books) {
+        const b = checkBooks(hand); books.push(...b); removeBooks(hand, b);
+        if (hand.length === 0 && deck.length > 0) deal(hand, 1);
+      }
+
       function init() {
         deck = makeDeck();
         playerHand = []; cpuHand = [];
         playerBooks = []; cpuBooks = [];
-        selected = null; playerTurn = true;
+        selected = null; playerTurn = true; currentPlayer = 1;
         deal(playerHand, 7); deal(cpuHand, 7);
         settle(playerHand, playerBooks); settle(cpuHand, cpuBooks);
         document.getElementById('log').innerHTML = '';
-        log('🎮 new game started! tap a card then press ask!');
+        document.getElementById('pass-screen').classList.remove('visible');
+        if (mode === 'friend') {
+          log('🎮 new game! player 1 goes first!');
+        } else {
+          log('🎮 new game started! tap a card then press ask!');
+        }
         render();
-      }
-
-      function settle(hand, books) {
-        const b = checkBooks(hand); books.push(...b); removeBooks(hand, b);
-        if (hand.length === 0 && deck.length > 0) deal(hand, 1);
       }
 
       function render() {
@@ -121,50 +158,114 @@
         document.getElementById('cpu-books').textContent = cpuBooks.length;
         document.getElementById('cpu-count').textContent = cpuHand.length;
 
+        // opponent hand (hidden in friend mode)
         const cpuEl = document.getElementById('cpu-hand');
         cpuEl.innerHTML = '';
-        cpuHand.forEach(() => { const c=document.createElement('div'); c.className='card cpu'; c.textContent='🂠'; cpuEl.appendChild(c); });
+        if (mode === 'friend') {
+          // show hidden cards for friend
+          cpuHand.forEach(() => { const c=document.createElement('div'); c.className='card cpu'; c.textContent='🂠'; cpuEl.appendChild(c); });
+        } else {
+          cpuHand.forEach(() => { const c=document.createElement('div'); c.className='card cpu'; c.textContent='🂠'; cpuEl.appendChild(c); });
+        }
 
+        // cpu/p2 books
+        const cpuBooksEl = document.getElementById('cpu-books-row');
+        cpuBooksEl.innerHTML = '';
+        cpuBooks.forEach(r => { const c=document.createElement('div'); c.className='book'; c.textContent=`[${r}×4]`; cpuBooksEl.appendChild(c); });
+
+        // your/p1 books
         const yourBooksEl = document.getElementById('your-books-row');
         yourBooksEl.innerHTML = '';
         playerBooks.forEach(r => { const c=document.createElement('div'); c.className='book'; c.textContent=`[${r}×4]`; yourBooksEl.appendChild(c); });
 
+        // your hand
         const handEl = document.getElementById('your-hand');
         handEl.innerHTML = '';
+        const isMyTurn = mode === 'solo' ? playerTurn : currentPlayer === 1;
         playerHand.forEach((card, i) => {
           const c = document.createElement('div');
           c.className = 'card' + (selected===i?' selected':'');
           c.textContent = card.r + card.s;
           c.style.color = (card.s==='♥'||card.s==='♦') ? '#e91e8c' : '#333';
-          if (playerTurn) c.addEventListener('click', () => { selected=i; render(); document.getElementById('ask-btn').style.display='inline-block'; });
+          if (isMyTurn) c.addEventListener('click', () => { selected=i; render(); document.getElementById('ask-btn').style.display='inline-block'; });
           handEl.appendChild(c);
         });
 
+        // labels
+        if (mode === 'friend') {
+          const p = currentPlayer === 1 ? 'player 1' : 'player 2';
+          document.getElementById('your-hand-label').textContent = `${p}'s hand — tap a card to ask for it!`;
+          document.getElementById('opponent-label').innerHTML = `${currentPlayer === 1 ? 'player 2' : 'player 1'}'s hand (<span id="cpu-count">${cpuHand.length}</span> cards) — hidden!`;
+        }
+
+        // game over?
         if (playerBooks.length + cpuBooks.length === 13) {
-          const winner = playerBooks.length > cpuBooks.length ? '🎉 you win!!' : playerBooks.length < cpuBooks.length ? '🤖 computer wins!' : "it's a tie! 🤝";
-          log(`🏁 game over! ${winner} (you: ${playerBooks.length} books, cpu: ${cpuBooks.length} books)`);
+          const p1name = mode === 'friend' ? 'player 1' : 'you';
+          const p2name = mode === 'friend' ? 'player 2' : 'computer';
+          const winner = playerBooks.length > cpuBooks.length ? `🎉 ${p1name} wins!!` : playerBooks.length < cpuBooks.length ? `🎉 ${p2name} wins!` : "it's a tie! 🤝";
+          log(`🏁 game over! ${winner} (${p1name}: ${playerBooks.length} books, ${p2name}: ${cpuBooks.length} books)`);
           document.getElementById('ask-btn').style.display = 'none';
         }
       }
 
+      function showPassScreen(toPlayer) {
+        const screen = document.getElementById('pass-screen');
+        document.getElementById('pass-title').textContent = `📱 pass to player ${toPlayer}!`;
+        document.getElementById('pass-sub').textContent = `don't peek! cover the screen while passing! 🙈`;
+        screen.classList.add('visible');
+      }
+
+      document.getElementById('pass-ready-btn').addEventListener('click', () => {
+        document.getElementById('pass-screen').classList.remove('visible');
+        // swap hands for display
+        [playerHand, cpuHand] = [cpuHand, playerHand];
+        [playerBooks, cpuBooks] = [cpuBooks, playerBooks];
+        selected = null;
+        document.getElementById('ask-btn').style.display = 'none';
+        log(`👆 player ${currentPlayer}'s turn! tap a card to ask!`);
+        render();
+      });
+
       document.getElementById('ask-btn').addEventListener('click', () => {
-        if (selected === null || !playerTurn) return;
+        if (selected === null) return;
         const rank = playerHand[selected].r;
         document.getElementById('ask-btn').style.display = 'none';
         selected = null;
-        const got = cpuHand.filter(c => c.r === rank);
-        if (got.length > 0) {
-          got.forEach(c => { playerHand.push(c); cpuHand.splice(cpuHand.findIndex(x=>x.r===rank&&x.s===c.s),1); });
-          log(`✅ you asked for ${rank}s — got ${got.length}!`);
-          settle(playerHand, playerBooks); settle(cpuHand, cpuBooks);
-          render();
+
+        if (mode === 'friend') {
+          // friend mode: check opponent's hand (cpuHand = other player's hand)
+          const got = cpuHand.filter(c => c.r === rank);
+          if (got.length > 0) {
+            got.forEach(c => { playerHand.push(c); cpuHand.splice(cpuHand.findIndex(x=>x.r===rank&&x.s===c.s),1); });
+            log(`✅ player ${currentPlayer} asked for ${rank}s — got ${got.length}!`);
+            settle(playerHand, playerBooks); settle(cpuHand, cpuBooks);
+            render();
+            // still player's turn (got cards), but pass screen to swap view
+          } else {
+            log(`🐟 go fish! player ${currentPlayer} asked for ${rank}s`);
+            if (deck.length > 0) { playerHand.push(deck.pop()); log(`🃏 player ${currentPlayer} drew a card`); }
+            settle(playerHand, playerBooks);
+            // switch player
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            showPassScreen(currentPlayer);
+          }
         } else {
-          log(`🐟 go fish! you asked for ${rank}s`);
-          if (deck.length > 0) { playerHand.push(deck.pop()); log(`🃏 you drew a card`); }
-          settle(playerHand, playerBooks);
-          render();
-          playerTurn = false;
-          setTimeout(cpuTurn, 1000);
+          // solo mode
+          if (!playerTurn) return;
+          const got = cpuHand.filter(c => c.r === rank);
+          if (got.length > 0) {
+            got.forEach(c => { playerHand.push(c); cpuHand.splice(cpuHand.findIndex(x=>x.r===rank&&x.s===c.s),1); });
+            log(`✅ you asked for ${rank}s — got ${got.length}!`);
+            settle(playerHand, playerBooks); settle(cpuHand, cpuBooks);
+            render();
+          } else {
+            log(`🐟 go fish! you asked for ${rank}s`);
+            if (deck.length > 0) { playerHand.push(deck.pop()); log(`🃏 you drew a card`); }
+            settle(playerHand, playerBooks);
+            render();
+            playerTurn = false;
+            setTimeout(cpuTurn, 1000);
+          }
         }
       });
 
@@ -187,6 +288,29 @@
           log(`👆 your turn! tap a card to ask!`);
         }
       }
+
+      // mode buttons
+      document.getElementById('solo-btn').addEventListener('click', () => {
+        mode = 'solo';
+        document.getElementById('solo-btn').classList.add('active');
+        document.getElementById('friend-btn').classList.remove('active');
+        document.getElementById('p1-label').textContent = 'you';
+        document.getElementById('p2-label').textContent = 'cpu';
+        document.getElementById('p2-books-label').textContent = 'cpu';
+        document.getElementById('opponent-label').innerHTML = `🤖 computer's hand (<span id="cpu-count">0</span> cards)`;
+        document.getElementById('your-hand-label').textContent = 'your hand — tap a card to ask for it!';
+        init();
+      });
+
+      document.getElementById('friend-btn').addEventListener('click', () => {
+        mode = 'friend';
+        document.getElementById('friend-btn').classList.add('active');
+        document.getElementById('solo-btn').classList.remove('active');
+        document.getElementById('p1-label').textContent = 'player 1';
+        document.getElementById('p2-label').textContent = 'player 2';
+        document.getElementById('p2-books-label').textContent = 'player 2';
+        init();
+      });
 
       document.getElementById('new-btn').addEventListener('click', init);
       init();
