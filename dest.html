@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="page-title">Destination</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background-color: #fde8f0;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 1.2rem; padding: 1rem 1rem 3rem;
+        min-height: 100vh;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem;
+        background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; letter-spacing: 0.1em;
+        padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;
+        border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      .flag { font-size: 3rem; margin-top: 4rem; }
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; text-align: center; }
+      .fact {
+        background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1rem;
+        padding: 0.8rem 1.2rem; width: min(500px, 94vw);
+        font-size: 0.85rem; line-height: 1.6; text-align: center;
+        box-shadow: 0 0 10px #ffb6d9;
+      }
+      .photo-grid {
+        display: grid; grid-template-columns: repeat(2, 1fr);
+        gap: 0.7rem; width: min(500px, 94vw);
+      }
+      .photo-grid img {
+        width: 100%; border-radius: 0.75rem;
+        border: 3px solid #f5c800; box-shadow: 0 0 10px #ffb6d9;
+        object-fit: cover; aspect-ratio: 3/4; cursor: pointer;
+        transition: transform 0.2s;
+      }
+      .photo-grid img:hover { transform: scale(1.02); }
+      .photo-grid img.wide { grid-column: span 2; aspect-ratio: 4/3; }
+      .no-photos {
+        font-size: 1rem; color: #e91e8c99; text-align: center;
+        padding: 2rem; letter-spacing: 0.08em;
+      }
+      .lightbox {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.88); z-index: 100;
+        align-items: center; justify-content: center;
+      }
+      .lightbox.open { display: flex; }
+      .lightbox img { max-width: 92vw; max-height: 92vh; border-radius: 1rem; border: 3px solid #f5c800; }
+      .lightbox-close {
+        position: fixed; top: 1rem; right: 1rem;
+        background: #f5c800; border: none; border-radius: 50%;
+        width: 2.5rem; height: 2.5rem; font-size: 1.2rem;
+        cursor: pointer; color: #c2185b; font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="travel.html">✈️ BACK TO TRAVELS</a>
+    <div class="flag" id="flag"></div>
+    <h1 id="title"></h1>
+    <div class="fact" id="fact"></div>
+    <div class="photo-grid" id="grid"></div>
+    <div class="no-photos" id="no-photos" style="display:none;">📸 no photos yet — coming soon!</div>
+
+    <div class="lightbox" id="lightbox">
+      <button class="lightbox-close" id="lb-close">✕</button>
+      <img id="lb-img" src="" alt="" />
+    </div>
+
+    <script>
+      const destinations = {
+        paris: {
+          flag: '🗼', title: 'Paris, France 🇫🇷',
+          fact: 'The city of lights! Home of the Eiffel Tower — one of the most famous landmarks in the world! ✨',
+          photos: [
+            { src: 'photos/france.png', wide: true },
+            { src: 'photos/travel/unknown1.jpg', wide: true },
+          ]
+        },
+        maui: {
+          flag: '🌺', title: 'Maui, Hawaii 🌊',
+          fact: 'One of the most beautiful islands in Hawaii! Amazing sunsets, sea turtles, luaus, and waterslides! 🐢🌅',
+          photos: [
+            { src: 'photos/travel/maui1.jpg' },
+            { src: 'photos/travel/maui2.jpg' },
+            { src: 'photos/travel/maui3.jpg' },
+            { src: 'photos/travel/maui4.jpg' },
+            { src: 'photos/travel/maui5.jpg' },
+            { src: 'photos/travel/maui6.jpg' },
+            { src: 'photos/travel/maui7.jpg' },
+            { src: 'photos/travel/maui8.jpg' },
+            { src: 'photos/travel/maui9.jpg', wide: true },
+            { src: 'photos/travel/maui10.jpg' },
+          ]
+        },
+        mammoth: {
+          flag: '🏔️', title: 'Mammoth Mountain ⛷️',
+          fact: 'A snowy mountain town famous for skiing and snowboarding! One of the best ski resorts in California! ❄️',
+          photos: [
+            { src: 'photos/travel/mammoth1.jpg' },
+            { src: 'photos/travel/mammoth2.jpg' },
+          ]
+        },
+        sf: {
+          flag: '🌉', title: 'San Francisco 🚃',
+          fact: 'Famous for the Golden Gate Bridge, cable cars, and super steep hills!',
+          photos: [
+            { src: 'photos/travel/sf1.jpg', wide: true },
+          ]
+        },
+        newyork: {
+          flag: '🗽', title: 'New York City 🍕',
+          fact: 'Home of the Statue of Liberty, Central Park, Times Square, and the best pizza!!',
+          photos: []
+        },
+        japan: {
+          flag: '⛩️', title: 'Tokyo, Japan 🇯🇵',
+          fact: 'A magical country known for cherry blossoms, sushi, anime, and super fast bullet trains! 🌸🍜',
+          photos: []
+        },
+        hawaii: {
+          flag: '🌺', title: 'Hawaii 🌊',
+          fact: 'A beautiful island state in the Pacific Ocean! Famous for volcanoes, beaches, and hula dancing!',
+          photos: []
+        },
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const key = params.get('place') || 'paris';
+      const dest = destinations[key] || destinations.paris;
+
+      document.getElementById('page-title').textContent = dest.title;
+      document.getElementById('flag').textContent = dest.flag;
+      document.getElementById('title').textContent = dest.title;
+      document.getElementById('fact').textContent = dest.fact;
+
+      if (dest.photos.length === 0) {
+        document.getElementById('no-photos').style.display = 'block';
+      } else {
+        const grid = document.getElementById('grid');
+        dest.photos.forEach(p => {
+          const img = document.createElement('img');
+          img.src = p.src;
+          if (p.wide) img.classList.add('wide');
+          img.addEventListener('click', () => {
+            document.getElementById('lb-img').src = p.src;
+            document.getElementById('lightbox').classList.add('open');
+          });
+          grid.appendChild(img);
+        });
+      }
+
+      document.getElementById('lb-close').addEventListener('click', () =>
+        document.getElementById('lightbox').classList.remove('open'));
+      document.getElementById('lightbox').addEventListener('click', e => {
+        if (e.target === document.getElementById('lightbox'))
+          document.getElementById('lightbox').classList.remove('open');
+      });
+    </script>
+  </body>
+</html>

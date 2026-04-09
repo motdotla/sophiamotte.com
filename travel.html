@@ -11,7 +11,7 @@
         color: #c2185b;
         font-family: "Courier New", Courier, monospace;
         display: flex; flex-direction: column; align-items: center;
-        gap: 2rem; padding: 1rem 1rem 3rem;
+        gap: 1rem; padding: 1rem 1rem 3rem;
         min-height: 100vh;
       }
       .back-tab {
@@ -30,167 +30,86 @@
         padding: 0.4rem 1.2rem; font-size: 0.9rem; font-weight: bold;
         box-shadow: 0 0 10px #ffb6d9;
       }
-      .destination {
-        width: min(560px, 94vw);
-        display: flex; flex-direction: column; gap: 0.8rem;
+      .places {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 90vw), 1fr));
+        gap: 1rem; width: min(560px, 94vw);
       }
-      .dest-header {
+      .place-card {
         background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1rem;
-        padding: 0.8rem 1.2rem; box-shadow: 0 0 12px #ffb6d9;
-        display: flex; align-items: center; gap: 0.8rem;
+        box-shadow: 0 0 12px #ffb6d9; padding: 1rem;
+        display: flex; flex-direction: column; gap: 0.4rem;
+        text-decoration: none; color: inherit;
+        transition: transform 0.15s, box-shadow 0.15s;
       }
-      .dest-flag { font-size: 2rem; }
-      .dest-info { display: flex; flex-direction: column; gap: 0.2rem; }
-      .dest-name { font-size: 1.1rem; font-weight: bold; letter-spacing: 0.08em; }
-      .dest-loc { font-size: 0.75rem; color: #e91e8c99; }
-      .dest-fact { font-size: 0.8rem; line-height: 1.5; }
-      .photo-grid {
-        display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem;
+      .place-card:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 20px #f5c800;
+        border-color: #f5c800;
       }
-      .photo-grid img {
-        width: 100%; border-radius: 0.75rem;
-        border: 3px solid #f5c800; box-shadow: 0 0 10px #ffb6d9;
-        object-fit: cover; aspect-ratio: 3/4; cursor: pointer;
-        transition: transform 0.2s;
-      }
-      .photo-grid img:hover { transform: scale(1.02); }
-      .photo-grid img.landscape { aspect-ratio: 4/3; }
-      .photo-grid img.wide { grid-column: span 2; aspect-ratio: 16/9; }
-
-      /* lightbox */
-      .lightbox {
-        display: none; position: fixed; inset: 0;
-        background: rgba(0,0,0,0.85); z-index: 100;
-        align-items: center; justify-content: center;
-      }
-      .lightbox.open { display: flex; }
-      .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 1rem; border: 3px solid #f5c800; }
-      .lightbox-close {
-        position: fixed; top: 1rem; right: 1rem;
-        background: #f5c800; border: none; border-radius: 50%;
-        width: 2.5rem; height: 2.5rem; font-size: 1.2rem;
-        cursor: pointer; color: #c2185b; font-weight: bold;
-      }
+      .place-card .flag { font-size: 2.5rem; }
+      .place-card h2 { font-size: 1rem; font-weight: bold; letter-spacing: 0.08em; }
+      .place-card .location { font-size: 0.75rem; color: #e91e8c99; }
+      .place-card .fun-fact { font-size: 0.8rem; line-height: 1.5; }
+      .place-card .tap-hint { font-size: 0.75rem; color: #f5c800; margin-top: 0.3rem; letter-spacing: 0.05em; }
+      .place-card.no-photos .tap-hint { color: #e91e8c44; }
     </style>
   </head>
   <body>
     <a class="back-tab" href="index.html">💕 GO BACK</a>
     <h1>✈️ sophia's travels!</h1>
-    <p class="subtitle">~ places i've been ~</p>
+    <p class="subtitle">~ tap a place to see the photos! ~</p>
     <div class="count">🌍 8 places visited!!</div>
 
-    <!-- FRANCE / PARIS -->
-    <div class="destination">
-      <div class="dest-header">
-        <div class="dest-flag">🗼</div>
-        <div class="dest-info">
-          <div class="dest-name">Paris, France 🇫🇷</div>
-          <div class="dest-loc">📍 Europe</div>
-          <div class="dest-fact">The city of lights! Home of the Eiffel Tower — one of the most famous landmarks in the world! ✨</div>
-        </div>
-      </div>
-      <div class="photo-grid">
-        <img src="photos/france.png" alt="Sophia in Paris" class="wide" />
-        <img src="photos/travel/unknown1.jpg" alt="In Paris" class="wide" />
-      </div>
+    <div class="places">
+      <a class="place-card" href="dest.html?place=paris">
+        <div class="flag">🗼</div>
+        <h2>Paris, France</h2>
+        <div class="location">📍 Europe 🇫🇷</div>
+        <div class="fun-fact">The city of lights and the Eiffel Tower! ✨</div>
+        <div class="tap-hint">📸 tap to see photos!</div>
+      </a>
+      <a class="place-card" href="dest.html?place=maui">
+        <div class="flag">🌺</div>
+        <h2>Maui, Hawaii</h2>
+        <div class="location">📍 USA 🌊</div>
+        <div class="fun-fact">Beautiful beaches, sunsets, and a luau! 🌅</div>
+        <div class="tap-hint">📸 tap to see photos!</div>
+      </a>
+      <a class="place-card" href="dest.html?place=mammoth">
+        <div class="flag">🏔️</div>
+        <h2>Mammoth Mountain</h2>
+        <div class="location">📍 California, USA</div>
+        <div class="fun-fact">Skiing and snow tubing in the mountains! ⛷️❄️</div>
+        <div class="tap-hint">📸 tap to see photos!</div>
+      </a>
+      <a class="place-card" href="dest.html?place=sf">
+        <div class="flag">🌉</div>
+        <h2>San Francisco</h2>
+        <div class="location">📍 California, USA</div>
+        <div class="fun-fact">Golden Gate Bridge and cable cars! 🚃</div>
+        <div class="tap-hint">📸 tap to see photos!</div>
+      </a>
+      <a class="place-card no-photos" href="dest.html?place=newyork">
+        <div class="flag">🗽</div>
+        <h2>New York</h2>
+        <div class="location">📍 USA</div>
+        <div class="fun-fact">Statue of Liberty and the best pizza!! 🍕</div>
+        <div class="tap-hint">📸 coming soon!</div>
+      </a>
+      <a class="place-card no-photos" href="dest.html?place=hawaii">
+        <div class="flag">🌺</div>
+        <h2>Hawaii</h2>
+        <div class="location">📍 USA</div>
+        <div class="fun-fact">Volcanoes, beaches, and hula dancing! 🌊</div>
+        <div class="tap-hint">📸 coming soon!</div>
+      </a>
+      <a class="place-card no-photos" href="dest.html?place=japan">
+        <div class="flag">⛩️</div>
+        <h2>Tokyo, Japan</h2>
+        <div class="location">📍 Asia 🇯🇵</div>
+        <div class="fun-fact">Cherry blossoms, sushi, and bullet trains! 🌸</div>
+        <div class="tap-hint">📸 coming soon!</div>
+      </a>
     </div>
-
-    <!-- MAUI / HAWAII -->
-    <div class="destination">
-      <div class="dest-header">
-        <div class="dest-flag">🌺</div>
-        <div class="dest-info">
-          <div class="dest-name">Maui, Hawaii 🌊</div>
-          <div class="dest-loc">📍 USA</div>
-          <div class="dest-fact">One of the most beautiful islands in Hawaii! Amazing sunsets, sea turtles, luaus, and waterslides! 🐢</div>
-        </div>
-      </div>
-      <div class="photo-grid">
-        <img src="photos/travel/maui1.jpg" alt="Maui" />
-        <img src="photos/travel/maui2.jpg" alt="Maui" />
-        <img src="photos/travel/maui3.jpg" alt="Maui night pool" />
-        <img src="photos/travel/maui4.jpg" alt="Maui resort" />
-        <img src="photos/travel/maui5.jpg" alt="Maui" />
-        <img src="photos/travel/maui6.jpg" alt="Maui sunset" />
-        <img src="photos/travel/maui7.jpg" alt="Maui luau" />
-        <img src="photos/travel/maui8.jpg" alt="Maui beach" />
-        <img src="photos/travel/maui9.jpg" class="wide" alt="Maui beach sunset" />
-        <img src="photos/travel/maui10.jpg" alt="Maui waterslide" />
-      </div>
-    </div>
-
-    <!-- MAMMOTH -->
-    <div class="destination">
-      <div class="dest-header">
-        <div class="dest-flag">🏔️</div>
-        <div class="dest-info">
-          <div class="dest-name">Mammoth Mountain</div>
-          <div class="dest-loc">📍 California, USA</div>
-          <div class="dest-fact">A snowy mountain town famous for skiing and snowboarding! One of the best ski resorts in California! ⛷️❄️</div>
-        </div>
-      </div>
-      <div class="photo-grid">
-        <img src="photos/travel/mammoth1.jpg" alt="Mammoth skiing" />
-        <img src="photos/travel/mammoth2.jpg" alt="Mammoth snow tubing" />
-      </div>
-    </div>
-
-    <!-- SAN FRANCISCO -->
-    <div class="destination">
-      <div class="dest-header">
-        <div class="dest-flag">🌉</div>
-        <div class="dest-info">
-          <div class="dest-name">San Francisco</div>
-          <div class="dest-loc">📍 California, USA</div>
-          <div class="dest-fact">Famous for the Golden Gate Bridge, cable cars, and super steep hills! 🚃</div>
-        </div>
-      </div>
-      <div class="photo-grid">
-        <img src="photos/travel/sf1.jpg" alt="San Francisco" class="wide landscape" />
-      </div>
-    </div>
-
-    <!-- NEW YORK -->
-    <div class="destination">
-      <div class="dest-header">
-        <div class="dest-flag">🗽</div>
-        <div class="dest-info">
-          <div class="dest-name">New York</div>
-          <div class="dest-loc">📍 USA</div>
-          <div class="dest-fact">Home of the Statue of Liberty, Central Park, and the best pizza!! 🍕</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- JAPAN / TOKYO -->
-    <div class="destination">
-      <div class="dest-header">
-        <div class="dest-flag">⛩️</div>
-        <div class="dest-info">
-          <div class="dest-name">Tokyo, Japan 🇯🇵</div>
-          <div class="dest-loc">📍 Asia</div>
-          <div class="dest-fact">A magical country known for cherry blossoms, sushi, anime, and super fast bullet trains! 🌸🍜</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- lightbox -->
-    <div class="lightbox" id="lightbox">
-      <button class="lightbox-close" id="lb-close">✕</button>
-      <img id="lb-img" src="" alt="" />
-    </div>
-
-    <script>
-      const lb = document.getElementById('lightbox');
-      const lbImg = document.getElementById('lb-img');
-      document.querySelectorAll('.photo-grid img').forEach(img => {
-        img.addEventListener('click', () => {
-          lbImg.src = img.src;
-          lb.classList.add('open');
-        });
-      });
-      document.getElementById('lb-close').addEventListener('click', () => lb.classList.remove('open'));
-      lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open'); });
-    </script>
   </body>
 </html>
