@@ -27,12 +27,9 @@
         border: 3px solid #e91e8c; border-radius: 1rem; overflow: hidden;
         box-shadow: 0 0 18px #ffb6d9; cursor: default;
       }
-      #stage {
-        position: absolute; inset: 0;
-        background: linear-gradient(to bottom, #87ceeb 60%, #f5deb3);
-      }
+      #stage { position: absolute; inset: 0; background: linear-gradient(to bottom, #87ceeb 60%, #f5deb3); }
       .char {
-        position: absolute; font-size: 2.4rem; cursor: grab; line-height: 1;
+        position: absolute; cursor: grab; line-height: 1;
         touch-action: none; transform: translate(-50%, -50%);
         transition: filter 0.1s;
       }
@@ -42,11 +39,8 @@
         position: absolute; bottom: 0; left: 0; right: 0;
         background: rgba(0,0,0,0.5); color: #fff;
         font-family: "Courier New", Courier, monospace;
-        font-size: 0.8rem; padding: 0.3rem 0.5rem; text-align: center;
-        min-height: 1.6rem;
+        font-size: 0.8rem; padding: 0.3rem 0.5rem; text-align: center; min-height: 1.6rem;
       }
-
-      /* playback overlay */
       #playback {
         display: none; position: absolute; inset: 0;
         flex-direction: column; align-items: center; justify-content: flex-end;
@@ -58,6 +52,14 @@
         font-size: 0.8rem; padding: 0.3rem 0.5rem; text-align: center; min-height: 1.6rem;
       }
 
+      /* size controls */
+      #size-controls {
+        display: none; gap: 0.4rem; align-items: center; justify-content: center;
+        flex-wrap: wrap;
+      }
+      #size-controls.visible { display: flex; }
+      #size-controls span { font-size: 0.8rem; color: #e91e8c99; }
+
       /* bg picker */
       .bg-row { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; max-width: min(360px, 94vw); }
       .bg-btn {
@@ -67,20 +69,29 @@
       }
       .bg-btn:hover, .bg-btn.active { background: #e91e8c; color: #fff; }
 
-      /* character picker */
-      .char-picker {
-        display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: center;
-        max-width: min(360px, 94vw);
-        background: #fff0f5; border: 2px solid #e91e8c; border-radius: 0.75rem;
-        padding: 0.5rem; box-shadow: 0 0 10px #ffb6d9;
+      /* emoji picker */
+      .emoji-picker-wrap {
+        width: min(360px, 94vw); background: #fff0f5;
+        border: 2px solid #e91e8c; border-radius: 0.75rem;
+        box-shadow: 0 0 10px #ffb6d9; overflow: hidden;
+      }
+      .emoji-tabs { display: flex; overflow-x: auto; border-bottom: 2px solid #e91e8c; }
+      .emoji-tab {
+        flex-shrink: 0; padding: 0.35rem 0.6rem; font-size: 1.1rem; cursor: pointer;
+        border: none; background: none; border-bottom: 3px solid transparent;
+      }
+      .emoji-tab.active { border-bottom-color: #e91e8c; background: #fde8f0; }
+      .emoji-grid {
+        display: flex; flex-wrap: wrap; gap: 0.15rem; padding: 0.5rem;
+        max-height: 140px; overflow-y: auto;
       }
       .char-pick {
-        font-size: 1.8rem; cursor: pointer; padding: 0.1rem;
-        border-radius: 0.3rem; transition: transform 0.1s;
+        font-size: 1.6rem; cursor: pointer; padding: 0.1rem;
+        border-radius: 0.3rem; transition: transform 0.1s; line-height: 1;
       }
-      .char-pick:hover { transform: scale(1.2); }
+      .char-pick:hover { transform: scale(1.25); }
 
-      /* caption input */
+      /* caption */
       .caption-row { display: flex; gap: 0.4rem; width: min(360px, 94vw); }
       .caption-row input {
         flex: 1; font-family: "Courier New", Courier, monospace;
@@ -103,9 +114,8 @@
       .btn.danger:hover { background: #e91e8c; color: #fff; }
 
       #frame-count { font-size: 0.85rem; color: #e91e8c99; }
-      #delete-hint { font-size: 0.75rem; color: #e91e8c99; min-height: 1rem; }
+      #delete-hint { font-size: 0.75rem; color: #e91e8c99; min-height: 1rem; text-align: center; }
 
-      /* frame strip */
       #frame-strip {
         display: flex; gap: 0.4rem; overflow-x: auto; max-width: min(360px, 94vw);
         padding: 0.3rem; scroll-behavior: smooth;
@@ -113,14 +123,13 @@
       .frame-thumb {
         flex-shrink: 0; width: 60px; height: 40px; border-radius: 0.4rem;
         border: 2px solid #e91e8c; overflow: hidden; position: relative;
-        font-size: 0.6rem; display: flex; align-items: center; justify-content: center;
         cursor: pointer;
       }
       .frame-thumb:hover { border-color: #f5c800; }
       .frame-thumb .thumb-bg { position: absolute; inset: 0; }
       .frame-thumb .thumb-num {
-        position: relative; z-index: 1; font-weight: bold; color: #fff;
-        text-shadow: 0 0 4px #000; font-size: 0.7rem;
+        position: absolute; bottom: 1px; right: 3px; font-weight: bold; color: #fff;
+        text-shadow: 0 0 3px #000; font-size: 0.65rem;
       }
     </style>
   </head>
@@ -131,14 +140,20 @@
     <div id="stage-wrap">
       <div id="stage"></div>
       <div id="caption-display"></div>
-      <div id="playback">
-        <div id="pb-caption"></div>
-      </div>
+      <div id="playback"><div id="pb-caption"></div></div>
     </div>
 
     <div id="delete-hint"></div>
 
-    <!-- background picker -->
+    <!-- size controls (shown when emoji selected) -->
+    <div id="size-controls">
+      <span>size:</span>
+      <button class="btn" id="size-down">➖</button>
+      <button class="btn" id="size-up">➕</button>
+      <button class="btn danger" id="delete-btn">🗑️ delete</button>
+    </div>
+
+    <!-- bg picker -->
     <div class="bg-row" id="bg-row"></div>
     <div class="caption-row" style="justify-content:center; gap:0.4rem;">
       <input type="color" id="color-pick" value="#87ceeb" title="pick a color!" style="width:2.4rem;height:2.4rem;border:2px solid #e91e8c;border-radius:0.5rem;cursor:pointer;padding:0.1rem;background:#fff0f5;" />
@@ -146,12 +161,15 @@
       <button class="btn" id="color-go-btn">go!</button>
     </div>
 
-    <!-- character picker -->
-    <div class="char-picker" id="char-picker"></div>
+    <!-- emoji picker with categories -->
+    <div class="emoji-picker-wrap">
+      <div class="emoji-tabs" id="emoji-tabs"></div>
+      <div class="emoji-grid" id="emoji-grid"></div>
+    </div>
 
     <!-- caption -->
     <div class="caption-row">
-      <input id="caption-input" type="text" placeholder="type a caption..." maxlength="60" />
+      <input id="caption-input" type="text" placeholder="type a caption..." maxlength="80" />
     </div>
 
     <!-- buttons -->
@@ -167,19 +185,29 @@
 
     <script>
       const BACKGROUNDS = [
-        { label: '🏖️ beach',  style: 'linear-gradient(to bottom, #87ceeb 60%, #f5deb3)' },
-        { label: '🌌 space',  style: 'linear-gradient(to bottom, #0a0a2e, #1a1a6e)' },
-        { label: '🌲 forest', style: 'linear-gradient(to bottom, #87ceeb 30%, #2d6a2d)' },
-        { label: '🌆 city',   style: 'linear-gradient(to bottom, #ff7043 40%, #37474f)' },
-        { label: '🌙 night',  style: 'linear-gradient(to bottom, #1a237e, #4a148c)' },
-        { label: '🌸 pink',   style: 'linear-gradient(to bottom, #fde8f0, #f48fb1)' },
-        { label: '❄️ snow',   style: 'linear-gradient(to bottom, #b3e5fc, #e0f7fa)' },
-        { label: '🌈 rainbow','style': 'linear-gradient(to bottom, #ff8a80, #ffd180, #ccff90, #80d8ff)' },
+        { label: '🏖️ beach',   style: 'linear-gradient(to bottom, #87ceeb 60%, #f5deb3)' },
+        { label: '🌌 space',   style: 'linear-gradient(to bottom, #0a0a2e, #1a1a6e)' },
+        { label: '🌲 forest',  style: 'linear-gradient(to bottom, #87ceeb 30%, #2d6a2d)' },
+        { label: '🌆 city',    style: 'linear-gradient(to bottom, #ff7043 40%, #37474f)' },
+        { label: '🌙 night',   style: 'linear-gradient(to bottom, #1a237e, #4a148c)' },
+        { label: '🌸 pink',    style: 'linear-gradient(to bottom, #fde8f0, #f48fb1)' },
+        { label: '❄️ snow',    style: 'linear-gradient(to bottom, #b3e5fc, #e0f7fa)' },
+        { label: '🌈 rainbow', style: 'linear-gradient(to bottom, #ff8a80, #ffd180, #ccff90, #80d8ff)' },
       ];
-      const CHARS = ['👧','👦','👩','👨','🧒','🐶','🐱','🦄','🐲','🐸','🐼','🦊','🚀','⭐','💕','🌸','🌈','🍕','🎉','👾','🦸','🧙','🏆','🌺','🎵','🍦','🌟','💫','🎪','🎠'];
+
+      const EMOJI_CATS = [
+        { label: '😀', name: 'faces', emojis: ['😀','😂','😍','🥰','😎','🤩','😜','🤪','😴','🥳','😭','😱','🤔','😇','🥺','😡','🤯','🥶','🤠','👻','💀','🤖','👽','🎃','🤡'] },
+        { label: '👧', name: 'people', emojis: ['👧','👦','👩','👨','👶','🧒','👵','👴','🧑','🧙','🧚','🧜','🧛','🦸','🦹','🧝','🧞','🧟','👮','🕵️','💂','🧑‍🍳','👩‍🚀','👩‍🎤','🧑‍🎨','🤸','🧘','🏄','⛷️','🤺'] },
+        { label: '🐶', name: 'animals', emojis: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🦄','🦋','🐝','🐢','🦎','🐍','🦕','🐳','🐬','🦈','🦞','🦜','🦩','🦚','🐧','🦅','🦉','🦇','🐺','🦝','🦨','🦡','🦦','🦥','🐿️','🦔'] },
+        { label: '🍕', name: 'food', emojis: ['🍕','🍔','🌮','🌯','🍜','🍣','🍦','🎂','🍰','🍩','🍪','🍫','🍭','🍿','🧁','🥐','🍓','🍒','🍉','🍌','🍑','🥝','🍇','🫐','🧃','🥤','🍵','☕','🧋','🍺'] },
+        { label: '🚀', name: 'travel', emojis: ['🚀','✈️','🛸','🚁','🚂','🚗','🏎️','🚕','🚙','🚌','🛵','🚲','⛵','🛥️','🚢','🏖️','🏔️','🗼','🗽','🏰','🎡','🎢','🎠','🌋','🏝️','🌍','🌙','⭐','🌟','☀️','🌈','❄️','⛈️'] },
+        { label: '⚽', name: 'sports', emojis: ['⚽','🏀','🏈','⚾','🎾','🏐','🏉','🎱','🏓','🏸','🥊','🥋','⛷️','🏂','🏄','🚴','🤸','🧗','🤺','🏹','🎣','🤿','🎿','🛷','🏆','🥇','🏅','🎖️'] },
+        { label: '🎵', name: 'fun', emojis: ['🎵','🎶','🎸','🎹','🥁','🎺','🎻','🎤','🎧','🎮','🕹️','🎲','🎯','🎨','🖌️','✏️','📚','🔭','🔬','💡','🎪','🎭','🎬','📷','🌺','🌸','🌻','🌷','🍀','🌿','🌴','🌊','🔥','💧','🌪️'] },
+        { label: '💕', name: 'hearts', emojis: ['💕','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💗','💓','💞','💖','💝','💘','❣️','💟','☮️','✨','🌟','💫','⚡','🎉','🎊','🎁','🎀','🏳️‍🌈','🦋','🌈'] },
+      ];
 
       let currentBg = BACKGROUNDS[0].style;
-      let characters = []; // {emoji, x%, y%, id}
+      let characters = [];
       let frames = [];
       let selectedId = null;
       let charIdCounter = 0;
@@ -192,8 +220,9 @@
       const frameCount = document.getElementById('frame-count');
       const frameStrip = document.getElementById('frame-strip');
       const deleteHint = document.getElementById('delete-hint');
+      const sizeControls = document.getElementById('size-controls');
 
-      // build bg buttons
+      // bg buttons
       const bgRow = document.getElementById('bg-row');
       BACKGROUNDS.forEach((bg, i) => {
         const btn = document.createElement('button');
@@ -209,20 +238,51 @@
       });
       stage.style.background = currentBg;
 
-      // build char picker
-      const picker = document.getElementById('char-picker');
-      CHARS.forEach(emoji => {
-        const span = document.createElement('span');
-        span.className = 'char-pick';
-        span.textContent = emoji;
-        span.addEventListener('click', () => addChar(emoji));
-        picker.appendChild(span);
+      // emoji picker with tabs
+      const tabsEl = document.getElementById('emoji-tabs');
+      const gridEl = document.getElementById('emoji-grid');
+      let activeCat = 0;
+
+      function buildEmojiGrid(catIdx) {
+        activeCat = catIdx;
+        gridEl.innerHTML = '';
+        EMOJI_CATS[catIdx].emojis.forEach(emoji => {
+          const span = document.createElement('span');
+          span.className = 'char-pick';
+          span.textContent = emoji;
+          span.addEventListener('click', () => addChar(emoji));
+          gridEl.appendChild(span);
+        });
+        document.querySelectorAll('.emoji-tab').forEach((t, i) => t.classList.toggle('active', i === catIdx));
+      }
+
+      EMOJI_CATS.forEach((cat, i) => {
+        const tab = document.createElement('button');
+        tab.className = 'emoji-tab' + (i === 0 ? ' active' : '');
+        tab.textContent = cat.label;
+        tab.title = cat.name;
+        tab.addEventListener('click', () => buildEmojiGrid(i));
+        tabsEl.appendChild(tab);
       });
+      buildEmojiGrid(0);
 
       function addChar(emoji) {
         const id = ++charIdCounter;
-        characters.push({ emoji, x: 50, y: 50, id });
+        characters.push({ emoji, x: 50, y: 50, id, size: 2.4 });
+        selectedId = id;
         renderChars();
+        updateSizeControls();
+      }
+
+      function updateSizeControls() {
+        const ch = characters.find(c => c.id === selectedId);
+        if (ch) {
+          sizeControls.classList.add('visible');
+          deleteHint.textContent = `✨ selected: ${ch.emoji} — resize or delete it!`;
+        } else {
+          sizeControls.classList.remove('visible');
+          deleteHint.textContent = '';
+        }
       }
 
       function renderChars() {
@@ -233,42 +293,52 @@
           el.textContent = ch.emoji;
           el.style.left = ch.x + '%';
           el.style.top = ch.y + '%';
+          el.style.fontSize = ch.size + 'rem';
           el.dataset.id = ch.id;
           makeDraggable(el, ch);
           el.addEventListener('click', e => {
             e.stopPropagation();
             selectedId = ch.id;
-            deleteHint.textContent = `tap ${ch.emoji} again to delete it! 🗑️`;
             renderChars();
-            // second click = delete
-            el.addEventListener('click', () => {
-              characters = characters.filter(c => c.id !== ch.id);
-              selectedId = null;
-              deleteHint.textContent = '';
-              renderChars();
-            }, { once: true });
+            updateSizeControls();
           });
           stage.appendChild(el);
         });
         captionDisplay.textContent = captionInput.value;
       }
 
+      // size buttons
+      document.getElementById('size-up').addEventListener('click', () => {
+        const ch = characters.find(c => c.id === selectedId);
+        if (ch) { ch.size = Math.min(8, +(ch.size + 0.5).toFixed(1)); renderChars(); }
+      });
+      document.getElementById('size-down').addEventListener('click', () => {
+        const ch = characters.find(c => c.id === selectedId);
+        if (ch) { ch.size = Math.max(0.8, +(ch.size - 0.5).toFixed(1)); renderChars(); }
+      });
+      document.getElementById('delete-btn').addEventListener('click', () => {
+        characters = characters.filter(c => c.id !== selectedId);
+        selectedId = null;
+        renderChars();
+        updateSizeControls();
+      });
+
       function makeDraggable(el, ch) {
-        let dragging = false, startX, startY, startChX, startChY;
+        let dragging = false, startX, startY, startChX, startChY, moved = false;
         const rect = () => stageWrap.getBoundingClientRect();
 
         function onStart(ex, ey) {
-          dragging = true;
+          dragging = true; moved = false;
           startX = ex; startY = ey;
           startChX = ch.x; startChY = ch.y;
         }
         function onMove(ex, ey) {
           if (!dragging) return;
+          const dx = ex - startX, dy = ey - startY;
+          if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
           const r = rect();
-          const dx = ((ex - startX) / r.width) * 100;
-          const dy = ((ey - startY) / r.height) * 100;
-          ch.x = Math.max(5, Math.min(95, startChX + dx));
-          ch.y = Math.max(5, Math.min(95, startChY + dy));
+          ch.x = Math.max(2, Math.min(98, startChX + (dx / r.width) * 100));
+          ch.y = Math.max(2, Math.min(98, startChY + (dy / r.height) * 100));
           el.style.left = ch.x + '%';
           el.style.top = ch.y + '%';
         }
@@ -277,47 +347,26 @@
         el.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
         window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
         window.addEventListener('mouseup', onEnd);
-
         el.addEventListener('touchstart', e => { e.preventDefault(); const t=e.touches[0]; onStart(t.clientX, t.clientY); }, { passive: false });
         el.addEventListener('touchmove', e => { e.preventDefault(); const t=e.touches[0]; onMove(t.clientX, t.clientY); }, { passive: false });
         el.addEventListener('touchend', onEnd);
       }
 
-      // custom color picker
+      // custom color
       const colorPick = document.getElementById('color-pick');
       const colorText = document.getElementById('color-text');
-
       function applyCustomColor(val) {
-        const s = val.trim();
-        if (!s) return;
-        // try setting it as a background and see if browser accepts it
-        const test = document.createElement('div');
-        test.style.background = s;
-        document.body.appendChild(test);
-        const computed = getComputedStyle(test).background;
-        document.body.removeChild(test);
-        if (computed && computed !== 'none' && computed !== 'rgba(0, 0, 0, 0)') {
-          currentBg = s;
-        } else {
-          currentBg = s; // try anyway — might be a valid keyword
-        }
-        stage.style.background = currentBg;
+        const s = val.trim(); if (!s) return;
+        currentBg = s; stage.style.background = s;
         document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
       }
-
-      colorPick.addEventListener('input', () => {
-        colorText.value = '';
-        applyCustomColor(colorPick.value);
-      });
-      document.getElementById('color-go-btn').addEventListener('click', () => {
-        applyCustomColor(colorText.value || colorPick.value);
-      });
+      colorPick.addEventListener('input', () => { colorText.value = ''; applyCustomColor(colorPick.value); });
+      document.getElementById('color-go-btn').addEventListener('click', () => applyCustomColor(colorText.value || colorPick.value));
       colorText.addEventListener('keydown', e => { if (e.key === 'Enter') applyCustomColor(colorText.value); });
 
       // click stage = deselect
-      stage.addEventListener('click', () => { selectedId = null; deleteHint.textContent = ''; renderChars(); });
+      stage.addEventListener('click', () => { selectedId = null; renderChars(); updateSizeControls(); });
 
-      // caption live update
       captionInput.addEventListener('input', () => { captionDisplay.textContent = captionInput.value; });
 
       // snap frame
@@ -336,22 +385,16 @@
       function addThumb(frame, num) {
         const div = document.createElement('div');
         div.className = 'frame-thumb';
-        div.title = `frame ${num}`;
         const bg = document.createElement('div');
-        bg.className = 'thumb-bg';
-        bg.style.background = frame.bg;
-        const numEl = document.createElement('span');
-        numEl.className = 'thumb-num';
-        numEl.textContent = num;
+        bg.className = 'thumb-bg'; bg.style.background = frame.bg;
         div.appendChild(bg);
-        // add chars as tiny emojis
         frame.characters.forEach(ch => {
           const s = document.createElement('span');
-          s.style.cssText = `position:absolute;left:${ch.x}%;top:${ch.y}%;transform:translate(-50%,-50%);font-size:0.9rem;`;
-          s.textContent = ch.emoji;
-          div.appendChild(s);
+          s.style.cssText = `position:absolute;left:${ch.x}%;top:${ch.y}%;transform:translate(-50%,-50%);font-size:${Math.min(ch.size*0.35, 1.1)}rem;`;
+          s.textContent = ch.emoji; div.appendChild(s);
         });
-        div.appendChild(numEl);
+        const numEl = document.createElement('span');
+        numEl.className = 'thumb-num'; numEl.textContent = num; div.appendChild(numEl);
         frameStrip.appendChild(div);
         frameStrip.scrollLeft = frameStrip.scrollWidth;
       }
@@ -369,38 +412,33 @@
           if (i >= frames.length) {
             pb.classList.remove('active');
             stage.style.background = currentBg;
-            renderChars();
-            playing = false;
+            renderChars(); playing = false;
             document.getElementById('play-btn').disabled = false;
             document.getElementById('snap-btn').disabled = false;
-            frameCount.textContent = `${frames.length} frame${frames.length===1?'':'s'} snapped! 🎬 the end!`;
+            frameCount.textContent = `${frames.length} frames — 🎬 the end!`;
             return;
           }
           const f = frames[i];
           stage.style.background = f.bg;
-          // clear chars from stage, show frame's chars
           document.querySelectorAll('.char').forEach(el => el.remove());
           f.characters.forEach(ch => {
             const el = document.createElement('span');
-            el.className = 'char';
-            el.textContent = ch.emoji;
-            el.style.left = ch.x + '%';
-            el.style.top = ch.y + '%';
+            el.className = 'char'; el.textContent = ch.emoji;
+            el.style.left = ch.x + '%'; el.style.top = ch.y + '%';
+            el.style.fontSize = ch.size + 'rem';
             stage.appendChild(el);
           });
-          pb.classList.add('active');
-          pbCaption.textContent = f.caption;
-          i++;
-          setTimeout(showFrame, 1200);
+          pb.classList.add('active'); pbCaption.textContent = f.caption;
+          i++; setTimeout(showFrame, 1200);
         }
         showFrame();
       });
 
       // clear stage
       document.getElementById('clear-stage-btn').addEventListener('click', () => {
-        characters = []; selectedId = null; deleteHint.textContent = '';
+        characters = []; selectedId = null;
         captionInput.value = ''; captionDisplay.textContent = '';
-        renderChars();
+        renderChars(); updateSizeControls();
       });
 
       // new movie
@@ -408,14 +446,12 @@
         if (frames.length > 0 && !confirm('start a new movie? your frames will be lost!')) return;
         frames = []; characters = []; selectedId = null; charIdCounter = 0;
         captionInput.value = ''; captionDisplay.textContent = '';
-        deleteHint.textContent = '';
-        currentBg = BACKGROUNDS[0].style;
-        stage.style.background = currentBg;
+        currentBg = BACKGROUNDS[0].style; stage.style.background = currentBg;
         document.querySelectorAll('.bg-btn').forEach((b,i) => b.classList.toggle('active', i===0));
         frameCount.textContent = '0 frames snapped';
         frameStrip.innerHTML = '';
         document.getElementById('play-btn').disabled = true;
-        renderChars();
+        renderChars(); updateSizeControls();
       });
     </script>
   </body>
