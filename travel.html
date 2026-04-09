@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sophia's Travels! ✈️</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background-color: #fde8f0;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 1.5rem; padding: 1rem 1rem 3rem;
+        min-height: 100vh;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem;
+        background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; letter-spacing: 0.1em;
+        padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;
+        border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 2rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 4rem; }
+      .subtitle { font-size: 0.85rem; color: #e91e8c99; letter-spacing: 0.1em; }
+      .count {
+        background: #f5c800; border: 2px solid #e91e8c; border-radius: 2rem;
+        padding: 0.4rem 1.2rem; font-size: 0.9rem; font-weight: bold;
+        box-shadow: 0 0 10px #ffb6d9;
+      }
+      .places {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 90vw), 1fr));
+        gap: 1rem; width: min(600px, 94vw);
+      }
+      .place-card {
+        background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1rem;
+        box-shadow: 0 0 12px #ffb6d9; padding: 1rem;
+        display: flex; flex-direction: column; gap: 0.4rem;
+      }
+      .place-card .flag { font-size: 2.5rem; }
+      .place-card h2 { font-size: 1rem; font-weight: bold; letter-spacing: 0.08em; }
+      .place-card .location { font-size: 0.75rem; color: #e91e8c99; }
+      .place-card .fun-fact { font-size: 0.8rem; line-height: 1.5; color: #c2185b; }
+      .france-photo {
+        width: min(480px, 94vw); border-radius: 1rem;
+        border: 3px solid #f5c800; box-shadow: 0 0 16px #ffb6d9;
+        object-fit: cover; max-height: 340px;
+      }
+      .photo-caption { font-size: 0.8rem; color: #e91e8c99; letter-spacing: 0.08em; }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>✈️ sophia's travels!</h1>
+    <p class="subtitle">~ places i've been ~</p>
+    <div class="count">🌍 7 places visited!!</div>
+
+    <img class="france-photo" src="photos/france.png" alt="Sophia in Paris" />
+    <p class="photo-caption">🗼 sophia in paris, france!</p>
+
+    <div class="places">
+      <div class="place-card">
+        <div class="flag">🗽</div>
+        <h2>New York</h2>
+        <div class="location">📍 USA</div>
+        <div class="fun-fact">Home of the Statue of Liberty, Central Park, and the best pizza!! 🍕</div>
+      </div>
+      <div class="place-card">
+        <div class="flag">🗼</div>
+        <h2>Paris, France</h2>
+        <div class="location">📍 France 🇫🇷</div>
+        <div class="fun-fact">The city of lights! Home of the Eiffel Tower — one of the most famous landmarks in the world! ✨</div>
+      </div>
+      <div class="place-card">
+        <div class="flag">🌺</div>
+        <h2>Hawaii</h2>
+        <div class="location">📍 USA</div>
+        <div class="fun-fact">A beautiful island state in the Pacific Ocean! Famous for volcanoes, beaches, and hula dancing! 🌊</div>
+      </div>
+      <div class="place-card">
+        <div class="flag">🏄</div>
+        <h2>Maui</h2>
+        <div class="location">📍 Hawaii, USA</div>
+        <div class="fun-fact">One of the most beautiful islands in Hawaii! Known for amazing sunsets and sea turtles! 🐢</div>
+      </div>
+      <div class="place-card">
+        <div class="flag">🌉</div>
+        <h2>San Francisco</h2>
+        <div class="location">📍 California, USA</div>
+        <div class="fun-fact">Famous for the Golden Gate Bridge, cable cars, and super steep hills! 🚃</div>
+      </div>
+      <div class="place-card">
+        <div class="flag">⛩️</div>
+        <h2>Japan</h2>
+        <div class="location">📍 Asia 🇯🇵</div>
+        <div class="fun-fact">A magical country known for cherry blossoms, sushi, anime, and super fast bullet trains! 🌸</div>
+      </div>
+      <div class="place-card">
+        <div class="flag">🏙️</div>
+        <h2>Tokyo</h2>
+        <div class="location">📍 Japan 🇯🇵</div>
+        <div class="fun-fact">One of the biggest and coolest cities in the world! Full of amazing food, lights, and fun! 🍜</div>
+      </div>
+    </div>
+  </body>
+</html>
