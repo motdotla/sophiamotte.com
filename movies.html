@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Movie Maker! 🎬</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #fde8f0; font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 0.6rem; padding: 1rem; min-height: 100vh; color: #c2185b;
+        user-select: none;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem; background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace; font-size: 0.85rem; font-weight: bold;
+        letter-spacing: 0.1em; padding: 0.5rem 1rem; border-radius: 0.5rem;
+        text-decoration: none; border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+
+      /* stage */
+      #stage-wrap {
+        position: relative; width: min(360px, 94vw); height: min(240px, 63vw);
+        border: 3px solid #e91e8c; border-radius: 1rem; overflow: hidden;
+        box-shadow: 0 0 18px #ffb6d9; cursor: default;
+      }
+      #stage {
+        position: absolute; inset: 0;
+        background: linear-gradient(to bottom, #87ceeb 60%, #f5deb3);
+      }
+      .char {
+        position: absolute; font-size: 2.4rem; cursor: grab; line-height: 1;
+        touch-action: none; transform: translate(-50%, -50%);
+        transition: filter 0.1s;
+      }
+      .char.selected { filter: drop-shadow(0 0 6px #f5c800); }
+      .char:active { cursor: grabbing; }
+      #caption-display {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: rgba(0,0,0,0.5); color: #fff;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.8rem; padding: 0.3rem 0.5rem; text-align: center;
+        min-height: 1.6rem;
+      }
+
+      /* playback overlay */
+      #playback {
+        display: none; position: absolute; inset: 0;
+        flex-direction: column; align-items: center; justify-content: flex-end;
+        pointer-events: none;
+      }
+      #playback.active { display: flex; }
+      #pb-caption {
+        width: 100%; background: rgba(0,0,0,0.5); color: #fff;
+        font-size: 0.8rem; padding: 0.3rem 0.5rem; text-align: center; min-height: 1.6rem;
+      }
+
+      /* bg picker */
+      .bg-row { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; max-width: min(360px, 94vw); }
+      .bg-btn {
+        font-size: 0.75rem; padding: 0.3rem 0.6rem; border-radius: 0.5rem;
+        border: 2px solid #e91e8c; background: #fff0f5; cursor: pointer;
+        color: #c2185b; font-family: "Courier New", Courier, monospace; font-weight: bold;
+      }
+      .bg-btn:hover, .bg-btn.active { background: #e91e8c; color: #fff; }
+
+      /* character picker */
+      .char-picker {
+        display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: center;
+        max-width: min(360px, 94vw);
+        background: #fff0f5; border: 2px solid #e91e8c; border-radius: 0.75rem;
+        padding: 0.5rem; box-shadow: 0 0 10px #ffb6d9;
+      }
+      .char-pick {
+        font-size: 1.8rem; cursor: pointer; padding: 0.1rem;
+        border-radius: 0.3rem; transition: transform 0.1s;
+      }
+      .char-pick:hover { transform: scale(1.2); }
+
+      /* caption input */
+      .caption-row { display: flex; gap: 0.4rem; width: min(360px, 94vw); }
+      .caption-row input {
+        flex: 1; font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; padding: 0.4rem 0.7rem;
+        border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; background: #fff0f5; outline: none;
+      }
+
+      /* buttons */
+      .btn-row { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; }
+      .btn {
+        background: #f5c800; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; padding: 0.45rem 0.9rem;
+        cursor: pointer; letter-spacing: 0.06em;
+      }
+      .btn:hover { background: #e91e8c; color: #fff; }
+      .btn:disabled { opacity: 0.4; cursor: default; }
+      .btn.danger { background: #fff0f5; }
+      .btn.danger:hover { background: #e91e8c; color: #fff; }
+
+      #frame-count { font-size: 0.85rem; color: #e91e8c99; }
+      #delete-hint { font-size: 0.75rem; color: #e91e8c99; min-height: 1rem; }
+
+      /* frame strip */
+      #frame-strip {
+        display: flex; gap: 0.4rem; overflow-x: auto; max-width: min(360px, 94vw);
+        padding: 0.3rem; scroll-behavior: smooth;
+      }
+      .frame-thumb {
+        flex-shrink: 0; width: 60px; height: 40px; border-radius: 0.4rem;
+        border: 2px solid #e91e8c; overflow: hidden; position: relative;
+        font-size: 0.6rem; display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+      }
+      .frame-thumb:hover { border-color: #f5c800; }
+      .frame-thumb .thumb-bg { position: absolute; inset: 0; }
+      .frame-thumb .thumb-num {
+        position: relative; z-index: 1; font-weight: bold; color: #fff;
+        text-shadow: 0 0 4px #000; font-size: 0.7rem;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>🎬 movie maker!</h1>
+
+    <div id="stage-wrap">
+      <div id="stage"></div>
+      <div id="caption-display"></div>
+      <div id="playback">
+        <div id="pb-caption"></div>
+      </div>
+    </div>
+
+    <div id="delete-hint"></div>
+
+    <!-- background picker -->
+    <div class="bg-row" id="bg-row"></div>
+    <div class="caption-row" style="justify-content:center; gap:0.4rem;">
+      <input type="color" id="color-pick" value="#87ceeb" title="pick a color!" style="width:2.4rem;height:2.4rem;border:2px solid #e91e8c;border-radius:0.5rem;cursor:pointer;padding:0.1rem;background:#fff0f5;" />
+      <input id="color-text" type="text" placeholder="type a color! (e.g. purple, hotpink...)" style="flex:1;" />
+      <button class="btn" id="color-go-btn">go!</button>
+    </div>
+
+    <!-- character picker -->
+    <div class="char-picker" id="char-picker"></div>
+
+    <!-- caption -->
+    <div class="caption-row">
+      <input id="caption-input" type="text" placeholder="type a caption..." maxlength="60" />
+    </div>
+
+    <!-- buttons -->
+    <div class="btn-row">
+      <button class="btn" id="snap-btn">📸 snap frame!</button>
+      <button class="btn" id="play-btn" disabled>▶️ play movie!</button>
+      <button class="btn danger" id="clear-stage-btn">🗑️ clear stage</button>
+      <button class="btn danger" id="new-movie-btn">🎬 new movie</button>
+    </div>
+
+    <div id="frame-count">0 frames snapped</div>
+    <div id="frame-strip"></div>
+
+    <script>
+      const BACKGROUNDS = [
+        { label: '🏖️ beach',  style: 'linear-gradient(to bottom, #87ceeb 60%, #f5deb3)' },
+        { label: '🌌 space',  style: 'linear-gradient(to bottom, #0a0a2e, #1a1a6e)' },
+        { label: '🌲 forest', style: 'linear-gradient(to bottom, #87ceeb 30%, #2d6a2d)' },
+        { label: '🌆 city',   style: 'linear-gradient(to bottom, #ff7043 40%, #37474f)' },
+        { label: '🌙 night',  style: 'linear-gradient(to bottom, #1a237e, #4a148c)' },
+        { label: '🌸 pink',   style: 'linear-gradient(to bottom, #fde8f0, #f48fb1)' },
+        { label: '❄️ snow',   style: 'linear-gradient(to bottom, #b3e5fc, #e0f7fa)' },
+        { label: '🌈 rainbow','style': 'linear-gradient(to bottom, #ff8a80, #ffd180, #ccff90, #80d8ff)' },
+      ];
+      const CHARS = ['👧','👦','👩','👨','🧒','🐶','🐱','🦄','🐲','🐸','🐼','🦊','🚀','⭐','💕','🌸','🌈','🍕','🎉','👾','🦸','🧙','🏆','🌺','🎵','🍦','🌟','💫','🎪','🎠'];
+
+      let currentBg = BACKGROUNDS[0].style;
+      let characters = []; // {emoji, x%, y%, id}
+      let frames = [];
+      let selectedId = null;
+      let charIdCounter = 0;
+      let playing = false;
+
+      const stage = document.getElementById('stage');
+      const stageWrap = document.getElementById('stage-wrap');
+      const captionInput = document.getElementById('caption-input');
+      const captionDisplay = document.getElementById('caption-display');
+      const frameCount = document.getElementById('frame-count');
+      const frameStrip = document.getElementById('frame-strip');
+      const deleteHint = document.getElementById('delete-hint');
+
+      // build bg buttons
+      const bgRow = document.getElementById('bg-row');
+      BACKGROUNDS.forEach((bg, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'bg-btn' + (i === 0 ? ' active' : '');
+        btn.textContent = bg.label;
+        btn.addEventListener('click', () => {
+          currentBg = bg.style;
+          stage.style.background = bg.style;
+          document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+        bgRow.appendChild(btn);
+      });
+      stage.style.background = currentBg;
+
+      // build char picker
+      const picker = document.getElementById('char-picker');
+      CHARS.forEach(emoji => {
+        const span = document.createElement('span');
+        span.className = 'char-pick';
+        span.textContent = emoji;
+        span.addEventListener('click', () => addChar(emoji));
+        picker.appendChild(span);
+      });
+
+      function addChar(emoji) {
+        const id = ++charIdCounter;
+        characters.push({ emoji, x: 50, y: 50, id });
+        renderChars();
+      }
+
+      function renderChars() {
+        document.querySelectorAll('.char').forEach(el => el.remove());
+        characters.forEach(ch => {
+          const el = document.createElement('span');
+          el.className = 'char' + (ch.id === selectedId ? ' selected' : '');
+          el.textContent = ch.emoji;
+          el.style.left = ch.x + '%';
+          el.style.top = ch.y + '%';
+          el.dataset.id = ch.id;
+          makeDraggable(el, ch);
+          el.addEventListener('click', e => {
+            e.stopPropagation();
+            selectedId = ch.id;
+            deleteHint.textContent = `tap ${ch.emoji} again to delete it! 🗑️`;
+            renderChars();
+            // second click = delete
+            el.addEventListener('click', () => {
+              characters = characters.filter(c => c.id !== ch.id);
+              selectedId = null;
+              deleteHint.textContent = '';
+              renderChars();
+            }, { once: true });
+          });
+          stage.appendChild(el);
+        });
+        captionDisplay.textContent = captionInput.value;
+      }
+
+      function makeDraggable(el, ch) {
+        let dragging = false, startX, startY, startChX, startChY;
+        const rect = () => stageWrap.getBoundingClientRect();
+
+        function onStart(ex, ey) {
+          dragging = true;
+          startX = ex; startY = ey;
+          startChX = ch.x; startChY = ch.y;
+        }
+        function onMove(ex, ey) {
+          if (!dragging) return;
+          const r = rect();
+          const dx = ((ex - startX) / r.width) * 100;
+          const dy = ((ey - startY) / r.height) * 100;
+          ch.x = Math.max(5, Math.min(95, startChX + dx));
+          ch.y = Math.max(5, Math.min(95, startChY + dy));
+          el.style.left = ch.x + '%';
+          el.style.top = ch.y + '%';
+        }
+        function onEnd() { dragging = false; }
+
+        el.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
+        window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+        window.addEventListener('mouseup', onEnd);
+
+        el.addEventListener('touchstart', e => { e.preventDefault(); const t=e.touches[0]; onStart(t.clientX, t.clientY); }, { passive: false });
+        el.addEventListener('touchmove', e => { e.preventDefault(); const t=e.touches[0]; onMove(t.clientX, t.clientY); }, { passive: false });
+        el.addEventListener('touchend', onEnd);
+      }
+
+      // custom color picker
+      const colorPick = document.getElementById('color-pick');
+      const colorText = document.getElementById('color-text');
+
+      function applyCustomColor(val) {
+        const s = val.trim();
+        if (!s) return;
+        // try setting it as a background and see if browser accepts it
+        const test = document.createElement('div');
+        test.style.background = s;
+        document.body.appendChild(test);
+        const computed = getComputedStyle(test).background;
+        document.body.removeChild(test);
+        if (computed && computed !== 'none' && computed !== 'rgba(0, 0, 0, 0)') {
+          currentBg = s;
+        } else {
+          currentBg = s; // try anyway — might be a valid keyword
+        }
+        stage.style.background = currentBg;
+        document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+      }
+
+      colorPick.addEventListener('input', () => {
+        colorText.value = '';
+        applyCustomColor(colorPick.value);
+      });
+      document.getElementById('color-go-btn').addEventListener('click', () => {
+        applyCustomColor(colorText.value || colorPick.value);
+      });
+      colorText.addEventListener('keydown', e => { if (e.key === 'Enter') applyCustomColor(colorText.value); });
+
+      // click stage = deselect
+      stage.addEventListener('click', () => { selectedId = null; deleteHint.textContent = ''; renderChars(); });
+
+      // caption live update
+      captionInput.addEventListener('input', () => { captionDisplay.textContent = captionInput.value; });
+
+      // snap frame
+      document.getElementById('snap-btn').addEventListener('click', () => {
+        const frame = {
+          bg: currentBg,
+          characters: characters.map(c => ({...c})),
+          caption: captionInput.value,
+        };
+        frames.push(frame);
+        frameCount.textContent = `${frames.length} frame${frames.length===1?'':'s'} snapped! 📸`;
+        document.getElementById('play-btn').disabled = frames.length < 2;
+        addThumb(frame, frames.length);
+      });
+
+      function addThumb(frame, num) {
+        const div = document.createElement('div');
+        div.className = 'frame-thumb';
+        div.title = `frame ${num}`;
+        const bg = document.createElement('div');
+        bg.className = 'thumb-bg';
+        bg.style.background = frame.bg;
+        const numEl = document.createElement('span');
+        numEl.className = 'thumb-num';
+        numEl.textContent = num;
+        div.appendChild(bg);
+        // add chars as tiny emojis
+        frame.characters.forEach(ch => {
+          const s = document.createElement('span');
+          s.style.cssText = `position:absolute;left:${ch.x}%;top:${ch.y}%;transform:translate(-50%,-50%);font-size:0.9rem;`;
+          s.textContent = ch.emoji;
+          div.appendChild(s);
+        });
+        div.appendChild(numEl);
+        frameStrip.appendChild(div);
+        frameStrip.scrollLeft = frameStrip.scrollWidth;
+      }
+
+      // play movie
+      document.getElementById('play-btn').addEventListener('click', () => {
+        if (playing || frames.length < 2) return;
+        playing = true;
+        document.getElementById('play-btn').disabled = true;
+        document.getElementById('snap-btn').disabled = true;
+        const pb = document.getElementById('playback');
+        const pbCaption = document.getElementById('pb-caption');
+        let i = 0;
+        function showFrame() {
+          if (i >= frames.length) {
+            pb.classList.remove('active');
+            stage.style.background = currentBg;
+            renderChars();
+            playing = false;
+            document.getElementById('play-btn').disabled = false;
+            document.getElementById('snap-btn').disabled = false;
+            frameCount.textContent = `${frames.length} frame${frames.length===1?'':'s'} snapped! 🎬 the end!`;
+            return;
+          }
+          const f = frames[i];
+          stage.style.background = f.bg;
+          // clear chars from stage, show frame's chars
+          document.querySelectorAll('.char').forEach(el => el.remove());
+          f.characters.forEach(ch => {
+            const el = document.createElement('span');
+            el.className = 'char';
+            el.textContent = ch.emoji;
+            el.style.left = ch.x + '%';
+            el.style.top = ch.y + '%';
+            stage.appendChild(el);
+          });
+          pb.classList.add('active');
+          pbCaption.textContent = f.caption;
+          i++;
+          setTimeout(showFrame, 1200);
+        }
+        showFrame();
+      });
+
+      // clear stage
+      document.getElementById('clear-stage-btn').addEventListener('click', () => {
+        characters = []; selectedId = null; deleteHint.textContent = '';
+        captionInput.value = ''; captionDisplay.textContent = '';
+        renderChars();
+      });
+
+      // new movie
+      document.getElementById('new-movie-btn').addEventListener('click', () => {
+        if (frames.length > 0 && !confirm('start a new movie? your frames will be lost!')) return;
+        frames = []; characters = []; selectedId = null; charIdCounter = 0;
+        captionInput.value = ''; captionDisplay.textContent = '';
+        deleteHint.textContent = '';
+        currentBg = BACKGROUNDS[0].style;
+        stage.style.background = currentBg;
+        document.querySelectorAll('.bg-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+        frameCount.textContent = '0 frames snapped';
+        frameStrip.innerHTML = '';
+        document.getElementById('play-btn').disabled = true;
+        renderChars();
+      });
+    </script>
+  </body>
+</html>
