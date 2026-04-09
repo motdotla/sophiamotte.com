@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Go Fish! 🐟</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #fde8f0; font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 0.8rem; padding: 1rem; min-height: 100vh; color: #c2185b;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem; background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace; font-size: 0.85rem; font-weight: bold;
+        letter-spacing: 0.1em; padding: 0.5rem 1rem; border-radius: 0.5rem;
+        text-decoration: none; border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+      .scores { font-size: 0.85rem; color: #e91e8c99; letter-spacing: 0.05em; }
+      .section { font-size: 0.8rem; color: #e91e8c99; letter-spacing: 0.08em; }
+      .cards-row { display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: center; max-width: min(500px, 94vw); }
+      .card {
+        background: #fff0f5; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        padding: 0.3rem 0.5rem; font-size: 0.9rem; cursor: pointer;
+        box-shadow: 0 0 6px #ffb6d9; white-space: nowrap;
+      }
+      .card:hover { background: #e91e8c; color: #fff; }
+      .card.selected { background: #f5c800; border-color: #c2185b; }
+      .card.cpu { cursor: default; background: #c2185b; color: #c2185b; border-color: #c2185b; }
+      .book { font-size: 1.2rem; }
+      .log {
+        background: #fff0f5; border: 2px solid #e91e8c; border-radius: 0.75rem;
+        padding: 0.8rem; width: min(420px, 94vw); max-height: 120px;
+        overflow-y: auto; font-size: 0.8rem; line-height: 1.7;
+      }
+      .btn {
+        background: #f5c800; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; font-family: "Courier New", Courier, monospace;
+        font-size: 0.9rem; font-weight: bold; padding: 0.5rem 1.2rem;
+        cursor: pointer; letter-spacing: 0.08em;
+      }
+      .btn:hover { background: #e91e8c; color: #fff; }
+      .btn:disabled { opacity: 0.4; cursor: default; }
+      #ask-btn { display: none; }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>🐟 go fish!</h1>
+    <div class="scores">your books: <span id="your-books">0</span> &nbsp;|&nbsp; cpu books: <span id="cpu-books">0</span> &nbsp;|&nbsp; deck: <span id="deck-count">0</span></div>
+
+    <div class="section">🤖 computer's hand (<span id="cpu-count">0</span> cards)</div>
+    <div class="cards-row" id="cpu-hand"></div>
+
+    <div class="section">your books 📚</div>
+    <div class="cards-row" id="your-books-row"></div>
+
+    <div class="section">your hand — tap a card to ask for it!</div>
+    <div class="cards-row" id="your-hand"></div>
+
+    <button class="btn" id="ask-btn">🎣 ask!</button>
+
+    <div class="log" id="log"></div>
+    <button class="btn" id="new-btn">🔄 new game</button>
+
+    <script>
+      const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+      const SUITS = ['♥','♦','♣','♠'];
+      let playerHand, cpuHand, deck, playerBooks, cpuBooks, selected, playerTurn;
+
+      function makeDeck() {
+        const d = [];
+        for (const r of RANKS) for (const s of SUITS) d.push({r,s});
+        for (let i=d.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [d[i],d[j]]=[d[j],d[i]]; }
+        return d;
+      }
+
+      function deal(hand, n) { for(let i=0;i<n&&deck.length;i++) hand.push(deck.pop()); }
+
+      function checkBooks(hand) {
+        const books = [];
+        for (const r of RANKS) {
+          const matched = hand.filter(c => c.r === r);
+          if (matched.length === 4) books.push(r);
+        }
+        return books;
+      }
+
+      function removeBooks(hand, books) {
+        for (const r of books) { while(hand.findIndex(c=>c.r===r)>=0) hand.splice(hand.findIndex(c=>c.r===r),1); }
+      }
+
+      function log(msg) {
+        const el = document.getElementById('log');
+        el.innerHTML = msg + '<br>' + el.innerHTML;
+      }
+
+      function init() {
+        deck = makeDeck();
+        playerHand = []; cpuHand = [];
+        playerBooks = []; cpuBooks = [];
+        selected = null; playerTurn = true;
+        deal(playerHand, 7); deal(cpuHand, 7);
+        settle(playerHand, playerBooks); settle(cpuHand, cpuBooks);
+        document.getElementById('log').innerHTML = '';
+        log('🎮 new game started! tap a card then press ask!');
+        render();
+      }
+
+      function settle(hand, books) {
+        const b = checkBooks(hand); books.push(...b); removeBooks(hand, b);
+        if (hand.length === 0 && deck.length > 0) deal(hand, 1);
+      }
+
+      function render() {
+        document.getElementById('deck-count').textContent = deck.length;
+        document.getElementById('your-books').textContent = playerBooks.length;
+        document.getElementById('cpu-books').textContent = cpuBooks.length;
+        document.getElementById('cpu-count').textContent = cpuHand.length;
+
+        const cpuEl = document.getElementById('cpu-hand');
+        cpuEl.innerHTML = '';
+        cpuHand.forEach(() => { const c=document.createElement('div'); c.className='card cpu'; c.textContent='🂠'; cpuEl.appendChild(c); });
+
+        const yourBooksEl = document.getElementById('your-books-row');
+        yourBooksEl.innerHTML = '';
+        playerBooks.forEach(r => { const c=document.createElement('div'); c.className='book'; c.textContent=`[${r}×4]`; yourBooksEl.appendChild(c); });
+
+        const handEl = document.getElementById('your-hand');
+        handEl.innerHTML = '';
+        playerHand.forEach((card, i) => {
+          const c = document.createElement('div');
+          c.className = 'card' + (selected===i?' selected':'');
+          c.textContent = card.r + card.s;
+          c.style.color = (card.s==='♥'||card.s==='♦') ? '#e91e8c' : '#333';
+          if (playerTurn) c.addEventListener('click', () => { selected=i; render(); document.getElementById('ask-btn').style.display='inline-block'; });
+          handEl.appendChild(c);
+        });
+
+        if (playerBooks.length + cpuBooks.length === 13) {
+          const winner = playerBooks.length > cpuBooks.length ? '🎉 you win!!' : playerBooks.length < cpuBooks.length ? '🤖 computer wins!' : "it's a tie! 🤝";
+          log(`🏁 game over! ${winner} (you: ${playerBooks.length} books, cpu: ${cpuBooks.length} books)`);
+          document.getElementById('ask-btn').style.display = 'none';
+        }
+      }
+
+      document.getElementById('ask-btn').addEventListener('click', () => {
+        if (selected === null || !playerTurn) return;
+        const rank = playerHand[selected].r;
+        document.getElementById('ask-btn').style.display = 'none';
+        selected = null;
+        const got = cpuHand.filter(c => c.r === rank);
+        if (got.length > 0) {
+          got.forEach(c => { playerHand.push(c); cpuHand.splice(cpuHand.findIndex(x=>x.r===rank&&x.s===c.s),1); });
+          log(`✅ you asked for ${rank}s — got ${got.length}!`);
+          settle(playerHand, playerBooks); settle(cpuHand, cpuBooks);
+          render();
+        } else {
+          log(`🐟 go fish! you asked for ${rank}s`);
+          if (deck.length > 0) { playerHand.push(deck.pop()); log(`🃏 you drew a card`); }
+          settle(playerHand, playerBooks);
+          render();
+          playerTurn = false;
+          setTimeout(cpuTurn, 1000);
+        }
+      });
+
+      function cpuTurn() {
+        if (cpuHand.length === 0) { playerTurn = true; render(); return; }
+        const rank = cpuHand[Math.floor(Math.random()*cpuHand.length)].r;
+        const got = playerHand.filter(c => c.r === rank);
+        if (got.length > 0) {
+          got.forEach(c => { cpuHand.push(c); playerHand.splice(playerHand.findIndex(x=>x.r===rank&&x.s===c.s),1); });
+          log(`🤖 computer asked for ${rank}s — got ${got.length} from you!`);
+          settle(cpuHand, cpuBooks); settle(playerHand, playerBooks);
+          render();
+          setTimeout(cpuTurn, 1000);
+        } else {
+          log(`🐟 computer asked for ${rank}s — go fish!`);
+          if (deck.length > 0) cpuHand.push(deck.pop());
+          settle(cpuHand, cpuBooks);
+          playerTurn = true;
+          render();
+          log(`👆 your turn! tap a card to ask!`);
+        }
+      }
+
+      document.getElementById('new-btn').addEventListener('click', init);
+      init();
+    </script>
+  </body>
+</html>

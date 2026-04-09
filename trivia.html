@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trivia Quiz! 🧠</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #fde8f0; font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 1rem; padding: 1rem; min-height: 100vh; color: #c2185b;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem; background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace; font-size: 0.85rem; font-weight: bold;
+        letter-spacing: 0.1em; padding: 0.5rem 1rem; border-radius: 0.5rem;
+        text-decoration: none; border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+      .progress { font-size: 0.85rem; color: #e91e8c99; letter-spacing: 0.08em; }
+      .card {
+        background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1rem;
+        box-shadow: 0 0 14px #ffb6d9; padding: 1.5rem;
+        width: min(420px, 94vw); display: flex; flex-direction: column;
+        align-items: center; gap: 1rem; text-align: center;
+      }
+      .question { font-size: 1.05rem; line-height: 1.5; letter-spacing: 0.03em; }
+      .answers { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; }
+      .answer-btn {
+        background: #fff0f5; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; font-family: "Courier New", Courier, monospace;
+        font-size: 0.9rem; padding: 0.6rem 1rem; cursor: pointer;
+        text-align: left; letter-spacing: 0.03em; transition: background 0.2s;
+      }
+      .answer-btn:hover:not(:disabled) { background: #ffe0f0; }
+      .answer-btn.correct { background: #bbf7d0; border-color: #22c55e; color: #15803d; }
+      .answer-btn.wrong { background: #fecaca; border-color: #ef4444; color: #b91c1c; }
+      .answer-btn:disabled { cursor: default; }
+      .feedback { font-size: 1rem; min-height: 1.5rem; font-weight: bold; }
+      .btn {
+        background: #f5c800; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; font-family: "Courier New", Courier, monospace;
+        font-size: 0.9rem; font-weight: bold; padding: 0.5rem 1.2rem;
+        cursor: pointer; letter-spacing: 0.08em;
+      }
+      .btn:hover { background: #e91e8c; color: #fff; }
+      .score-big { font-size: 2rem; color: #e91e8c; }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>🧠 trivia!</h1>
+    <div class="progress">question <span id="q-num">1</span> of 10 &nbsp;|&nbsp; score: <span id="score">0</span></div>
+    <div class="card" id="card">
+      <div class="question" id="question"></div>
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="btn" id="next-btn" style="display:none;">next ➡️</button>
+    </div>
+    <div class="card" id="end-card" style="display:none;">
+      <div class="score-big" id="final-score"></div>
+      <div id="end-msg"></div>
+      <button class="btn" id="play-again-btn">🔄 play again!</button>
+    </div>
+
+    <script>
+      const allQuestions = [
+        { q: "🌍 What is the biggest planet in our solar system?", a: ["Jupiter","Mars","Saturn","Earth"], correct: 0 },
+        { q: "🦁 What do you call a group of lions?", a: ["Pack","Pride","Herd","Flock"], correct: 1 },
+        { q: "🌈 How many colors are in a rainbow?", a: ["5","6","7","8"], correct: 2 },
+        { q: "🐳 What is the largest animal on Earth?", a: ["Elephant","Blue Whale","Giraffe","Great White Shark"], correct: 1 },
+        { q: "🍎 What color is the inside of a watermelon?", a: ["Yellow","White","Red","Orange"], correct: 2 },
+        { q: "⭐ How many stars are on the American flag?", a: ["48","50","52","54"], correct: 1 },
+        { q: "🦋 What do caterpillars turn into?", a: ["Moths only","Butterflies only","Butterflies or moths","Beetles"], correct: 2 },
+        { q: "🌊 What is the biggest ocean on Earth?", a: ["Atlantic","Indian","Arctic","Pacific"], correct: 3 },
+        { q: "🎨 What color do you get when you mix red and blue?", a: ["Green","Orange","Purple","Brown"], correct: 2 },
+        { q: "🦒 What is the tallest animal in the world?", a: ["Elephant","Giraffe","Horse","Ostrich"], correct: 1 },
+        { q: "🍌 What color is a banana when it's ripe?", a: ["Green","Red","Yellow","Orange"], correct: 2 },
+        { q: "🐧 Where do penguins live?", a: ["North Pole","Africa","Antarctica","Australia"], correct: 2 },
+        { q: "🌙 How long does it take the Moon to go around Earth?", a: ["1 week","1 month","1 year","1 day"], correct: 1 },
+        { q: "🦷 How many teeth do adult humans have?", a: ["28","30","32","36"], correct: 2 },
+        { q: "🐝 What do bees make?", a: ["Milk","Honey","Butter","Juice"], correct: 1 },
+        { q: "🌺 What do plants need to grow?", a: ["Just water","Sun, water, and soil","Only soil","Only sunlight"], correct: 1 },
+        { q: "🎵 How many strings does a guitar usually have?", a: ["4","5","6","7"], correct: 2 },
+        { q: "🐠 What do fish use to breathe?", a: ["Lungs","Gills","Skin","Nose"], correct: 1 },
+        { q: "❄️ What is frozen water called?", a: ["Steam","Mist","Ice","Fog"], correct: 2 },
+        { q: "🦊 What do foxes eat?", a: ["Only plants","Only fish","Meat and plants","Only bugs"], correct: 2 },
+      ];
+
+      let questions, current, score;
+
+      function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length-1; i>0; i--) {
+          const j = Math.floor(Math.random()*(i+1));
+          [a[i],a[j]] = [a[j],a[i]];
+        }
+        return a;
+      }
+
+      function startGame() {
+        questions = shuffle(allQuestions).slice(0, 10);
+        current = 0; score = 0;
+        document.getElementById('end-card').style.display = 'none';
+        document.getElementById('card').style.display = 'flex';
+        showQuestion();
+      }
+
+      function showQuestion() {
+        const q = questions[current];
+        document.getElementById('q-num').textContent = current + 1;
+        document.getElementById('score').textContent = score;
+        document.getElementById('question').textContent = q.q;
+        document.getElementById('feedback').textContent = '';
+        document.getElementById('next-btn').style.display = 'none';
+
+        const answers = document.getElementById('answers');
+        answers.innerHTML = '';
+        q.a.forEach((ans, i) => {
+          const btn = document.createElement('button');
+          btn.className = 'answer-btn';
+          btn.textContent = ans;
+          btn.addEventListener('click', () => pick(i, btn));
+          answers.appendChild(btn);
+        });
+      }
+
+      function pick(i, btn) {
+        const q = questions[current];
+        document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+        if (i === q.correct) {
+          btn.classList.add('correct');
+          score++;
+          document.getElementById('score').textContent = score;
+          document.getElementById('feedback').textContent = '✅ correct!! great job!';
+        } else {
+          btn.classList.add('wrong');
+          document.querySelectorAll('.answer-btn')[q.correct].classList.add('correct');
+          document.getElementById('feedback').textContent = `❌ the answer was "${q.a[q.correct]}"!`;
+        }
+        document.getElementById('next-btn').style.display = 'inline-block';
+      }
+
+      document.getElementById('next-btn').addEventListener('click', () => {
+        current++;
+        if (current >= questions.length) {
+          document.getElementById('card').style.display = 'none';
+          document.getElementById('end-card').style.display = 'flex';
+          document.getElementById('final-score').textContent = `${score} / 10`;
+          const msgs = ['keep practicing! 💪', 'not bad! 👍', 'good job! 🌟', 'great!! 🎉', 'amazing!! you\'re a genius!! 🧠✨'];
+          document.getElementById('end-msg').textContent = msgs[Math.min(Math.floor(score/2), 4)];
+        } else {
+          showQuestion();
+        }
+      });
+
+      document.getElementById('play-again-btn').addEventListener('click', startGame);
+      startGame();
+    </script>
+  </body>
+</html>

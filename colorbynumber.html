@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Color by Number! 🎨</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #fde8f0; font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 0.8rem; padding: 1rem; min-height: 100vh; color: #c2185b;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem; background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace; font-size: 0.85rem; font-weight: bold;
+        letter-spacing: 0.1em; padding: 0.5rem 1rem; border-radius: 0.5rem;
+        text-decoration: none; border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+      .pic-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+      .btn {
+        background: #f5c800; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; padding: 0.4rem 0.9rem;
+        cursor: pointer; letter-spacing: 0.08em;
+      }
+      .btn:hover, .btn.active { background: #e91e8c; color: #fff; }
+      .palette { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+      .color-choice {
+        display: flex; align-items: center; gap: 0.3rem;
+        background: #fff0f5; border: 3px solid transparent; border-radius: 0.5rem;
+        padding: 0.3rem 0.6rem; cursor: pointer; font-size: 0.8rem; color: #c2185b;
+      }
+      .color-choice.active { border-color: #c2185b; }
+      .color-swatch { width: 1.2rem; height: 1.2rem; border-radius: 0.25rem; border: 1px solid #e91e8c88; }
+      .grid-wrap { border: 3px solid #e91e8c; border-radius: 0.75rem; box-shadow: 0 0 14px #ffb6d9; overflow: hidden; }
+      .grid { display: grid; }
+      .pixel {
+        width: clamp(24px, 6vw, 36px); height: clamp(24px, 6vw, 36px);
+        border: 1px solid #e91e8c44; display: flex; align-items: center;
+        justify-content: center; font-size: 0.6rem; cursor: pointer;
+        font-weight: bold; color: #c2185b88; user-select: none;
+        transition: filter 0.1s;
+      }
+      .pixel:hover { filter: brightness(1.1); }
+      #message { font-size: 1rem; min-height: 1.5rem; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>🎨 color by number!</h1>
+
+    <div class="pic-btns">
+      <button class="btn active" onclick="loadPic('heart')">💗 heart</button>
+      <button class="btn" onclick="loadPic('duck')">🐥 duck</button>
+      <button class="btn" onclick="loadPic('star')">⭐ star</button>
+      <button class="btn" onclick="loadPic('flower')">🌸 flower</button>
+    </div>
+
+    <div class="palette" id="palette"></div>
+    <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+    <div id="message"></div>
+    <button class="btn" id="clear-btn">🗑 clear</button>
+
+    <script>
+      const PICTURES = {
+        heart: {
+          cols: 10,
+          palette: [
+            { color: '#fff0f5', label: '0 bg' },
+            { color: '#e91e8c', label: '1 pink' },
+            { color: '#ff6ba8', label: '2 light pink' },
+          ],
+          grid: [
+            [0,1,1,0,0,0,1,1,0,0],
+            [1,2,2,1,0,1,2,2,1,0],
+            [1,2,2,2,1,2,2,2,1,0],
+            [1,2,2,2,2,2,2,2,1,0],
+            [0,1,2,2,2,2,2,1,0,0],
+            [0,0,1,2,2,2,1,0,0,0],
+            [0,0,0,1,2,1,0,0,0,0],
+            [0,0,0,0,1,0,0,0,0,0],
+          ]
+        },
+        duck: {
+          cols: 12,
+          palette: [
+            { color: '#fff0f5', label: '0 bg' },
+            { color: '#f5c800', label: '1 yellow' },
+            { color: '#f97316', label: '2 orange' },
+            { color: '#333', label: '3 black' },
+            { color: '#ffe066', label: '4 light yellow' },
+          ],
+          grid: [
+            [0,0,0,1,1,1,1,0,0,0,0,0],
+            [0,0,1,4,4,4,4,1,0,0,0,0],
+            [0,0,1,4,3,4,4,1,2,2,0,0],
+            [0,0,1,4,4,4,4,4,2,0,0,0],
+            [0,1,4,4,4,4,4,4,1,0,0,0],
+            [0,1,4,4,4,4,4,4,4,1,0,0],
+            [0,1,4,4,4,4,4,4,4,1,0,0],
+            [0,0,1,4,4,4,4,4,1,0,0,0],
+            [0,0,0,1,1,1,1,1,0,0,0,0],
+            [0,0,2,1,0,0,1,2,0,0,0,0],
+            [0,0,2,0,0,0,0,2,0,0,0,0],
+          ]
+        },
+        star: {
+          cols: 11,
+          palette: [
+            { color: '#fff0f5', label: '0 bg' },
+            { color: '#f5c800', label: '1 yellow' },
+            { color: '#ffe066', label: '2 light yellow' },
+            { color: '#f97316', label: '3 orange' },
+          ],
+          grid: [
+            [0,0,0,0,0,1,0,0,0,0,0],
+            [0,0,0,0,1,2,1,0,0,0,0],
+            [0,0,0,0,1,2,1,0,0,0,0],
+            [1,1,1,1,1,2,1,1,1,1,1],
+            [0,1,2,2,2,2,2,2,2,1,0],
+            [0,0,1,2,2,2,2,2,1,0,0],
+            [0,1,1,0,1,2,1,0,1,1,0],
+            [0,1,0,0,1,2,1,0,0,1,0],
+            [1,0,0,0,0,1,0,0,0,0,1],
+          ]
+        },
+        flower: {
+          cols: 11,
+          palette: [
+            { color: '#fff0f5', label: '0 bg' },
+            { color: '#e91e8c', label: '1 pink' },
+            { color: '#ff6ba8', label: '2 light pink' },
+            { color: '#f5c800', label: '3 yellow' },
+            { color: '#22c55e', label: '4 green' },
+          ],
+          grid: [
+            [0,0,0,1,1,0,1,1,0,0,0],
+            [0,0,1,2,2,1,2,2,1,0,0],
+            [0,1,2,2,1,1,1,2,2,1,0],
+            [0,1,2,1,1,3,1,1,2,1,0],
+            [1,2,1,1,3,3,3,1,1,2,1],
+            [0,1,2,1,1,3,1,1,2,1,0],
+            [0,1,2,2,1,1,1,2,2,1,0],
+            [0,0,1,2,2,1,2,2,1,0,0],
+            [0,0,0,1,1,0,1,1,0,0,0],
+            [0,0,0,0,4,4,0,0,0,0,0],
+            [0,0,0,0,4,4,0,0,0,0,0],
+          ]
+        }
+      };
+
+      let currentPic = 'heart';
+      let selectedColor = 1;
+      let painted = [];
+
+      function loadPic(name) {
+        currentPic = name;
+        document.querySelectorAll('.pic-btns .btn').forEach(b => b.classList.toggle('active', b.textContent.includes(name === 'heart' ? '💗' : name === 'duck' ? '🐥' : name === 'star' ? '⭐' : '🌸')));
+        const pic = PICTURES[name];
+        painted = pic.grid.map(row => row.map(() => -1));
+        selectedColor = 1;
+        document.getElementById('message').textContent = '';
+        buildPalette(pic);
+        buildGrid(pic);
+      }
+
+      function buildPalette(pic) {
+        const el = document.getElementById('palette');
+        el.innerHTML = '';
+        pic.palette.forEach((p, i) => {
+          if (i === 0) return; // skip background
+          const div = document.createElement('div');
+          div.className = 'color-choice' + (selectedColor === i ? ' active' : '');
+          div.innerHTML = `<div class="color-swatch" style="background:${p.color}"></div>${p.label}`;
+          div.addEventListener('click', () => { selectedColor = i; buildPalette(pic); });
+          el.appendChild(div);
+        });
+      }
+
+      function buildGrid(pic) {
+        const grid = document.getElementById('grid');
+        grid.style.gridTemplateColumns = `repeat(${pic.cols}, 1fr)`;
+        grid.innerHTML = '';
+        pic.grid.forEach((row, r) => {
+          row.forEach((num, c) => {
+            const cell = document.createElement('div');
+            cell.className = 'pixel';
+            const bg = painted[r][c] >= 0 ? pic.palette[painted[r][c]].color : '#fff8fc';
+            cell.style.background = bg;
+            cell.textContent = painted[r][c] >= 0 ? '' : (num === 0 ? '' : num);
+            cell.addEventListener('click', () => paint(r, c, num, pic));
+            grid.appendChild(cell);
+          });
+        });
+      }
+
+      function paint(r, c, num, pic) {
+        if (num === 0) return;
+        painted[r][c] = selectedColor;
+        buildGrid(pic);
+        // check if done correctly
+        let allDone = true, allCorrect = true;
+        pic.grid.forEach((row, ri) => row.forEach((n, ci) => {
+          if (n > 0 && painted[ri][ci] < 0) allDone = false;
+          if (n > 0 && painted[ri][ci] >= 0 && painted[ri][ci] !== n) allCorrect = false;
+        }));
+        if (allDone && allCorrect) document.getElementById('message').textContent = '🎉 perfect!! amazing job!!';
+        else if (allDone) document.getElementById('message').textContent = '🖌 some colors are wrong — try again!';
+        else document.getElementById('message').textContent = '';
+      }
+
+      document.getElementById('clear-btn').addEventListener('click', () => loadPic(currentPic));
+      loadPic('heart');
+    </script>
+  </body>
+</html>
