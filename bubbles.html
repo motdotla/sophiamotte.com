@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bubbles 🫧</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: linear-gradient(135deg, #fde8f0 0%, #e3f6fd 50%, #fff9c4 100%);
+        font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; height: 100vh; color: #c2185b;
+        overflow: hidden;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem;
+        background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; letter-spacing: 0.1em;
+        padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;
+        border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+
+      /* header */
+      .header {
+        background: linear-gradient(90deg, #f5c800, #e91e8c, #87ceeb);
+        padding: 0.8rem 1rem;
+        display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        box-shadow: 0 2px 10px #ffb6d9;
+        padding-top: 3.5rem;
+      }
+      .header h1 { font-size: 1.4rem; font-weight: bold; letter-spacing: 0.15em; color: #fff; text-shadow: 0 0 8px #c2185b; }
+      .avatar {
+        width: 2.5rem; height: 2.5rem; border-radius: 50%;
+        background: #fff; border: 3px solid #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; box-shadow: 0 0 8px #ffb6d9;
+      }
+      .header .sub { font-size: 0.7rem; color: #fff9; letter-spacing: 0.08em; }
+
+      /* chat area */
+      #chat {
+        flex: 1; overflow-y: auto; padding: 1rem;
+        display: flex; flex-direction: column; gap: 0.7rem;
+        scroll-behavior: smooth;
+      }
+
+      /* messages */
+      .msg-row { display: flex; align-items: flex-end; gap: 0.5rem; }
+      .msg-row.user { flex-direction: row-reverse; }
+      .bubble-avatar {
+        width: 1.8rem; height: 1.8rem; border-radius: 50%;
+        background: linear-gradient(135deg, #f5c800, #e91e8c);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; flex-shrink: 0; border: 2px solid #fff;
+        box-shadow: 0 0 6px #ffb6d9;
+      }
+      .bubble {
+        max-width: 75%; padding: 0.6rem 0.9rem; border-radius: 1.2rem;
+        font-size: 0.85rem; line-height: 1.6; word-break: break-word;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        animation: popIn 0.2s ease;
+      }
+      @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+      .bubble.bot {
+        background: #fff0f5; border: 2px solid #f5c800;
+        border-bottom-left-radius: 0.3rem; color: #c2185b;
+      }
+      .bubble.user {
+        background: linear-gradient(135deg, #b3e5fc, #81d4fa);
+        border: 2px solid #87ceeb; color: #01579b;
+        border-bottom-right-radius: 0.3rem;
+      }
+      .typing { display: flex; gap: 0.3rem; align-items: center; padding: 0.4rem 0.6rem; }
+      .typing span {
+        width: 0.5rem; height: 0.5rem; border-radius: 50%;
+        background: #e91e8c; animation: bounce 0.8s infinite;
+      }
+      .typing span:nth-child(2) { animation-delay: 0.15s; }
+      .typing span:nth-child(3) { animation-delay: 0.3s; }
+      @keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+
+      /* photos strip */
+      .photo-strip {
+        display: flex; gap: 0.5rem; justify-content: center; align-items: center;
+        padding: 0.5rem; background: #fff0f5;
+        border-top: 2px solid #f5c800;
+        overflow-x: auto;
+      }
+      .photo-strip img {
+        height: 3.5rem; width: 3.5rem; object-fit: cover;
+        border-radius: 0.75rem; border: 2px solid #f5c800;
+        box-shadow: 0 0 6px #ffb6d9; flex-shrink: 0;
+      }
+      .photo-strip span { font-size: 0.65rem; color: #e91e8c99; text-align: center; }
+      .photo-item { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
+
+      /* input bar */
+      .input-bar {
+        display: flex; gap: 0.5rem; padding: 0.6rem 0.8rem;
+        background: #fff; border-top: 2px solid #e91e8c;
+        box-shadow: 0 -2px 10px #ffb6d9;
+      }
+      .input-bar input {
+        flex: 1; font-family: "Courier New", Courier, monospace;
+        font-size: 0.9rem; padding: 0.5rem 0.8rem;
+        border: 2px solid #87ceeb; border-radius: 2rem;
+        color: #c2185b; background: #f0faff; outline: none;
+      }
+      .input-bar input:focus { border-color: #e91e8c; }
+      .send-btn {
+        background: linear-gradient(135deg, #f5c800, #e91e8c);
+        border: none; border-radius: 50%;
+        width: 2.5rem; height: 2.5rem; font-size: 1.1rem;
+        cursor: pointer; flex-shrink: 0;
+        box-shadow: 0 0 8px #ffb6d9;
+      }
+      .send-btn:hover { transform: scale(1.1); }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+
+    <div class="header">
+      <div class="avatar">🫧</div>
+      <div>
+        <h1>BUBBLES</h1>
+        <div class="sub">sophia's very own chatbot 💕</div>
+      </div>
+    </div>
+
+    <div id="chat"></div>
+
+    <div class="photo-strip">
+      <div class="photo-item">
+        <img src="photos/cooking.png" alt="Sophia" />
+        <span>👧 sophia</span>
+      </div>
+      <div class="photo-item">
+        <img src="photos/pistol-dog.png" alt="Pistol" />
+        <span>🐾 pistol</span>
+      </div>
+      <div class="photo-item">
+        <img src="photos/wally1.jpeg" alt="Wally" />
+        <span>🐶 wally</span>
+      </div>
+      <div class="photo-item">
+        <img src="photos/france.png" alt="France" />
+        <span>🗼 france</span>
+      </div>
+      <div class="photo-item">
+        <img src="photos/valentines.png" alt="Valentines" />
+        <span>💕 sophia</span>
+      </div>
+    </div>
+
+    <div class="input-bar">
+      <input id="msg-input" type="text" placeholder="ask bubbles anything! 🫧" maxlength="200" />
+      <button class="send-btn" id="send-btn">💬</button>
+    </div>
+
+    <script>
+      const FACTS = [
+        // name / who
+        { p: ['who are you','what are you','your name','who is bubbles'], r: ["i'm bubbles!! 🫧 sophia's very own chatbot! i know everything about her! ask me anything! 💕"] },
+        { p: ['who is sophia','tell me about sophia','about sophia'], r: ["sophia is an 8 year old girl who is SUPER creative and amazing!! she loves art, fashion, cooking, ice skating, and building her own website!! 💕🌟"] },
+        { p: ['how old','sophia age','age'], r: ["sophia is 8 years old!! 🎂✨"] },
+
+        // favorite things
+        { p: ['favorite color','fav color'], r: ["sophia's favorite color is BABY BLUE!! 🩵 so pretty!"] },
+        { p: ['favorite number','fav number','lucky number'], r: ["sophia's favorite number is 7!! 🍀 lucky number 7!"] },
+        { p: ['favorite drink','fav drink','drink'], r: ["sophia loves chocolate milk AND hot chocolate!! 🍫🥛 the best drinks ever!!"] },
+        { p: ['favorite holiday','fav holiday','holiday'], r: ["sophia loves easter, christmas, and halloween!! 🐣🎄🎃 so many fun holidays!!"] },
+        { p: ['favorite game','fav game'], r: ["sophia loves hangman the most!! ✏️ but she also made snake, go fish, match, trivia, and so many more games on her website!!"] },
+
+        // family
+        { p: ['family','mom','dad','brother','sibling','sister'], r: ["sophia has a mom, a dad, and a brother!! she's the youngest sibling 🥰💕"] },
+        { p: ['youngest','oldest'], r: ["sophia is the youngest in her family!! 🥰 the baby of the family!"] },
+
+        // friends
+        { p: ['friend','bff','bestie','misha','autumn','evelyn'], r: ["sophia has 3 super amazing bffs — misha, autumn, and evelyn!! 💕👯 the best squad ever!!"] },
+
+        // dogs
+        { p: ['wally'], r: ["wally is sophia's CRAZY puppy!! 🐶 he's about 8 months old and gets the zoomies whenever sophia comes home!! his favorite costume is reindeer!! 🦌"] },
+        { p: ['pistol'], r: ["pistol was sophia's beloved dog who passed away when sophia was young 🐾💕 sophia loves pistol so much and always will!!"] },
+        { p: ['dog','pet','puppy'], r: ["sophia has wally — a super crazy 8 month old puppy who LOVES her!! 🐶 and she will always love her sweet pistol too 🐾💕"] },
+
+        // travel
+        { p: ['travel','been','visited','trip','vacation'], r: ["sophia has been to SO many places!! 🌍 paris/france, maui, mammoth mountain, san francisco, new york, tokyo/japan, aspen, and hawaii!! what a traveler!! ✈️"] },
+        { p: ['paris','france'], r: ["sophia went to paris FRANCE for a whole month and a half!! 🗼✨ she even has a lock from paris as a souvenir!! so romantic!!"] },
+        { p: ['lock','souvenir'], r: ["sophia has a special lock from paris!! 🔒🗼 it's one of her most treasured souvenirs!!"] },
+        { p: ['japan','tokyo'], r: ["sophia went to tokyo japan!! 🇯🇵🌸 land of cherry blossoms, sushi, and bullet trains!!"] },
+        { p: ['maui','hawaii'], r: ["sophia went to maui hawaii!! 🌺🌊 beautiful beaches, sea turtles, sunsets, and a luau!! so amazing!!"] },
+        { p: ['mammoth'], r: ["sophia went to mammoth mountain for skiing and snow tubing!! ⛷️❄️ she loved flying down the slopes!!"] },
+        { p: ['aspen'], r: ["sophia has also been to aspen!! 🏔️ another snowy mountain adventure!!"] },
+        { p: ['new york','nyc'], r: ["sophia went to new york city!! 🗽🍕 she saw central park, went ice skating at rockefeller center, and ate the best pizza!!"] },
+        { p: ['san francisco','sf'], r: ["sophia visited san francisco!! 🌉🚃 home of the golden gate bridge and cable cars!!"] },
+
+        // hobbies / art
+        { p: ['art','pottery','painting','watercolor','drawing','draw'], r: ["sophia LOVES art!! 🎨 she does pottery, painting, watercolor, and drawing!! she's so talented!!"] },
+        { p: ['cook','bak','food'], r: ["sophia loves cooking and baking!! 👩‍🍳 she's a total chef!! check out her cooking photo on her page!"] },
+        { p: ['ice skat','skating','skate'], r: ["sophia does ice skating!! ⛸️ she's been to the rink in new york city too!!"] },
+        { p: ['fashion','style','clothes'], r: ["sophia LOVES fashion!! 👗✨ she has amazing style!!"] },
+
+        // website
+        { p: ['website','sophiamotte'], r: ["sophia built her very own website at sophiamotte.com!! 💻🌟 it has games, travel pages, a movie maker, and even ME — bubbles!! she built it all herself with help from claude!!"] },
+        { p: ['claude','ai','robot'], r: ["sophia loves working with claude!! 🤖💕 they built this whole website together!! claude is her coding buddy!!"] },
+        { p: ['hangman'], r: ["hangman is sophia's favorite game on the website!! ✏️ she loves guessing the words!!"] },
+        { p: ['game','snake','fish','trivia'], r: ["sophia has made SO many games on her website!! snake, go fish, hangman, match, trivia, whack-a-mole, simon says, sliding puzzle, tic tac toe, connect four, and more!! 🎮✨"] },
+        { p: ['movie','unicornia'], r: ["sophia made an AMAZING movie called unicornia: into space!! 🦄🚀 about a unicorn who goes to space in a spaceship!! she made it on her very own movie maker!!"] },
+
+        // misc
+        { p: ['bubbles','bubble'], r: ["that's me!! bubbles!! 🫧💕 sophia's pink, yellow, and baby blue chatbot!! i love being sophia's bot!!"] },
+        { p: ['heart','hearts'], r: ["sophia LOVES hearts!! 💕❤️ her whole website is full of them!! floating hearts, still hearts, heart everywhere!!"] },
+        { p: ['easter'], r: ["easter is one of sophia's favorite holidays!! 🐣🌷 she loves it so much!!"] },
+        { p: ['christmas'], r: ["christmas is one of sophia's favorites!! 🎄🎁 wally even wore a reindeer costume!! 🦌"] },
+        { p: ['halloween'], r: ["halloween is one of sophia's favorite holidays!! 🎃👻 spooky and fun!!"] },
+        { p: ['hello','hi','hey','hiya','howdy'], r: ["hi hi hi!! 🫧💕 i'm bubbles! i know everything about sophia! what do you want to know?? 🌟", "heyyyy!! 🫧 so nice to meet you!! ask me anything about sophia!! 💕"] },
+        { p: ['bye','goodbye','see you','cya'], r: ["byeee!! 🫧💕 come back anytime to learn more about sophia!! 🌟"] },
+        { p: ['thank','thanks'], r: ["you're so welcome!! 💕 that's what i'm here for!! 🫧✨"] },
+        { p: ['love','like','favorite'], r: ["sophia loves SO many things!! art, fashion, cooking, ice skating, traveling, her dogs, her friends, hearts, and building her website!! 💕🌟"] },
+        { p: ['funny','joke'], r: ["why did the unicorn go to space?? 🦄🚀 because she heard the stars were made of glitter!! ✨😂"] },
+        { p: ['how many','count'], r: ["sophia has visited 8 amazing places, has 3 bffs, 1 crazy puppy, and 1 amazing website!! 🌍💕"] },
+      ];
+
+      const FALLBACKS = [
+        "hmm i'm not sure about that one!! 🤔 try asking me about sophia's travels, hobbies, dogs, or favorite things!! 💕",
+        "ooh that's a tricky one! 🫧 i know lots about sophia though — try asking about wally, paris, her art, or her website!!",
+        "i don't know that one! 😅 but i know EVERYTHING about sophia!! ask me about her bffs, her games, or her favorite color!! 💕",
+        "bubbles doesn't know that one! 🫧 ask me something about sophia!! like her favorite drink or where she's traveled!! 🌍",
+      ];
+
+      function getBotResponse(msg) {
+        const lower = msg.toLowerCase();
+        for (const fact of FACTS) {
+          if (fact.p.some(p => lower.includes(p))) {
+            return fact.r[Math.floor(Math.random() * fact.r.length)];
+          }
+        }
+        return FALLBACKS[Math.floor(Math.random() * FALLBACKS.length)];
+      }
+
+      const chat = document.getElementById('chat');
+
+      function addMessage(text, who) {
+        const row = document.createElement('div');
+        row.className = 'msg-row ' + who;
+        if (who === 'bot') {
+          const av = document.createElement('div');
+          av.className = 'bubble-avatar'; av.textContent = '🫧';
+          row.appendChild(av);
+        }
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble ' + who;
+        bubble.textContent = text;
+        row.appendChild(bubble);
+        chat.appendChild(row);
+        chat.scrollTop = chat.scrollHeight;
+      }
+
+      function showTyping() {
+        const row = document.createElement('div');
+        row.className = 'msg-row bot'; row.id = 'typing-row';
+        const av = document.createElement('div');
+        av.className = 'bubble-avatar'; av.textContent = '🫧';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble bot';
+        bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+        row.appendChild(av); row.appendChild(bubble);
+        chat.appendChild(row);
+        chat.scrollTop = chat.scrollHeight;
+        return row;
+      }
+
+      function sendMessage() {
+        const input = document.getElementById('msg-input');
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+        addMessage(text, 'user');
+        const typingRow = showTyping();
+        setTimeout(() => {
+          typingRow.remove();
+          addMessage(getBotResponse(text), 'bot');
+        }, 800 + Math.random() * 600);
+      }
+
+      document.getElementById('send-btn').addEventListener('click', sendMessage);
+      document.getElementById('msg-input').addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+
+      // greeting
+      setTimeout(() => {
+        addMessage("hi!! 🫧💕 i'm bubbles — sophia's very own chatbot!! i know everything about her! ask me anything!! 🌟", 'bot');
+      }, 400);
+    </script>
+  </body>
+</html>
