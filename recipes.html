@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sophia's Recipe Book! 👩‍🍳</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #fde8f0; font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 1rem; padding: 1rem 1rem 3rem; min-height: 100vh; color: #c2185b;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem; background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace; font-size: 0.85rem; font-weight: bold;
+        letter-spacing: 0.1em; padding: 0.5rem 1rem; border-radius: 0.5rem;
+        text-decoration: none; border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+      .subtitle { font-size: 0.85rem; color: #e91e8c99; letter-spacing: 0.1em; }
+
+      .recipe-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 90vw), 1fr));
+        gap: 0.8rem; width: min(560px, 94vw);
+      }
+      .recipe-btn {
+        background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1rem;
+        padding: 1rem; cursor: pointer; text-align: center;
+        box-shadow: 0 0 10px #ffb6d9; transition: transform 0.15s, box-shadow 0.15s;
+        font-family: "Courier New", Courier, monospace; color: #c2185b;
+      }
+      .recipe-btn:hover { transform: scale(1.03); box-shadow: 0 0 18px #f5c800; border-color: #f5c800; }
+      .recipe-btn.active { border-color: #f5c800; background: #fff9e6; }
+      .recipe-btn .r-emoji { font-size: 2.5rem; }
+      .recipe-btn .r-name { font-size: 0.9rem; font-weight: bold; letter-spacing: 0.08em; margin-top: 0.3rem; }
+
+      .recipe-card {
+        display: none; background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1rem;
+        box-shadow: 0 0 18px #ffb6d9; padding: 1.5rem;
+        width: min(560px, 94vw); flex-direction: column; gap: 1rem;
+        animation: fadeIn 0.2s ease;
+      }
+      .recipe-card.visible { display: flex; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .recipe-card h2 { font-size: 1.3rem; font-weight: normal; letter-spacing: 0.1em; }
+      .recipe-card .r-big-emoji { font-size: 3rem; }
+      .section-title {
+        font-size: 0.8rem; letter-spacing: 0.12em; color: #e91e8c;
+        border-bottom: 2px solid #f5c800; padding-bottom: 0.2rem; margin-top: 0.3rem;
+      }
+      .ingredients { display: flex; flex-direction: column; gap: 0.3rem; }
+      .ingredient { font-size: 0.85rem; line-height: 1.5; }
+      .ingredient::before { content: "🌸 "; }
+      .steps { display: flex; flex-direction: column; gap: 0.5rem; counter-reset: steps; }
+      .step {
+        font-size: 0.85rem; line-height: 1.6;
+        background: #fde8f0; border-radius: 0.5rem; padding: 0.4rem 0.7rem;
+        counter-increment: steps;
+      }
+      .step::before { content: counter(steps) ". "; font-weight: bold; color: #e91e8c; }
+      .tip {
+        background: #fff9e6; border: 2px solid #f5c800; border-radius: 0.75rem;
+        padding: 0.6rem 0.9rem; font-size: 0.8rem; line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>👩‍🍳 sophia's recipes!</h1>
+    <p class="subtitle">~ tap a recipe to see how to make it! ~</p>
+
+    <div class="recipe-grid" id="recipe-grid"></div>
+    <div class="recipe-card" id="recipe-card"></div>
+
+    <script>
+      const RECIPES = [
+        {
+          emoji: '🥞', name: 'crepes',
+          intro: 'thin and delicious french pancakes!! perfect with strawberries and whipped cream!',
+          serves: '2-3 people',
+          ingredients: [
+            '1 cup flour',
+            '2 eggs',
+            '1½ cups milk',
+            '2 tablespoons melted butter',
+            'pinch of salt',
+            '1 teaspoon sugar',
+            'butter for cooking',
+            'toppings: strawberries, whipped cream, nutella, or syrup!',
+          ],
+          steps: [
+            'mix the flour, eggs, milk, butter, salt, and sugar together in a bowl until smooth!',
+            'let the batter rest for 30 minutes (this makes them extra yummy!).',
+            'heat a pan on medium and add a tiny bit of butter.',
+            'pour a small ladle of batter and swirl the pan so it spreads thin.',
+            'cook for about 1 minute until the edges look dry, then flip!',
+            'cook the other side for 30 seconds.',
+            'repeat with the rest of the batter.',
+            'add your favorite toppings and enjoy!! 🍓',
+          ],
+          tip: '💛 tip: the first crepe is always a little messy — that\'s totally normal!! keep going!',
+        },
+        {
+          emoji: '🍝', name: 'pasta',
+          intro: 'simple and yummy pasta with tomato sauce — so easy and so good!!',
+          serves: '2-3 people',
+          ingredients: [
+            '2 cups pasta (spaghetti or penne)',
+            '1 can crushed tomatoes',
+            '2 cloves garlic',
+            '2 tablespoons olive oil',
+            'salt and pepper',
+            'parmesan cheese',
+            'fresh basil (optional)',
+          ],
+          steps: [
+            'boil a pot of water with a big pinch of salt.',
+            'add the pasta and cook until al dente (check the box for timing!).',
+            'in a pan, heat olive oil and add garlic. cook for 1 minute.',
+            'add the crushed tomatoes and stir!',
+            'season with salt and pepper and let it simmer for 10 minutes.',
+            'drain the pasta and add it to the sauce.',
+            'toss everything together and top with parmesan!! 🧀',
+          ],
+          tip: '💛 tip: save a little pasta water before draining — adding a splash to the sauce makes it extra creamy!!',
+        },
+        {
+          emoji: '🍳', name: 'eggs',
+          intro: 'perfect scrambled eggs — soft, creamy, and delicious!!',
+          serves: '1 person',
+          ingredients: [
+            '2-3 eggs',
+            '1 tablespoon butter',
+            '2 tablespoons milk or cream',
+            'salt and pepper',
+            'chives or cheese (optional!)',
+          ],
+          steps: [
+            'crack the eggs into a bowl and add the milk.',
+            'whisk them together really well!',
+            'heat a pan on LOW heat and add the butter.',
+            'pour in the eggs and let them sit for a moment.',
+            'use a spatula to gently push the eggs around slowly.',
+            'take them OFF the heat while they still look a little wet — they keep cooking!',
+            'season with salt and pepper and serve right away!! 🍳',
+          ],
+          tip: '💛 tip: low and slow is the secret to super creamy eggs!!',
+        },
+        {
+          emoji: '🥧', name: 'apple pie',
+          intro: 'warm and cozy apple pie — perfect for fall and holidays!!',
+          serves: '6-8 people',
+          ingredients: [
+            '6 apples (peeled and sliced thin)',
+            '¾ cup sugar',
+            '2 tablespoons flour',
+            '1 teaspoon cinnamon',
+            '¼ teaspoon nutmeg',
+            'pinch of salt',
+            '1 tablespoon lemon juice',
+            '2 pie crusts (store-bought is fine!!)',
+            '1 tablespoon butter',
+            '1 egg (for brushing)',
+          ],
+          steps: [
+            'preheat oven to 375°F (190°C).',
+            'mix apples, sugar, flour, cinnamon, nutmeg, salt, and lemon juice in a bowl.',
+            'put one pie crust in a pie dish.',
+            'pour the apple filling in and dot with little pieces of butter.',
+            'lay the second crust on top and pinch the edges together.',
+            'cut a few little slits on top so steam can escape.',
+            'brush with beaten egg so it turns golden brown.',
+            'bake for 45-50 minutes until golden and bubbly!!',
+            'let it cool before cutting — then enjoy with ice cream!! 🍦',
+          ],
+          tip: '💛 tip: put a baking sheet under the pie dish in case it bubbles over!!',
+        },
+        {
+          emoji: '🥔', name: 'mashed potato',
+          intro: 'fluffy, buttery mashed potatoes — the ultimate comfort food!!',
+          serves: '3-4 people',
+          ingredients: [
+            '4 large potatoes',
+            '4 tablespoons butter',
+            '½ cup warm milk or cream',
+            'salt and pepper',
+            'chives or cheese on top (optional!)',
+          ],
+          steps: [
+            'peel and chop the potatoes into chunks.',
+            'put them in a pot of cold salted water and bring to a boil.',
+            'cook for 15-20 minutes until a fork pokes through easily.',
+            'drain the potatoes really well!',
+            'add the butter and mash with a masher.',
+            'pour in the warm milk a little at a time and keep mashing until smooth and fluffy.',
+            'season with salt and pepper.',
+            'top with chives or cheese and serve!! 🧈',
+          ],
+          tip: '💛 tip: warm the milk before adding — cold milk makes the mash gluey!!',
+        },
+        {
+          emoji: '🐟', name: 'salmon',
+          intro: 'juicy baked salmon with lemon and herbs — so yummy and healthy!!',
+          serves: '2 people',
+          ingredients: [
+            '2 salmon fillets',
+            '2 tablespoons olive oil',
+            '1 lemon (sliced)',
+            '2 cloves garlic (minced)',
+            'salt and pepper',
+            'fresh dill or parsley',
+            '1 tablespoon honey (optional)',
+          ],
+          steps: [
+            'preheat oven to 400°F (200°C).',
+            'place salmon on a baking sheet lined with foil.',
+            'drizzle with olive oil and rub in the garlic.',
+            'season with salt and pepper.',
+            'lay lemon slices on top and sprinkle with herbs.',
+            'drizzle a tiny bit of honey on top if you want!',
+            'bake for 12-15 minutes until the salmon flakes easily with a fork.',
+            'squeeze a little extra lemon on top and enjoy!! 🍋',
+          ],
+          tip: '💛 tip: the salmon is done when it changes from dark pink to light pink and flakes apart!',
+        },
+      ];
+
+      const grid = document.getElementById('recipe-grid');
+      const card = document.getElementById('recipe-card');
+      let activeIdx = null;
+
+      RECIPES.forEach((recipe, i) => {
+        const btn = document.createElement('div');
+        btn.className = 'recipe-btn';
+        btn.innerHTML = `<div class="r-emoji">${recipe.emoji}</div><div class="r-name">${recipe.name}</div>`;
+        btn.addEventListener('click', () => {
+          if (activeIdx === i) {
+            activeIdx = null;
+            btn.classList.remove('active');
+            card.classList.remove('visible');
+            return;
+          }
+          activeIdx = i;
+          document.querySelectorAll('.recipe-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          showRecipe(recipe);
+          setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+        });
+        grid.appendChild(btn);
+      });
+
+      function showRecipe(r) {
+        card.classList.remove('visible');
+        void card.offsetWidth;
+        card.innerHTML = `
+          <div class="r-big-emoji">${r.emoji}</div>
+          <h2>${r.name}!</h2>
+          <p style="font-size:0.85rem;color:#e91e8c99;">${r.intro}</p>
+          <p style="font-size:0.8rem;">🍽️ serves: ${r.serves}</p>
+          <div class="section-title">INGREDIENTS</div>
+          <div class="ingredients">${r.ingredients.map(i => `<div class="ingredient">${i}</div>`).join('')}</div>
+          <div class="section-title">STEPS</div>
+          <div class="steps">${r.steps.map(s => `<div class="step">${s}</div>`).join('')}</div>
+          <div class="tip">${r.tip}</div>
+        `;
+        card.classList.add('visible');
+      }
+    </script>
+  </body>
+</html>
