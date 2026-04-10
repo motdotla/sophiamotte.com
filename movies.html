@@ -39,6 +39,14 @@
         box-shadow: 0 0 18px #ffb6d9; cursor: default;
       }
       #stage { position: absolute; inset: 0; background: linear-gradient(to bottom, #87ceeb 60%, #f5deb3); }
+      .wave-layer {
+        display: none; position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
+        overflow: hidden; pointer-events: none;
+      }
+      .wave-layer.active { display: block; }
+      .wave-svg { position: absolute; bottom: 0; width: 200%; animation: waveMove 2.5s linear infinite; }
+      .wave-svg2 { position: absolute; bottom: 0; width: 200%; animation: waveMove 3.5s linear infinite reverse; opacity: 0.5; }
+      @keyframes waveMove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
       .char {
         position: absolute; cursor: grab; line-height: 1;
         touch-action: none; transform: translate(-50%, -50%);
@@ -151,6 +159,14 @@
 
     <div id="stage-wrap">
       <div id="stage"></div>
+      <div class="wave-layer" id="wave-layer">
+        <svg class="wave-svg" viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,60 C150,100 350,0 600,60 C850,120 1050,20 1200,60 L1200,120 L0,120 Z" fill="rgba(30,140,255,0.55)"/>
+        </svg>
+        <svg class="wave-svg2" viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,80 C200,30 400,110 600,70 C800,30 1000,100 1200,60 L1200,120 L0,120 Z" fill="rgba(80,200,255,0.45)"/>
+        </svg>
+      </div>
       <div id="caption-display"></div>
       <div id="playback"><div id="pb-caption"></div></div>
     </div>
@@ -205,6 +221,7 @@
         { label: '🌸 pink',    style: 'linear-gradient(to bottom, #fde8f0, #f48fb1)' },
         { label: '❄️ snow',    style: 'linear-gradient(to bottom, #b3e5fc, #e0f7fa)' },
         { label: '🌈 rainbow', style: 'linear-gradient(to bottom, #ff8a80, #ffd180, #ccff90, #80d8ff)' },
+        { label: '🌊 wave',    style: 'linear-gradient(to bottom, #87ceeb 40%, #b3e5fc)', wave: true },
       ];
 
       const EMOJI_CATS = [
@@ -245,6 +262,7 @@
           stage.style.background = bg.style;
           document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
+          document.getElementById('wave-layer').classList.toggle('active', !!bg.wave);
         });
         bgRow.appendChild(btn);
       });
@@ -371,6 +389,7 @@
         const s = val.trim(); if (!s) return;
         currentBg = s; stage.style.background = s;
         document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('wave-layer').classList.remove('active');
       }
       colorPick.addEventListener('input', () => { colorText.value = ''; applyCustomColor(colorPick.value); });
       document.getElementById('color-go-btn').addEventListener('click', () => applyCustomColor(colorText.value || colorPick.value));
