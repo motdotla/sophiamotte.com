@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compliment Machine! 💌</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #fde8f0; font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 1.5rem; padding: 1rem; min-height: 100vh; color: #c2185b;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem; background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace; font-size: 0.85rem; font-weight: bold;
+        letter-spacing: 0.1em; padding: 0.5rem 1rem; border-radius: 0.5rem;
+        text-decoration: none; border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; }
+      .subtitle { font-size: 0.85rem; color: #e91e8c99; letter-spacing: 0.1em; }
+
+      .machine {
+        background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1.5rem;
+        box-shadow: 0 0 24px #ffb6d9; padding: 2rem 1.5rem;
+        width: min(420px, 94vw); display: flex; flex-direction: column;
+        align-items: center; gap: 1.5rem; text-align: center;
+      }
+      .screen {
+        background: #fde8f0; border: 3px solid #f5c800; border-radius: 1rem;
+        padding: 1.5rem; width: 100%; min-height: 7rem;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 0.5rem; box-shadow: inset 0 0 10px #ffb6d9;
+      }
+      .compliment-emoji { font-size: 3rem; animation: bounce 0.5s ease; }
+      .compliment-text {
+        font-size: 1.1rem; line-height: 1.6; letter-spacing: 0.03em;
+        animation: fadeIn 0.4s ease;
+      }
+      @keyframes bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+      .btn {
+        background: linear-gradient(135deg, #f5c800, #e91e8c);
+        border: none; border-radius: 2rem; color: #fff;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1.1rem; font-weight: bold; padding: 0.8rem 2rem;
+        cursor: pointer; letter-spacing: 0.1em;
+        box-shadow: 0 0 16px #ffb6d9;
+        transition: transform 0.1s, box-shadow 0.1s;
+      }
+      .btn:hover { transform: scale(1.05); box-shadow: 0 0 24px #f5c800; }
+      .btn:active { transform: scale(0.97); }
+
+      .hearts {
+        display: flex; gap: 0.3rem; font-size: 1.2rem;
+        animation: fadeIn 0.3s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>💌 compliment machine!</h1>
+    <p class="subtitle">~ you deserve to feel amazing! ~</p>
+
+    <div class="machine">
+      <div class="screen">
+        <div class="compliment-emoji" id="comp-emoji">💌</div>
+        <div class="compliment-text" id="comp-text">press the button to get a compliment!!</div>
+      </div>
+      <div class="hearts" id="hearts">💕 💛 💕</div>
+      <button class="btn" id="comp-btn">✨ give me a compliment!</button>
+    </div>
+
+    <script>
+      const COMPLIMENTS = [
+        ['🌟', 'you are absolutely amazing!!'],
+        ['💕', 'you make the world a better place just by being in it!'],
+        ['✨', 'you are SO smart and creative!!'],
+        ['🌈', 'your smile could light up the whole world!'],
+        ['🦄', 'you are one of a kind — totally unique and magical!!'],
+        ['💛', 'you are braver than you know!'],
+        ['🌸', 'you are incredibly kind and thoughtful!'],
+        ['🎉', 'the world is SO lucky to have you!!'],
+        ['🌺', 'you are beautiful inside and out!'],
+        ['⭐', 'you are a superstar — never forget it!!'],
+        ['🍀', 'anyone who knows you is really lucky!'],
+        ['💫', 'you have the most amazing ideas!!'],
+        ['🎨', 'you are so creative and talented!'],
+        ['🏆', 'you are a total winner at life!!'],
+        ['🤩', 'you inspire everyone around you!'],
+        ['💖', 'you are worthy of all the love in the world!'],
+        ['🌻', 'you are sunshine on a cloudy day!'],
+        ['🦋', 'you are growing and becoming more amazing every day!'],
+        ['🍓', 'you are sweeter than the sweetest thing!'],
+        ['💎', 'you are rare and precious — like a diamond!!'],
+        ['🎵', 'you bring so much joy wherever you go!'],
+        ['🌙', 'you are magical just like the stars!!'],
+        ['🐝', 'you work so hard and it really shows!'],
+        ['🌊', 'your energy is contagious — everyone loves being around you!'],
+        ['🦄', 'you can do ANYTHING you put your mind to!!'],
+        ['💝', 'your heart is so big and full of love!'],
+        ['🌷', 'you are thoughtful and caring in the best way!'],
+        ['🎀', 'you have the best taste in everything!'],
+        ['🌟', 'you are stronger than you think!!'],
+        ['💞', 'you deserve all the happiness in the world!'],
+      ];
+
+      let last = -1;
+      function getCompliment() {
+        let i;
+        do { i = Math.floor(Math.random() * COMPLIMENTS.length); } while (i === last);
+        last = i;
+        return COMPLIMENTS[i];
+      }
+
+      const heartSets = ['💕 💛 💕','🌸 ✨ 🌸','💛 💕 💛','⭐ 💖 ⭐','🌟 💕 🌟','💗 🌈 💗'];
+
+      document.getElementById('comp-btn').addEventListener('click', () => {
+        const [emoji, text] = getCompliment();
+
+        const emojiEl = document.getElementById('comp-emoji');
+        const textEl = document.getElementById('comp-text');
+        const heartsEl = document.getElementById('hearts');
+
+        emojiEl.style.animation = 'none'; textEl.style.animation = 'none';
+        void emojiEl.offsetWidth;
+        emojiEl.style.animation = 'bounce 0.5s ease';
+        textEl.style.animation = 'fadeIn 0.4s ease';
+
+        emojiEl.textContent = emoji;
+        textEl.textContent = text;
+        heartsEl.textContent = heartSets[Math.floor(Math.random() * heartSets.length)];
+      });
+    </script>
+  </body>
+</html>
