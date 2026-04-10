@@ -209,6 +209,18 @@
 
     <div id="frame-count">0 frames snapped</div>
     <div id="frame-strip"></div>
+
+    <!-- save movie -->
+    <div class="caption-row" style="margin-top:0.5rem;">
+      <input id="movie-name-input" type="text" placeholder="name your movie..." maxlength="40" />
+      <button class="btn" id="save-movie-btn" disabled>💾 save!</button>
+    </div>
+    <div id="save-msg" style="font-size:0.8rem;color:#e91e8c;min-height:1rem;text-align:center;"></div>
+
+    <!-- saved movies -->
+    <div style="font-size:0.9rem;letter-spacing:0.08em;align-self:flex-start;width:min(360px,94vw);">🎥 my saved movies!</div>
+    <div id="saved-movies" style="display:flex;flex-direction:column;gap:0.4rem;width:min(360px,94vw);"></div>
+
     <button class="btn danger" id="new-movie-btn" style="margin-top:0.5rem;">🎬 new movie</button>
 
     <script>
@@ -425,7 +437,7 @@
         frameCount.textContent = `${frames.length} frame${frames.length===1?'':'s'} snapped! 📸`;
         document.getElementById('play-btn').disabled = frames.length < 2;
         addThumb(frame, frames.length);
-        updateUndoBtn();
+        updateUndoBtn(); updateSaveBtn();
       });
 
       function addThumb(frame, num) {
@@ -494,11 +506,79 @@
         captionInput.value = ''; captionDisplay.textContent = '';
         currentBg = BACKGROUNDS[0].style; stage.style.background = currentBg;
         document.querySelectorAll('.bg-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+        document.getElementById('wave-layer').classList.remove('active');
         frameCount.textContent = '0 frames snapped';
         frameStrip.innerHTML = '';
         document.getElementById('play-btn').disabled = true;
+        document.getElementById('save-movie-btn').disabled = true;
+        document.getElementById('movie-name-input').value = '';
+        document.getElementById('save-msg').textContent = '';
         renderChars(); updateSizeControls();
       });
+
+      // enable save btn when frames exist
+      function updateSaveBtn() {
+        document.getElementById('save-movie-btn').disabled = frames.length === 0;
+      }
+
+      // save movie
+      function getSavedMovies() {
+        try { return JSON.parse(localStorage.getItem('saved-movies') || '[]'); } catch { return []; }
+      }
+      function storeSavedMovies(list) { localStorage.setItem('saved-movies', JSON.stringify(list)); }
+
+      document.getElementById('save-movie-btn').addEventListener('click', () => {
+        const name = document.getElementById('movie-name-input').value.trim() || 'my movie';
+        const saved = getSavedMovies();
+        saved.unshift({ name, frames: JSON.parse(JSON.stringify(frames)), date: new Date().toLocaleDateString() });
+        storeSavedMovies(saved.slice(0, 10)); // keep max 10
+        document.getElementById('save-msg').textContent = `✅ "${name}" saved!!`;
+        renderSavedMovies();
+      });
+
+      function renderSavedMovies() {
+        const container = document.getElementById('saved-movies');
+        const saved = getSavedMovies();
+        container.innerHTML = '';
+        if (saved.length === 0) {
+          container.innerHTML = '<div style="font-size:0.8rem;color:#e91e8c99;text-align:center;">no saved movies yet! snap some frames and save! 🎬</div>';
+          return;
+        }
+        saved.forEach((movie, i) => {
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;background:#fff0f5;border:2px solid #e91e8c;border-radius:0.75rem;padding:0.5rem 0.8rem;box-shadow:0 0 6px #ffb6d9;';
+          row.innerHTML = `
+            <span style="flex:1;font-size:0.85rem;">🎬 ${movie.name} <span style="color:#e91e8c99;font-size:0.75rem;">(${movie.frames.length} frames · ${movie.date})</span></span>
+          `;
+          const loadBtn = document.createElement('button');
+          loadBtn.className = 'btn'; loadBtn.textContent = '▶️ load';
+          loadBtn.style.fontSize = '0.75rem'; loadBtn.style.padding = '0.3rem 0.6rem';
+          loadBtn.addEventListener('click', () => {
+            if (frames.length > 0 && !confirm('load this movie? your current frames will be lost!')) return;
+            frames = JSON.parse(JSON.stringify(movie.frames));
+            frameStrip.innerHTML = '';
+            frames.forEach((f, n) => addThumb(f, n + 1));
+            frameCount.textContent = `${frames.length} frame${frames.length===1?'':'s'} loaded! 📽️`;
+            document.getElementById('play-btn').disabled = frames.length < 2;
+            document.getElementById('movie-name-input').value = movie.name;
+            updateUndoBtn(); updateSaveBtn();
+          });
+          const delBtn = document.createElement('button');
+          delBtn.className = 'btn danger'; delBtn.textContent = '🗑️';
+          delBtn.style.fontSize = '0.75rem'; delBtn.style.padding = '0.3rem 0.6rem';
+          delBtn.addEventListener('click', () => {
+            const list = getSavedMovies(); list.splice(i, 1); storeSavedMovies(list); renderSavedMovies();
+          });
+          row.appendChild(loadBtn); row.appendChild(delBtn);
+          container.appendChild(row);
+        });
+      }
+
+      // hook save btn enable into snap
+      const origSnap = document.getElementById('snap-btn').onclick;
+      document.getElementById('snap-btn').addEventListener('click', updateSaveBtn);
+
+      renderSavedMovies();
     </script>
   </body>
 </html>
