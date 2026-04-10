@@ -19,6 +19,17 @@
         text-decoration: none; border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
       }
       .back-tab:hover { background: #e91e8c; color: #fff; }
+      .undo-tab {
+        position: fixed; top: 1rem; right: 1rem;
+        background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; letter-spacing: 0.1em;
+        padding: 0.5rem 1rem; border-radius: 0.5rem;
+        border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+        cursor: pointer;
+      }
+      .undo-tab:hover { background: #e91e8c; color: #fff; }
+      .undo-tab:disabled { opacity: 0.4; cursor: default; }
       h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
 
       /* stage */
@@ -135,6 +146,7 @@
   </head>
   <body>
     <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <button class="undo-tab" id="undo-btn" disabled>↩️ UNDO</button>
     <h1>🎬 movie maker!</h1>
 
     <div id="stage-wrap">
@@ -177,11 +189,11 @@
       <button class="btn" id="snap-btn">📸 snap frame!</button>
       <button class="btn" id="play-btn" disabled>▶️ play movie!</button>
       <button class="btn danger" id="clear-stage-btn">🗑️ clear stage</button>
-      <button class="btn danger" id="new-movie-btn">🎬 new movie</button>
     </div>
 
     <div id="frame-count">0 frames snapped</div>
     <div id="frame-strip"></div>
+    <button class="btn danger" id="new-movie-btn" style="margin-top:0.5rem;">🎬 new movie</button>
 
     <script>
       const BACKGROUNDS = [
@@ -369,6 +381,20 @@
 
       captionInput.addEventListener('input', () => { captionDisplay.textContent = captionInput.value; });
 
+      function updateUndoBtn() {
+        document.getElementById('undo-btn').disabled = frames.length === 0;
+      }
+
+      // undo last frame
+      document.getElementById('undo-btn').addEventListener('click', () => {
+        if (frames.length === 0) return;
+        frames.pop();
+        frameStrip.removeChild(frameStrip.lastChild);
+        frameCount.textContent = frames.length === 0 ? '0 frames snapped' : `${frames.length} frame${frames.length===1?'':'s'} snapped! 📸`;
+        document.getElementById('play-btn').disabled = frames.length < 2;
+        updateUndoBtn();
+      });
+
       // snap frame
       document.getElementById('snap-btn').addEventListener('click', () => {
         const frame = {
@@ -380,6 +406,7 @@
         frameCount.textContent = `${frames.length} frame${frames.length===1?'':'s'} snapped! 📸`;
         document.getElementById('play-btn').disabled = frames.length < 2;
         addThumb(frame, frames.length);
+        updateUndoBtn();
       });
 
       function addThumb(frame, num) {
