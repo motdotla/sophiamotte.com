@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mood Tracker! 🌈</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #fde8f0; font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 1rem; padding: 1rem 1rem 3rem; min-height: 100vh; color: #c2185b;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem; background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace; font-size: 0.85rem; font-weight: bold;
+        letter-spacing: 0.1em; padding: 0.5rem 1rem; border-radius: 0.5rem;
+        text-decoration: none; border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+      .subtitle { font-size: 0.85rem; color: #e91e8c99; letter-spacing: 0.1em; }
+
+      .today-card {
+        background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1rem;
+        box-shadow: 0 0 14px #ffb6d9; padding: 1.2rem;
+        width: min(480px, 94vw); display: flex; flex-direction: column; gap: 0.8rem;
+        align-items: center; text-align: center;
+      }
+      .today-card h2 { font-size: 1rem; font-weight: normal; letter-spacing: 0.1em; }
+      .selected-mood { font-size: 3.5rem; min-height: 4rem; line-height: 1; }
+      .mood-label { font-size: 0.85rem; color: #e91e8c99; min-height: 1.2rem; }
+
+      .faces-grid {
+        display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: center;
+        max-height: 180px; overflow-y: auto;
+        background: #fff0f5; border: 2px solid #f5c800; border-radius: 0.75rem;
+        padding: 0.6rem; width: min(480px, 94vw);
+        box-shadow: 0 0 8px #ffb6d9;
+      }
+      .face {
+        font-size: 1.8rem; cursor: pointer; padding: 0.15rem;
+        border-radius: 0.4rem; transition: transform 0.1s; line-height: 1;
+        border: 2px solid transparent;
+      }
+      .face:hover { transform: scale(1.25); }
+      .face.active { border-color: #e91e8c; background: #fde8f0; transform: scale(1.15); }
+
+      .btn {
+        background: #f5c800; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; font-family: "Courier New", Courier, monospace;
+        font-size: 0.9rem; font-weight: bold; padding: 0.5rem 1.4rem;
+        cursor: pointer; letter-spacing: 0.08em;
+      }
+      .btn:hover { background: #e91e8c; color: #fff; }
+      .btn:disabled { opacity: 0.4; cursor: default; }
+
+      .history-title { font-size: 1rem; letter-spacing: 0.1em; align-self: flex-start; width: min(480px, 94vw); }
+      .history {
+        display: flex; flex-direction: column; gap: 0.5rem;
+        width: min(480px, 94vw);
+      }
+      .history-item {
+        background: #fff0f5; border: 2px solid #e91e8c; border-radius: 0.75rem;
+        padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.8rem;
+        box-shadow: 0 0 6px #ffb6d9;
+      }
+      .history-item .h-emoji { font-size: 1.8rem; }
+      .history-item .h-date { font-size: 0.8rem; color: #e91e8c99; flex: 1; }
+      .history-item .h-note { font-size: 0.85rem; }
+
+      .note-input {
+        font-family: "Courier New", Courier, monospace; font-size: 0.85rem;
+        padding: 0.4rem 0.8rem; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; background: #fff0f5; outline: none; width: 100%;
+      }
+      #saved-msg { font-size: 0.9rem; color: #e91e8c; min-height: 1.4rem; }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>🌈 mood tracker!</h1>
+    <p class="subtitle">~ how are you feeling today? ~</p>
+
+    <div class="today-card">
+      <h2>📅 today — <span id="today-date"></span></h2>
+      <div class="selected-mood" id="selected-mood">🤔</div>
+      <div class="mood-label" id="mood-label">pick a face below!</div>
+      <input class="note-input" id="note-input" type="text" placeholder="add a note about your day... (optional)" maxlength="80" />
+      <button class="btn" id="save-btn" disabled>💾 save my mood!</button>
+      <div id="saved-msg"></div>
+    </div>
+
+    <div class="faces-grid" id="faces-grid"></div>
+
+    <div class="history-title">📖 your mood history!</div>
+    <div class="history" id="history"></div>
+
+    <script>
+      const FACES = [
+        ['😀','happy'],['😃','super happy'],['😄','joyful'],['😁','grinning'],['😆','laughing'],
+        ['😅','relieved'],['🤣','rolling laughing'],['😂','crying laughing'],['🙂','okay'],['🙃','silly'],
+        ['😉','winking'],['😊','warm and fuzzy'],['😇','angelic'],['🥰','loved up'],['😍','in love'],
+        ['🤩','starstruck'],['😘','kissy'],['😗','whistling'],['😚','cozy'],['😙','content'],
+        ['🥲','happy crying'],['😋','yummy'],['😛','tongue out'],['😜','silly wink'],['🤪','goofy'],
+        ['😝','super silly'],['🤑','money eyes'],['🤗','huggy'],['🤭','oops'],['🤫','shh'],
+        ['🤔','thinking'],['🤐','zipped up'],['🤨','suspicious'],['😐','neutral'],['😑','expressionless'],
+        ['😶','speechless'],['😏','smirky'],['😒','unamused'],['🙄','eye roll'],['😬','awkward'],
+        ['🤥','fibbing'],['😌','peaceful'],['😔','sad'],['😪','sleepy'],['🤤','drooling'],
+        ['😴','sleeping'],['😷','sick'],['🤒','feverish'],['🤕','hurt'],['🤢','queasy'],
+        ['🤧','sneezy'],['🥵','hot'],['🥶','freezing'],['🥴','dizzy'],['😵','overwhelmed'],
+        ['🤯','mind blown'],['🤠','cowgirl'],['🥳','party time'],['🥸','disguised'],['😎','cool'],
+        ['🤓','nerdy'],['🧐','fancy'],['😕','confused'],['😟','worried'],['🙁','sad face'],
+        ['☹️','frowning'],['😮','surprised'],['😯','shocked'],['😲','amazed'],['😳','flushed'],
+        ['🥺','pleading'],['😦','dismayed'],['😧','anguished'],['😨','scared'],['😰','anxious'],
+        ['😥','disappointed'],['😢','crying'],['😭','sobbing'],['😱','screaming'],['😖','frustrated'],
+        ['😣','struggling'],['😞','downcast'],['😓','stressed'],['😩','weary'],['😫','tired'],
+        ['🥱','yawning'],['😤','huffing'],['😡','angry'],['😠','mad'],['🤬','furious'],
+        ['😈','mischievous'],['👿','super mischievous'],['💀','dead tired'],['☠️','done'],['💩','meh'],
+        ['🤡','clowning'],['👹','grr'],['👺','fierce'],['👻','spooked'],['👽','out of this world'],
+        ['🤖','robotic'],['😺','kitty happy'],['😸','kitty laughing'],['😹','kitty crying laughing'],
+      ];
+
+      const grid = document.getElementById('faces-grid');
+      const selectedMood = document.getElementById('selected-mood');
+      const moodLabel = document.getElementById('mood-label');
+      const saveBtn = document.getElementById('save-btn');
+      const savedMsg = document.getElementById('saved-msg');
+
+      let pickedEmoji = null;
+      let pickedLabel = null;
+
+      // build face grid
+      FACES.forEach(([emoji, label]) => {
+        const span = document.createElement('span');
+        span.className = 'face';
+        span.textContent = emoji;
+        span.title = label;
+        span.addEventListener('click', () => {
+          document.querySelectorAll('.face').forEach(f => f.classList.remove('active'));
+          span.classList.add('active');
+          pickedEmoji = emoji;
+          pickedLabel = label;
+          selectedMood.textContent = emoji;
+          moodLabel.textContent = label;
+          saveBtn.disabled = false;
+          savedMsg.textContent = '';
+        });
+        grid.appendChild(span);
+      });
+
+      // today's date
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      const dateKey = now.toLocaleDateString('en-US');
+      document.getElementById('today-date').textContent = dateStr;
+
+      // load history
+      function getHistory() {
+        try { return JSON.parse(localStorage.getItem('mood-history') || '[]'); } catch { return []; }
+      }
+      function saveHistory(h) { localStorage.setItem('mood-history', JSON.stringify(h)); }
+
+      function renderHistory() {
+        const h = getHistory();
+        const el = document.getElementById('history');
+        el.innerHTML = '';
+        if (h.length === 0) {
+          el.innerHTML = '<div style="font-size:0.85rem;color:#e91e8c99;text-align:center;">no moods saved yet! save your first one! 💕</div>';
+          return;
+        }
+        h.slice().reverse().forEach(entry => {
+          const div = document.createElement('div');
+          div.className = 'history-item';
+          div.innerHTML = `
+            <span class="h-emoji">${entry.emoji}</span>
+            <span class="h-date">${entry.date}</span>
+            <span class="h-note">${entry.label}${entry.note ? ' — ' + entry.note : ''}</span>
+          `;
+          el.appendChild(div);
+        });
+      }
+
+      // check if already saved today
+      const existing = getHistory().find(e => e.dateKey === dateKey);
+      if (existing) {
+        selectedMood.textContent = existing.emoji;
+        moodLabel.textContent = existing.label;
+        savedMsg.textContent = `✅ mood already saved for today!`;
+        saveBtn.disabled = true;
+      }
+
+      renderHistory();
+
+      saveBtn.addEventListener('click', () => {
+        if (!pickedEmoji) return;
+        const h = getHistory().filter(e => e.dateKey !== dateKey);
+        h.push({ emoji: pickedEmoji, label: pickedLabel, date: dateStr, dateKey, note: document.getElementById('note-input').value.trim() });
+        saveHistory(h);
+        saveBtn.disabled = true;
+        savedMsg.textContent = '✅ mood saved!!';
+        renderHistory();
+      });
+    </script>
+  </body>
+</html>
