@@ -365,5 +365,33 @@
       </div>
     </div>
     </div>
+  <div id="brinemark-egg" style="
+    position: fixed; bottom: -6rem; font-size: 2rem; white-space: pre;
+    font-family: 'Courier New', monospace; color: #f5c800;
+    text-shadow: 0 0 8px #ffb6d9; z-index: 999; pointer-events: none;
+    line-height: 1.2;
+  "> _
+( )>
+ ||</div>
+
+  <script>
+    document.addEventListener('keydown', function(e) {
+      if (e.key !== 's' && e.key !== 'S') return;
+      const duck = document.getElementById('brinemark-egg');
+      // reset if already animating
+      duck.style.transition = 'none';
+      duck.style.left = '-6rem';
+      duck.style.bottom = '1rem';
+      void duck.offsetWidth; // force reflow
+      duck.style.transition = 'left 2s ease-in-out';
+      duck.style.left = '110vw';
+
+      // egg appears in the middle then fades
+      setTimeout(() => {
+        duck.style.transition = 'left 0.3s ease-in, opacity 0.5s';
+        duck.style.left = '110vw';
+      }, 1800);
+    });
+  </script>
   </body>
 </html>
