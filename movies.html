@@ -180,6 +180,15 @@
       <button class="btn" id="size-up">➕</button>
       <button class="btn danger" id="delete-btn">🗑️ delete</button>
     </div>
+    <div id="tone-controls" style="display:none;gap:0.3rem;align-items:center;flex-wrap:wrap;justify-content:center;">
+      <span style="font-size:0.8rem;color:#e91e8c99;">skin tone:</span>
+      <button class="btn" data-tone="" style="padding:0.3rem 0.5rem;font-size:0.9rem;" title="default">🫱</button>
+      <button class="btn" data-tone="🏻" style="padding:0.3rem 0.5rem;font-size:0.9rem;" title="light">🏻</button>
+      <button class="btn" data-tone="🏼" style="padding:0.3rem 0.5rem;font-size:0.9rem;" title="medium-light">🏼</button>
+      <button class="btn" data-tone="🏽" style="padding:0.3rem 0.5rem;font-size:0.9rem;" title="medium">🏽</button>
+      <button class="btn" data-tone="🏾" style="padding:0.3rem 0.5rem;font-size:0.9rem;" title="medium-dark">🏾</button>
+      <button class="btn" data-tone="🏿" style="padding:0.3rem 0.5rem;font-size:0.9rem;" title="dark">🏿</button>
+    </div>
 
     <!-- bg picker -->
     <div class="bg-row" id="bg-row"></div>
@@ -192,6 +201,10 @@
     <!-- emoji picker with categories -->
     <div class="emoji-picker-wrap">
       <div class="emoji-tabs" id="emoji-tabs"></div>
+      <div style="padding:0.4rem 0.4rem 0;">
+        <input id="emoji-search" type="text" placeholder="🔍 search emojis..." maxlength="30"
+          style="width:100%;font-family:'Courier New',monospace;font-size:0.8rem;padding:0.3rem 0.6rem;border:2px solid #e91e8c;border-radius:0.5rem;color:#c2185b;background:#fde8f0;outline:none;" />
+      </div>
       <div class="emoji-grid" id="emoji-grid"></div>
     </div>
 
@@ -237,15 +250,23 @@
       ];
 
       const EMOJI_CATS = [
-        { label: '😀', name: 'faces', emojis: ['😀','😂','😍','🥰','😎','🤩','😜','🤪','😴','🥳','😭','😱','🤔','😇','🥺','😡','🤯','🥶','🤠','👻','💀','🤖','👽','🎃','🤡'] },
-        { label: '👧', name: 'people', emojis: ['👧','👦','👩','👨','👶','🧒','👵','👴','🧑','🧙','🧚','🧜','🧛','🦸','🦹','🧝','🧞','🧟','👮','🕵️','💂','🧑‍🍳','👩‍🚀','👩‍🎤','🧑‍🎨','🤸','🧘','🏄','⛷️','🤺'] },
-        { label: '🐶', name: 'animals', emojis: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🦄','🦋','🐝','🐢','🦎','🐍','🦕','🐳','🐬','🦈','🦞','🦜','🦩','🦚','🐧','🦅','🦉','🦇','🐺','🦝','🦨','🦡','🦦','🦥','🐿️','🦔'] },
-        { label: '🍕', name: 'food', emojis: ['🍕','🍔','🌮','🌯','🍜','🍣','🍦','🎂','🍰','🍩','🍪','🍫','🍭','🍿','🧁','🥐','🍓','🍒','🍉','🍌','🍑','🥝','🍇','🫐','🧃','🥤','🍵','☕','🧋','🍺'] },
-        { label: '🚀', name: 'travel', emojis: ['🚀','✈️','🛸','🚁','🚂','🚗','🏎️','🚕','🚙','🚌','🛵','🚲','⛵','🛥️','🚢','🏖️','🏔️','🗼','🗽','🏰','🎡','🎢','🎠','🌋','🏝️','🌍','🌙','⭐','🌟','☀️','🌈','❄️','⛈️'] },
-        { label: '⚽', name: 'sports', emojis: ['⚽','🏀','🏈','⚾','🎾','🏐','🏉','🎱','🏓','🏸','🥊','🥋','⛷️','🏂','🏄','🚴','🤸','🧗','🤺','🏹','🎣','🤿','🎿','🛷','🏆','🥇','🏅','🎖️'] },
-        { label: '🎵', name: 'fun', emojis: ['🎵','🎶','🎸','🎹','🥁','🎺','🎻','🎤','🎧','🎮','🕹️','🎲','🎯','🎨','🖌️','✏️','📚','🔭','🔬','💡','🎪','🎭','🎬','📷','🌺','🌸','🌻','🌷','🍀','🌿','🌴','🌊','🔥','💧','🌪️'] },
-        { label: '💕', name: 'hearts', emojis: ['💕','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💗','💓','💞','💖','💝','💘','❣️','💟','☮️','✨','🌟','💫','⚡','🎉','🎊','🎁','🎀','🏳️‍🌈','🦋','🌈'] },
+        { label: '😀', name: 'faces', emojis: ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','☺️','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤧','🥵','🥶','🥴','😵','🤯','🤠','🥳','🥸','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖','😺','😸','😹','😻','😼','😽','🙀','😿','😾'] },
+        { label: '👧', name: 'people', emojis: ['👶','🧒','👧','👦','🧑','👩','👨','👩‍🦱','👨‍🦱','👩‍🦰','👨‍🦰','👩‍🦳','👨‍🦳','👩‍🦲','👨‍🦲','🧔','👵','👴','👮','🕵️','💂','🧑‍⚕️','👩‍🍳','🧑‍🍳','👩‍🎓','🧑‍🎓','👩‍🏫','👩‍🚀','🧑‍🚀','👩‍✈️','👩‍🎤','🧑‍🎨','👩‍💻','🦸','🦹','🧙','🧚','🧜','🧛','🧝','🧞','🧟','💆','💇','🚶','🧍','🧎','🏃','🤸','🏋️','⛹️','🤺','🏄','🧘','🤾','🏇','🧗','🤼','🤽','🤿','🛹','🛷','🏌️','🤺'] },
+        { label: '🐶', name: 'animals', emojis: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🦟','🦗','🦂','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🐅','🐆','🦓','🦍','🦧','🦣','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🦬','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🦙','🐐','🦌','🐕','🐩','🦮','🐈','🐓','🦃','🦤','🦚','🦜','🦩','🕊️','🐇','🦝','🦨','🦡','🦫','🦦','🦥','🐁','🐀','🐿️','🦔'] },
+        { label: '🍕', name: 'food', emojis: ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🥑','🫒','🥦','🥬','🥒','🌶️','🫑','🧄','🧅','🥔','🍠','🧇','🧆','🧈','🍳','🥚','🍲','🥘','🫕','🥗','🥙','🥪','🌮','🌯','🫔','🍱','🍘','🍙','🍚','🍛','🍜','🍝','🍣','🍤','🍙','🥟','🦪','🍦','🍧','🍨','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥞','🧁','🥐','🍞','🥖','🥨','🧀','🥗','🍔','🍟','🌭','🍕','🫙','🧃','🥤','🍵','☕','🧋','🍺','🥂','🍷','🍸','🍹','🧉'] },
+        { label: '🚀', name: 'travel', emojis: ['🚀','✈️','🛸','🚁','🛩️','🚂','🚃','🚄','🚅','🚆','🚇','🚈','🚉','🚊','🚝','🚞','🚋','🚌','🚍','🚎','🚐','🚑','🚒','🚓','🚔','🚕','🚖','🚗','🚘','🚙','🛻','🚚','🚛','🚜','🏎️','🏍️','🛵','🚲','🛴','🛺','🚨','🚥','🚦','⛽','🛞','🚧','⚓','🪝','⛵','🚤','🛥️','🛳️','⛴️','🚢','🛶','🏖️','🏔️','🗼','🗽','🏰','🏯','🎡','🎢','🎠','⛲','🌋','🏝️','🗺️','🌍','🌎','🌏','🌙','⭐','🌟','💫','☀️','🌤️','⛅','🌈','❄️','⛄','⛈️','🌊','🌬️','🌀','🌪️'] },
+        { label: '⚽', name: 'sports', emojis: ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎱','🪀','🏓','🏸','🏒','🥍','🏑','🏏','🪃','🥅','⛳','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','🛷','⛸️','🥌','🎿','⛷️','🏂','🪂','🏋️','🤼','🤸','🤺','⛹️','🤾','🏌️','🏇','🧘','🏄','🚵','🚴','🧗','🤽','🏊','🏆','🥇','🥈','🥉','🏅','🎖️','🎪','🎭','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🎷','🎺','🎸','🎻','🎲','♟️','🎯','🎳','🎮','🕹️'] },
+        { label: '🎵', name: 'fun', emojis: ['🎵','🎶','🎸','🎹','🥁','🎺','🎻','🎤','🎧','🎼','🎮','🕹️','🎲','♟️','🎯','🎳','🎪','🎭','🎬','📷','📸','📹','🎥','📽️','🎞️','📺','📻','🔭','🔬','💡','🔦','🕯️','🧲','💰','💎','🔑','🗝️','🔒','🔓','🔨','⚙️','🧪','🧫','🧬','💊','🩹','🌺','🌸','🌻','🌷','🌹','🥀','🌼','🍀','☘️','🌿','🌴','🌵','🎋','🎍','🍃','🍂','🍁','🌾','🌊','🔥','💧','🌪️','⚡','🌈','✨','💥','❄️','🌙','⭐','🌟','💫'] },
+        { label: '💕', name: 'hearts', emojis: ['💕','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💗','💓','💞','💖','💝','💘','❣️','💟','❤️‍🔥','❤️‍🩹','🫀','💋','👄','🫦','👅','👁️','👀','🫶','🤝','👏','🙌','👐','🤲','🙏','✌️','🤞','🤟','🤘','👈','👉','👆','👇','☝️','👍','👎','✊','👊','🤛','🤜','👋','🤚','🖐️','✋','🖖','💅','🫰','🤏','👌','🤌','🤙','💪','🦾','🦿','🦵','🦶','👣','🎉','🎊','🎁','🎀','🏳️‍🌈','🦋','🌈','🫧','🫶'] },
       ];
+
+      // flat list for search
+      const ALL_EMOJIS = EMOJI_CATS.flatMap(c => c.emojis);
+
+      // skin tone utils
+      const TONES = ['\u{1F3FB}','\u{1F3FC}','\u{1F3FD}','\u{1F3FE}','\u{1F3FF}'];
+      function stripTone(e) { let r=e; for(const t of TONES) r=r.replaceAll(t,''); return r; }
+      function applyTone(e, tone) { return stripTone(e) + tone; }
 
       let currentBg = BACKGROUNDS[0].style;
       let characters = [];
@@ -285,18 +306,30 @@
       const gridEl = document.getElementById('emoji-grid');
       let activeCat = 0;
 
-      function buildEmojiGrid(catIdx) {
+      function buildEmojiGrid(catIdx, searchTerm) {
         activeCat = catIdx;
         gridEl.innerHTML = '';
-        EMOJI_CATS[catIdx].emojis.forEach(emoji => {
+        const emojis = searchTerm
+          ? ALL_EMOJIS.filter(e => e.includes(searchTerm))
+          : EMOJI_CATS[catIdx].emojis;
+        emojis.forEach(emoji => {
           const span = document.createElement('span');
           span.className = 'char-pick';
           span.textContent = emoji;
           span.addEventListener('click', () => addChar(emoji));
           gridEl.appendChild(span);
         });
-        document.querySelectorAll('.emoji-tab').forEach((t, i) => t.classList.toggle('active', i === catIdx));
+        if (!searchTerm) document.querySelectorAll('.emoji-tab').forEach((t, i) => t.classList.toggle('active', i === catIdx));
       }
+
+      document.getElementById('emoji-search').addEventListener('input', function() {
+        const q = this.value.trim();
+        if (q) {
+          buildEmojiGrid(activeCat, q);
+        } else {
+          buildEmojiGrid(activeCat);
+        }
+      });
 
       EMOJI_CATS.forEach((cat, i) => {
         const tab = document.createElement('button');
@@ -318,14 +351,27 @@
 
       function updateSizeControls() {
         const ch = characters.find(c => c.id === selectedId);
+        const toneEl = document.getElementById('tone-controls');
         if (ch) {
           sizeControls.classList.add('visible');
-          deleteHint.textContent = `✨ selected: ${ch.emoji} — resize or delete it!`;
+          toneEl.style.display = 'flex';
+          deleteHint.textContent = `✨ selected: ${ch.emoji} — resize, recolor, or delete!`;
         } else {
           sizeControls.classList.remove('visible');
+          toneEl.style.display = 'none';
           deleteHint.textContent = '';
         }
       }
+
+      // skin tone buttons
+      document.querySelectorAll('#tone-controls [data-tone]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const ch = characters.find(c => c.id === selectedId);
+          if (!ch) return;
+          ch.emoji = applyTone(ch.emoji, btn.dataset.tone);
+          renderChars(); updateSizeControls();
+        });
+      });
 
       function renderChars() {
         document.querySelectorAll('.char').forEach(el => el.remove());
