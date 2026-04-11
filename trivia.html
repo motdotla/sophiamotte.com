@@ -47,13 +47,90 @@
       }
       .btn:hover { background: #e91e8c; color: #fff; }
       .score-big { font-size: 2rem; color: #e91e8c; }
+
+      /* difficulty screen */
+      #diff-screen {
+        display: flex; flex-direction: column; align-items: center; gap: 1rem;
+        width: min(420px, 94vw);
+      }
+      .diff-subtitle { font-size: 0.85rem; color: #e91e8c99; letter-spacing: 0.1em; }
+      .diff-grid { display: flex; flex-direction: column; gap: 0.7rem; width: 100%; }
+      .diff-btn {
+        border: 3px solid; border-radius: 1rem; padding: 1rem 1.2rem;
+        font-family: "Courier New", Courier, monospace; font-size: 1rem; font-weight: bold;
+        cursor: pointer; letter-spacing: 0.05em; transition: transform 0.1s, box-shadow 0.1s;
+        text-align: left; display: flex; align-items: center; gap: 0.8rem;
+      }
+      .diff-btn:hover { transform: scale(1.02); box-shadow: 0 0 16px #ffb6d9; }
+      .diff-btn:active { transform: scale(0.98); }
+      .diff-btn .diff-label { display: flex; flex-direction: column; }
+      .diff-btn .diff-name { font-size: 1.1rem; }
+      .diff-btn .diff-desc { font-size: 0.72rem; font-weight: normal; opacity: 0.8; margin-top: 0.1rem; }
+
+      .diff-super-easy { background: #e8fff0; border-color: #22c55e; color: #15803d; }
+      .diff-easy       { background: #fffde8; border-color: #84cc16; color: #3f6212; }
+      .diff-medium     { background: #fff8e8; border-color: #f5c800; color: #92400e; }
+      .diff-hard       { background: #fff0e8; border-color: #f97316; color: #9a3412; }
+      .diff-super-hard { background: #ffe8f0; border-color: #e91e8c; color: #9d174d; }
+
+      .diff-badge {
+        font-size: 0.8rem; font-weight: bold; letter-spacing: 0.08em;
+        padding: 0.25rem 0.6rem; border-radius: 0.4rem; border: 2px solid;
+      }
     </style>
   </head>
   <body>
     <a class="back-tab" href="index.html">💕 GO BACK</a>
     <h1>🧠 trivia!</h1>
-    <div class="progress">question <span id="q-num">1</span> of 10 &nbsp;|&nbsp; score: <span id="score">0</span></div>
-    <div class="card" id="card">
+
+    <!-- difficulty pick screen -->
+    <div id="diff-screen">
+      <p class="diff-subtitle">~ pick your difficulty! ~</p>
+      <div class="diff-grid">
+        <button class="diff-btn diff-super-easy" onclick="startGame('super-easy')">
+          <span style="font-size:2rem;">⭐</span>
+          <div class="diff-label">
+            <span class="diff-name">super easy!</span>
+            <span class="diff-desc">great for beginners — super simple questions!</span>
+          </div>
+        </button>
+        <button class="diff-btn diff-easy" onclick="startGame('easy')">
+          <span style="font-size:2rem;">🌟</span>
+          <div class="diff-label">
+            <span class="diff-name">easy</span>
+            <span class="diff-desc">fun and not too tricky!</span>
+          </div>
+        </button>
+        <button class="diff-btn diff-medium" onclick="startGame('medium')">
+          <span style="font-size:2rem;">💫</span>
+          <div class="diff-label">
+            <span class="diff-name">medium</span>
+            <span class="diff-desc">a little bit harder — think carefully!</span>
+          </div>
+        </button>
+        <button class="diff-btn diff-hard" onclick="startGame('hard')">
+          <span style="font-size:2rem;">🔥</span>
+          <div class="diff-label">
+            <span class="diff-name">hard</span>
+            <span class="diff-desc">tricky questions for big brains!</span>
+          </div>
+        </button>
+        <button class="diff-btn diff-super-hard" onclick="startGame('super-hard')">
+          <span style="font-size:2rem;">💀</span>
+          <div class="diff-label">
+            <span class="diff-name">super hard!!</span>
+            <span class="diff-desc">only the smartest can survive this!!</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- game screen -->
+    <div class="progress" id="progress" style="display:none;">
+      question <span id="q-num">1</span> of 10 &nbsp;|&nbsp; score: <span id="score">0</span>
+      &nbsp;|&nbsp; <span id="diff-badge" class="diff-badge"></span>
+    </div>
+    <div class="card" id="card" style="display:none;">
       <div class="question" id="question"></div>
       <div class="answers" id="answers"></div>
       <div class="feedback" id="feedback"></div>
@@ -63,33 +140,115 @@
       <div class="score-big" id="final-score"></div>
       <div id="end-msg"></div>
       <button class="btn" id="play-again-btn">🔄 play again!</button>
+      <button class="btn" id="change-diff-btn" style="margin-top:0.2rem;">⭐ change difficulty</button>
     </div>
 
     <script>
-      const allQuestions = [
-        { q: "🌍 What is the biggest planet in our solar system?", a: ["Jupiter","Mars","Saturn","Earth"], correct: 0 },
-        { q: "🦁 What do you call a group of lions?", a: ["Pack","Pride","Herd","Flock"], correct: 1 },
-        { q: "🌈 How many colors are in a rainbow?", a: ["5","6","7","8"], correct: 2 },
-        { q: "🐳 What is the largest animal on Earth?", a: ["Elephant","Blue Whale","Giraffe","Great White Shark"], correct: 1 },
-        { q: "🍎 What color is the inside of a watermelon?", a: ["Yellow","White","Red","Orange"], correct: 2 },
-        { q: "⭐ How many stars are on the American flag?", a: ["48","50","52","54"], correct: 1 },
-        { q: "🦋 What do caterpillars turn into?", a: ["Moths only","Butterflies only","Butterflies or moths","Beetles"], correct: 2 },
-        { q: "🌊 What is the biggest ocean on Earth?", a: ["Atlantic","Indian","Arctic","Pacific"], correct: 3 },
-        { q: "🎨 What color do you get when you mix red and blue?", a: ["Green","Orange","Purple","Brown"], correct: 2 },
-        { q: "🦒 What is the tallest animal in the world?", a: ["Elephant","Giraffe","Horse","Ostrich"], correct: 1 },
-        { q: "🍌 What color is a banana when it's ripe?", a: ["Green","Red","Yellow","Orange"], correct: 2 },
-        { q: "🐧 Where do penguins live?", a: ["North Pole","Africa","Antarctica","Australia"], correct: 2 },
-        { q: "🌙 How long does it take the Moon to go around Earth?", a: ["1 week","1 month","1 year","1 day"], correct: 1 },
-        { q: "🦷 How many teeth do adult humans have?", a: ["28","30","32","36"], correct: 2 },
-        { q: "🐝 What do bees make?", a: ["Milk","Honey","Butter","Juice"], correct: 1 },
-        { q: "🌺 What do plants need to grow?", a: ["Just water","Sun, water, and soil","Only soil","Only sunlight"], correct: 1 },
-        { q: "🎵 How many strings does a guitar usually have?", a: ["4","5","6","7"], correct: 2 },
-        { q: "🐠 What do fish use to breathe?", a: ["Lungs","Gills","Skin","Nose"], correct: 1 },
-        { q: "❄️ What is frozen water called?", a: ["Steam","Mist","Ice","Fog"], correct: 2 },
-        { q: "🦊 What do foxes eat?", a: ["Only plants","Only fish","Meat and plants","Only bugs"], correct: 2 },
-      ];
+      const QUESTION_BANKS = {
+        'super-easy': [
+          { q: "🌈 What color is the sky on a sunny day?", a: ["Green","Blue","Red","Purple"], correct: 1 },
+          { q: "🍎 What color is an apple?", a: ["Blue","Yellow","Red","Pink"], correct: 2 },
+          { q: "🐶 What sound does a dog make?", a: ["Moo","Woof","Meow","Oink"], correct: 1 },
+          { q: "🌞 What comes up every morning?", a: ["The moon","The stars","The sun","The clouds"], correct: 2 },
+          { q: "🐱 What sound does a cat make?", a: ["Woof","Quack","Meow","Moo"], correct: 2 },
+          { q: "🍌 What color is a banana?", a: ["Purple","Red","Orange","Yellow"], correct: 3 },
+          { q: "🐮 What sound does a cow make?", a: ["Oink","Moo","Baa","Woof"], correct: 1 },
+          { q: "❄️ What is frozen water called?", a: ["Steam","Rain","Ice","Fog"], correct: 2 },
+          { q: "🌙 What do you see in the sky at night?", a: ["The sun","Birds","Stars and moon","Rainbows"], correct: 2 },
+          { q: "🐟 Where do fish live?", a: ["In trees","In the sky","Underground","In water"], correct: 3 },
+          { q: "🍊 What color is an orange?", a: ["Blue","Orange","Green","Pink"], correct: 1 },
+          { q: "🐘 What is the biggest land animal?", a: ["Dog","Cat","Elephant","Rabbit"], correct: 2 },
+          { q: "🌸 What do flowers need to grow?", a: ["Ice and snow","Sun and water","Just wind","Only darkness"], correct: 1 },
+          { q: "🎨 What color do you get mixing red and white?", a: ["Purple","Orange","Pink","Green"], correct: 2 },
+          { q: "🐣 What hatches from eggs?", a: ["Puppies","Kittens","Baby birds","Baby bunnies"], correct: 2 },
+        ],
+        'easy': [
+          { q: "🌍 What is the biggest planet in our solar system?", a: ["Jupiter","Mars","Saturn","Earth"], correct: 0 },
+          { q: "🦁 What do you call a group of lions?", a: ["Pack","Pride","Herd","Flock"], correct: 1 },
+          { q: "🌈 How many colors are in a rainbow?", a: ["5","6","7","8"], correct: 2 },
+          { q: "🐳 What is the largest animal on Earth?", a: ["Elephant","Blue Whale","Giraffe","Great White Shark"], correct: 1 },
+          { q: "⭐ How many stars are on the American flag?", a: ["48","50","52","54"], correct: 1 },
+          { q: "🦋 What do caterpillars turn into?", a: ["Moths only","Butterflies only","Butterflies or moths","Beetles"], correct: 2 },
+          { q: "🌊 What is the biggest ocean on Earth?", a: ["Atlantic","Indian","Arctic","Pacific"], correct: 3 },
+          { q: "🎨 What color do you get when you mix red and blue?", a: ["Green","Orange","Purple","Brown"], correct: 2 },
+          { q: "🦒 What is the tallest animal in the world?", a: ["Elephant","Giraffe","Horse","Ostrich"], correct: 1 },
+          { q: "🐧 Where do penguins live?", a: ["North Pole","Africa","Antarctica","Australia"], correct: 2 },
+          { q: "🌙 How long does it take the Moon to go around Earth?", a: ["1 week","1 month","1 year","1 day"], correct: 1 },
+          { q: "🐝 What do bees make?", a: ["Milk","Honey","Butter","Juice"], correct: 1 },
+          { q: "🎵 How many strings does a guitar usually have?", a: ["4","5","6","7"], correct: 2 },
+          { q: "🐠 What do fish use to breathe?", a: ["Lungs","Gills","Skin","Nose"], correct: 1 },
+          { q: "🦊 What do foxes eat?", a: ["Only plants","Only fish","Meat and plants","Only bugs"], correct: 2 },
+        ],
+        'medium': [
+          { q: "🌍 What is the capital city of France?", a: ["London","Berlin","Paris","Rome"], correct: 2 },
+          { q: "🔢 What is 8 × 7?", a: ["54","56","58","64"], correct: 1 },
+          { q: "🦷 How many teeth do adult humans have?", a: ["28","30","32","36"], correct: 2 },
+          { q: "🌋 What do you call the opening at the top of a volcano?", a: ["Summit","Crater","Cave","Peak"], correct: 1 },
+          { q: "🐬 What are dolphins — fish or mammals?", a: ["Fish","Reptiles","Mammals","Amphibians"], correct: 2 },
+          { q: "🌎 What is the smallest continent?", a: ["Europe","Antarctica","Australia","South America"], correct: 2 },
+          { q: "🔭 What is the closest star to Earth?", a: ["Sirius","Polaris","The Sun","Alpha Centauri"], correct: 2 },
+          { q: "🎹 How many keys does a standard piano have?", a: ["72","76","80","88"], correct: 3 },
+          { q: "🦅 What is the national bird of the USA?", a: ["Eagle","Hawk","Falcon","Owl"], correct: 0 },
+          { q: "💧 What percentage of Earth's surface is covered in water?", a: ["50%","61%","71%","80%"], correct: 2 },
+          { q: "🕷️ How many legs does a spider have?", a: ["6","8","10","12"], correct: 1 },
+          { q: "📏 How many centimeters are in a meter?", a: ["10","50","100","1000"], correct: 2 },
+          { q: "🌡️ At what temperature does water boil?", a: ["90°C","95°C","100°C","110°C"], correct: 2 },
+          { q: "🧪 What gas do plants breathe in?", a: ["Oxygen","Hydrogen","Carbon Dioxide","Nitrogen"], correct: 2 },
+          { q: "🦜 What is the only bird that can fly backwards?", a: ["Parrot","Penguin","Hummingbird","Eagle"], correct: 2 },
+        ],
+        'hard': [
+          { q: "🌍 What is the capital of Australia?", a: ["Sydney","Melbourne","Brisbane","Canberra"], correct: 3 },
+          { q: "🔢 What is the square root of 144?", a: ["11","12","13","14"], correct: 1 },
+          { q: "🧬 What is the powerhouse of the cell?", a: ["Nucleus","Ribosome","Mitochondria","Vacuole"], correct: 2 },
+          { q: "🌊 What is the deepest ocean trench on Earth?", a: ["Puerto Rico Trench","Java Trench","Mariana Trench","Tonga Trench"], correct: 2 },
+          { q: "🎭 Who wrote Romeo and Juliet?", a: ["Charles Dickens","William Shakespeare","Jane Austen","Mark Twain"], correct: 1 },
+          { q: "🚀 What year did humans first land on the Moon?", a: ["1965","1967","1969","1972"], correct: 2 },
+          { q: "🧲 What are the two poles of a magnet called?", a: ["East and West","Up and Down","North and South","Plus and Minus"], correct: 2 },
+          { q: "🌡️ What is absolute zero in Celsius?", a: ["-100°C","-200°C","-273°C","-300°C"], correct: 2 },
+          { q: "🐊 What is the fastest reptile on land?", a: ["Komodo Dragon","Crocodile","Black Mamba","Perentie"], correct: 3 },
+          { q: "🧊 What is the chemical formula for water?", a: ["HO","H2O","H3O","HO2"], correct: 1 },
+          { q: "🌐 How many countries are in the United Nations?", a: ["175","183","193","201"], correct: 2 },
+          { q: "🎻 How many strings does a violin have?", a: ["3","4","5","6"], correct: 1 },
+          { q: "🏔️ What is the tallest mountain on Earth?", a: ["K2","Kangchenjunga","Mount Everest","Lhotse"], correct: 2 },
+          { q: "⚡ Who invented the light bulb?", a: ["Nikola Tesla","Albert Einstein","Thomas Edison","Ben Franklin"], correct: 2 },
+          { q: "🌺 What country did the Olympics start in?", a: ["Italy","Egypt","Greece","Rome"], correct: 2 },
+        ],
+        'super-hard': [
+          { q: "🌍 What is the capital of Kazakhstan?", a: ["Almaty","Astana","Bishkek","Tashkent"], correct: 1 },
+          { q: "🔢 What is 17 × 19?", a: ["313","323","333","343"], correct: 1 },
+          { q: "🧬 How many chromosomes do humans normally have?", a: ["44","46","48","50"], correct: 1 },
+          { q: "🌌 What is the name of our galaxy?", a: ["Andromeda","Milky Way","Triangulum","Whirlpool"], correct: 1 },
+          { q: "🎭 In what year was Shakespeare born?", a: ["1554","1564","1574","1584"], correct: 1 },
+          { q: "🚀 What planet has the most moons?", a: ["Jupiter","Saturn","Uranus","Neptune"], correct: 1 },
+          { q: "🧪 What element has the chemical symbol Au?", a: ["Silver","Copper","Gold","Aluminum"], correct: 2 },
+          { q: "🏛️ What ancient wonder was in Alexandria, Egypt?", a: ["Hanging Gardens","Colossus","Great Lighthouse","Statue of Zeus"], correct: 2 },
+          { q: "🌊 What percentage of Earth's water is fresh water?", a: ["1%","3%","10%","25%"], correct: 1 },
+          { q: "🧠 How many bones does an adult human have?", a: ["196","206","216","226"], correct: 1 },
+          { q: "🦕 How many years ago did dinosaurs go extinct?", a: ["6 million","26 million","46 million","66 million"], correct: 3 },
+          { q: "🎵 What is the speed of sound in air (approx)?", a: ["343 m/s","443 m/s","543 m/s","643 m/s"], correct: 0 },
+          { q: "🌡️ What is the boiling point of nitrogen?", a: ["-100°C","-146°C","-196°C","-250°C"], correct: 2 },
+          { q: "⚗️ What scientist discovered penicillin?", a: ["Louis Pasteur","Marie Curie","Alexander Fleming","Jonas Salk"], correct: 2 },
+          { q: "🌐 What is the longest river in the world?", a: ["Amazon","Congo","Mississippi","Nile"], correct: 3 },
+        ],
+      };
 
-      let questions, current, score;
+      const DIFF_INFO = {
+        'super-easy': { label: '⭐ SUPER EASY', color: '#15803d', bg: '#e8fff0', border: '#22c55e' },
+        'easy':       { label: '🌟 EASY',       color: '#3f6212', bg: '#fffde8', border: '#84cc16' },
+        'medium':     { label: '💫 MEDIUM',     color: '#92400e', bg: '#fff8e8', border: '#f5c800' },
+        'hard':       { label: '🔥 HARD',       color: '#9a3412', bg: '#fff0e8', border: '#f97316' },
+        'super-hard': { label: '💀 SUPER HARD', color: '#9d174d', bg: '#ffe8f0', border: '#e91e8c' },
+      };
+
+      const END_MSGS = {
+        'super-easy': ['keep trying!! 💪', 'getting there! 🌸', 'pretty good! 🌟', 'great job!! 🎉', 'PERFECT!! you\'re amazing!! 🌈✨'],
+        'easy':       ['keep practicing! 💪', 'not bad! 👍', 'good job! 🌟', 'great!! 🎉', 'amazing!! you\'re a genius!! 🧠✨'],
+        'medium':     ['medium is hard! keep going! 💪', 'solid effort! 👍', 'nice work! 💫', 'wow really smart!! 🎉', 'INCREDIBLE!! medium master!! 🧠🏆'],
+        'hard':       ['hard is HARD! don\'t give up! 💪', 'good try!! 🔥', 'impressive!! 🔥🌟', 'you\'re SO smart!! 🎉🔥', 'LEGENDARY!! 🧠🏆🔥'],
+        'super-hard': ['super hard is brutal!! 💀keep going!', 'not bad for super hard!! 💀', 'wow!! super hard is HARD!! 🏆', 'you\'re a genius!! 💀🧠', 'PERFECT on SUPER HARD?! you\'re the smartest!! 💀🏆🧠✨'],
+      };
+
+      let questions, current, score, currentDiff;
 
       function shuffle(arr) {
         const a = [...arr];
@@ -100,10 +259,22 @@
         return a;
       }
 
-      function startGame() {
-        questions = shuffle(allQuestions).slice(0, 10);
+      function startGame(diff) {
+        currentDiff = diff;
+        const info = DIFF_INFO[diff];
+        questions = shuffle(QUESTION_BANKS[diff]).slice(0, 10);
         current = 0; score = 0;
+
+        document.getElementById('diff-screen').style.display = 'none';
         document.getElementById('end-card').style.display = 'none';
+
+        const badge = document.getElementById('diff-badge');
+        badge.textContent = info.label;
+        badge.style.color = info.color;
+        badge.style.background = info.bg;
+        badge.style.borderColor = info.border;
+
+        document.getElementById('progress').style.display = 'block';
         document.getElementById('card').style.display = 'flex';
         showQuestion();
       }
@@ -147,17 +318,21 @@
         current++;
         if (current >= questions.length) {
           document.getElementById('card').style.display = 'none';
+          document.getElementById('progress').style.display = 'none';
           document.getElementById('end-card').style.display = 'flex';
           document.getElementById('final-score').textContent = `${score} / 10`;
-          const msgs = ['keep practicing! 💪', 'not bad! 👍', 'good job! 🌟', 'great!! 🎉', 'amazing!! you\'re a genius!! 🧠✨'];
+          const msgs = END_MSGS[currentDiff];
           document.getElementById('end-msg').textContent = msgs[Math.min(Math.floor(score/2), 4)];
         } else {
           showQuestion();
         }
       });
 
-      document.getElementById('play-again-btn').addEventListener('click', startGame);
-      startGame();
+      document.getElementById('play-again-btn').addEventListener('click', () => startGame(currentDiff));
+      document.getElementById('change-diff-btn').addEventListener('click', () => {
+        document.getElementById('end-card').style.display = 'none';
+        document.getElementById('diff-screen').style.display = 'flex';
+      });
     </script>
   </body>
 </html>
