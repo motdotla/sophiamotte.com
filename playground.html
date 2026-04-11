@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Picture Playground! 🎨</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #fde8f0; font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 0.7rem; padding: 1rem 1rem 2rem; min-height: 100vh; color: #c2185b;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem; background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace; font-size: 0.85rem; font-weight: bold;
+        letter-spacing: 0.1em; padding: 0.5rem 1rem; border-radius: 0.5rem;
+        text-decoration: none; border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.6rem; font-weight: normal; letter-spacing: 0.15em; margin-top: 3.5rem; }
+      .subtitle { font-size: 0.8rem; color: #e91e8c99; letter-spacing: 0.1em; }
+
+      /* stage */
+      #stage {
+        width: min(360px, 94vw);
+        height: min(360px, 94vw);
+        border: 3px solid #e91e8c;
+        border-radius: 1rem;
+        box-shadow: 0 0 18px #ffb6d9;
+        position: relative;
+        overflow: hidden;
+        background: #ffe0f0;
+        touch-action: none;
+        cursor: default;
+      }
+
+      .stage-item {
+        position: absolute;
+        cursor: grab;
+        user-select: none;
+        touch-action: none;
+        line-height: 1;
+      }
+      .stage-item:active { cursor: grabbing; }
+      .stage-item.selected { outline: 2px dashed #e91e8c; outline-offset: 2px; border-radius: 4px; }
+      .stage-item img { display: block; image-rendering: auto; border-radius: 0.5rem; }
+
+      /* background picker */
+      .bg-row {
+        display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center;
+        width: min(360px, 94vw);
+      }
+      .bg-btn {
+        width: 2.2rem; height: 2.2rem; border-radius: 0.5rem;
+        border: 3px solid transparent; cursor: pointer; font-size: 1.1rem;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 0 4px #ffb6d9;
+      }
+      .bg-btn:hover, .bg-btn.active { border-color: #c2185b; transform: scale(1.1); }
+
+      /* emoji picker */
+      .picker-box {
+        width: min(360px, 94vw);
+        background: #fff0f5; border: 2px solid #e91e8c; border-radius: 0.75rem;
+        box-shadow: 0 0 10px #ffb6d9; overflow: hidden;
+      }
+      .emoji-tabs { display: flex; overflow-x: auto; border-bottom: 2px solid #e91e8c; }
+      .emoji-tab {
+        flex-shrink: 0; padding: 0.35rem 0.6rem; font-size: 1.1rem; cursor: pointer;
+        border: none; background: none; border-bottom: 3px solid transparent;
+      }
+      .emoji-tab.active { border-bottom-color: #e91e8c; background: #fde8f0; }
+      .emoji-grid {
+        display: flex; flex-wrap: wrap; gap: 0.15rem; padding: 0.5rem;
+        max-height: 120px; overflow-y: auto;
+      }
+      .e-pick {
+        font-size: 1.6rem; cursor: pointer; padding: 0.1rem;
+        border-radius: 0.3rem; transition: transform 0.1s; line-height: 1;
+      }
+      .e-pick:hover { transform: scale(1.3); background: #fde8f0; }
+
+      /* ai generator */
+      .ai-box {
+        width: min(360px, 94vw);
+        background: #fff0f5; border: 2px solid #f5c800; border-radius: 0.75rem;
+        box-shadow: 0 0 10px #ffb6d9; padding: 0.8rem;
+        display: flex; flex-direction: column; gap: 0.5rem;
+      }
+      .ai-box h3 { font-size: 0.85rem; font-weight: bold; letter-spacing: 0.08em; }
+      .ai-row { display: flex; gap: 0.4rem; }
+      .ai-row input {
+        flex: 1; font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; padding: 0.45rem 0.7rem;
+        border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; background: #fde8f0; outline: none;
+      }
+      .ai-row input:focus { border-color: #f5c800; }
+      .btn {
+        background: #f5c800; border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; padding: 0.45rem 0.8rem;
+        cursor: pointer; letter-spacing: 0.05em; white-space: nowrap;
+      }
+      .btn:hover { background: #e91e8c; color: #fff; }
+      .btn:disabled { opacity: 0.5; cursor: default; }
+      #ai-status { font-size: 0.75rem; color: #e91e8c99; min-height: 1rem; }
+
+      /* selected controls */
+      .controls-row {
+        display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center;
+        width: min(360px, 94vw);
+      }
+      #selected-hint { font-size: 0.75rem; color: #e91e8c99; min-height: 1rem; text-align: center; }
+
+      /* loading spinner */
+      .spinner {
+        display: inline-block; width: 1rem; height: 1rem;
+        border: 2px solid #f5c800; border-top-color: #e91e8c;
+        border-radius: 50%; animation: spin 0.7s linear infinite;
+        vertical-align: middle;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* preview strip for generated images */
+      #gen-strip {
+        display: flex; gap: 0.4rem; flex-wrap: wrap;
+        padding: 0.3rem 0; min-height: 0;
+      }
+      .gen-thumb {
+        width: 3rem; height: 3rem; object-fit: cover; border-radius: 0.4rem;
+        border: 2px solid #f5c800; cursor: pointer; image-rendering: auto;
+        transition: transform 0.1s;
+      }
+      .gen-thumb:hover { transform: scale(1.15); border-color: #e91e8c; }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>🎨 picture playground!</h1>
+    <p class="subtitle">~ make your own scenes! ~</p>
+
+    <!-- stage -->
+    <div id="stage"></div>
+
+    <!-- background picker -->
+    <div class="bg-row" id="bg-row"></div>
+
+    <!-- emoji picker -->
+    <div class="picker-box">
+      <div class="emoji-tabs" id="emoji-tabs"></div>
+      <div class="emoji-grid" id="emoji-grid"></div>
+    </div>
+
+    <!-- ai generator -->
+    <div class="ai-box">
+      <h3>✨ describe something to add!</h3>
+      <div class="ai-row">
+        <input id="ai-input" type="text" placeholder="e.g. a pink unicorn, a rainbow castle..." maxlength="120" />
+        <button class="btn" id="ai-btn">🪄 make it!</button>
+      </div>
+      <div id="ai-status"></div>
+      <div id="gen-strip"></div>
+    </div>
+
+    <!-- controls -->
+    <div class="controls-row">
+      <button class="btn" id="bigger-btn">➕ bigger</button>
+      <button class="btn" id="smaller-btn">➖ smaller</button>
+      <button class="btn" id="delete-btn" style="background:#fff0f5;">🗑️ delete</button>
+      <button class="btn" id="clear-btn" style="background:#fff0f5;">💨 clear all</button>
+    </div>
+    <div id="selected-hint">tap a sticker or generated picture to select it!</div>
+
+    <script>
+      // ── backgrounds ──────────────────────────────────────────
+      const BACKGROUNDS = [
+        { label: '🌸', style: '#ffe0f0' },
+        { label: '☁️', style: 'linear-gradient(180deg,#b3e5fc 0%,#e0f7fa 100%)' },
+        { label: '🌈', style: 'linear-gradient(135deg,#ffb6d9,#ffe082,#b3f0b3,#b3e5fc,#d1b3f0)' },
+        { label: '🌙', style: 'linear-gradient(180deg,#1a1040 0%,#3d2070 100%)' },
+        { label: '🌊', style: 'linear-gradient(180deg,#0277bd 0%,#4fc3f7 60%,#b3e5fc 100%)' },
+        { label: '🌿', style: 'linear-gradient(180deg,#a5d6a7 0%,#c8e6c9 60%,#dcedc8 100%)' },
+        { label: '🌅', style: 'linear-gradient(180deg,#f5c800 0%,#ff8a65 40%,#e91e8c 100%)' },
+        { label: '❄️', style: 'linear-gradient(180deg,#e3f2fd 0%,#bbdefb 100%)' },
+        { label: '🟡', style: '#fffde7' },
+        { label: '⬜', style: '#ffffff' },
+      ];
+
+      const stage = document.getElementById('stage');
+      let currentBg = BACKGROUNDS[0].style;
+      stage.style.background = currentBg;
+
+      const bgRow = document.getElementById('bg-row');
+      BACKGROUNDS.forEach((bg, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'bg-btn' + (i === 0 ? ' active' : '');
+        btn.textContent = bg.label;
+        btn.style.background = bg.style.startsWith('linear') || bg.style.startsWith('#') ? bg.style : bg.style;
+        btn.addEventListener('click', () => {
+          currentBg = bg.style;
+          stage.style.background = bg.style;
+          document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+        bgRow.appendChild(btn);
+      });
+
+      // ── emoji picker ─────────────────────────────────────────
+      const EMOJI_CATS = [
+        { label: '😊', name: 'faces', emojis: ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','🤬','💀','👻','😺','😸','😹','😻','😼','😽','🙀','😿','😾'] },
+        { label: '🐶', name: 'animals', emojis: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🙉','🙊','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦋','🐛','🐌','🐞','🐜','🦗','🐢','🐍','🦎','🦕','🦖','🐳','🐬','🐟','🐠','🐡','🦈','🐙','🦑','🦐','🦞','🦀','🐚','🐌','🦓','🦍','🦧','🦣','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🦬','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🦙','🐐','🦌','🐕','🐩','🦮','🐈','🐓','🦃','🦤','🦚','🦜','🦢','🕊️','🐇','🦝','🦨','🦡','🦫','🦦','🦥','🐿️','🦔'] },
+        { label: '🍓', name: 'food', emojis: ['🍎','🍊','🍋','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🫒','🥑','🍆','🥦','🥬','🌽','🥕','🧅','🥔','🌰','🍞','🥐','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🌭','🍔','🍟','🍕','🌮','🌯','🥗','🍝','🍜','🍲','🍣','🍱','🍛','🍚','🍙','🍘','🦪','🍦','🍧','🍨','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🧁','🍡','🍢','🍧','☕','🍵','🧃','🥤','🧋','🍶','🍾','🧉'] },
+        { label: '🌈', name: 'nature', emojis: ['🌸','🌺','🌻','🌹','🪷','🌷','💐','🌼','🍀','🌿','🌱','🪴','🌵','🎄','🎋','🍁','🍂','🍃','🌾','☀️','🌤️','⛅','🌥️','☁️','🌦️','🌧️','⛈️','🌩️','🌨️','❄️','☃️','⛄','🌈','🌊','💧','🌙','⭐','🌟','💫','✨','☄️','🔥','🌍','🌎','🌏','🪐','🌋','🏔️','⛰️','🏝️','🏜️','🌅','🌄','🌠','🎑','🌃','🏙️'] },
+        { label: '💕', name: 'hearts', emojis: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💕','💞','💓','💗','💖','💝','💘','💟','❣️','💔','♥️','🌹','💌','💋','💍','💎','👑','🎀','🎁','🎊','🎉','🎈','⭐','🌟','✨','💫','🌈','🦄','🍭','🍬','🧁','🍰','🎂'] },
+        { label: '🏠', name: 'places', emojis: ['🏠','🏡','🏰','🏯','🗼','🗽','⛪','🕌','🕍','🛕','🏛️','🏗️','🏘️','🏚️','🏢','🏬','🏣','🏤','🏥','🏦','🏨','🏩','🏪','🏫','🏭','🏟️','🌁','⛲','🎠','🎡','🎢','🎪','🌉','🌃','🏙️','🌆','🌇','🌅','🌄','🏕️','🏖️','🏝️','🏜️','🏔️','⛰️','🗻','🌋','🗾','🏞️'] },
+        { label: '🚀', name: 'fun', emojis: ['🚀','🛸','🌙','⭐','🎮','🕹️','🎲','🎯','🎳','🏆','🥇','🎪','🎭','🎨','🖼️','🎬','🎤','🎧','🎵','🎶','🎸','🎹','🥁','🎷','🎺','🎻','🪄','🎩','🪅','🎭','🎪','🎠','🎡','🎢','🎰','🚂','✈️','🚁','⛵','🛶','🏄','🤿','🧗','🏇','🤸','⛹️','🏊','🚴','🧘','🤺','🥊','🎽','🛹','🛼','🤾'] },
+      ];
+
+      const tabsEl = document.getElementById('emoji-tabs');
+      const gridEl = document.getElementById('emoji-grid');
+
+      EMOJI_CATS.forEach((cat, i) => {
+        const tab = document.createElement('button');
+        tab.className = 'emoji-tab' + (i === 0 ? ' active' : '');
+        tab.textContent = cat.label;
+        tab.title = cat.name;
+        tab.addEventListener('click', () => {
+          gridEl.innerHTML = '';
+          document.querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          cat.emojis.forEach(em => {
+            const span = document.createElement('span');
+            span.className = 'e-pick';
+            span.textContent = em;
+            span.addEventListener('click', () => addEmoji(em));
+            gridEl.appendChild(span);
+          });
+        });
+        tabsEl.appendChild(tab);
+      });
+      tabsEl.children[0].click();
+
+      // ── items on stage ───────────────────────────────────────
+      let items = [];
+      let selectedId = null;
+      let idCounter = 0;
+
+      function addEmoji(em) {
+        const id = ++idCounter;
+        items.push({ id, type: 'emoji', content: em, x: 30 + Math.random()*40, y: 30 + Math.random()*40, size: 3 });
+        selectedId = id;
+        render();
+      }
+
+      function addImage(src) {
+        const id = ++idCounter;
+        items.push({ id, type: 'img', src, x: 20 + Math.random()*30, y: 20 + Math.random()*30, size: 100 });
+        selectedId = id;
+        render();
+      }
+
+      function render() {
+        // remove old elements
+        stage.querySelectorAll('.stage-item').forEach(el => el.remove());
+        items.forEach(item => {
+          let el;
+          if (item.type === 'emoji') {
+            el = document.createElement('span');
+            el.textContent = item.content;
+            el.style.fontSize = item.size + 'px';
+          } else {
+            el = document.createElement('div');
+            const img = document.createElement('img');
+            img.src = item.src;
+            img.style.width = item.size + 'px';
+            img.style.height = item.size + 'px';
+            img.draggable = false;
+            el.appendChild(img);
+          }
+          el.className = 'stage-item' + (item.id === selectedId ? ' selected' : '');
+          el.style.left = item.x + '%';
+          el.style.top = item.y + '%';
+          el.dataset.id = item.id;
+
+          makeDraggable(el, item);
+          el.addEventListener('click', e => { e.stopPropagation(); selectedId = item.id; render(); updateHint(); });
+          stage.appendChild(el);
+        });
+        updateHint();
+      }
+
+      stage.addEventListener('click', () => { selectedId = null; render(); });
+
+      function makeDraggable(el, item) {
+        let dragging = false, ox, oy, sr, st;
+        function startDrag(cx, cy) {
+          dragging = true;
+          const rect = stage.getBoundingClientRect();
+          ox = cx - rect.left - (item.x / 100) * rect.width;
+          oy = cy - rect.top - (item.y / 100) * rect.height;
+          selectedId = item.id;
+          render();
+        }
+        function moveDrag(cx, cy) {
+          if (!dragging) return;
+          const rect = stage.getBoundingClientRect();
+          item.x = Math.max(0, Math.min(90, ((cx - rect.left - ox) / rect.width) * 100));
+          item.y = Math.max(0, Math.min(90, ((cy - rect.top - oy) / rect.height) * 100));
+          el.style.left = item.x + '%';
+          el.style.top = item.y + '%';
+        }
+        el.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); startDrag(e.clientX, e.clientY); });
+        window.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+        window.addEventListener('mouseup', () => { dragging = false; });
+        el.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+        el.addEventListener('touchmove', e => { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+        el.addEventListener('touchend', () => { dragging = false; });
+      }
+
+      function updateHint() {
+        const item = items.find(i => i.id === selectedId);
+        document.getElementById('selected-hint').textContent = item
+          ? `✨ selected! resize or delete it!`
+          : 'tap a sticker or generated picture to select it!';
+      }
+
+      document.getElementById('bigger-btn').addEventListener('click', () => {
+        const item = items.find(i => i.id === selectedId);
+        if (!item) return;
+        item.size = Math.min(item.type === 'emoji' ? 200 : 300, item.size * 1.2);
+        render();
+      });
+      document.getElementById('smaller-btn').addEventListener('click', () => {
+        const item = items.find(i => i.id === selectedId);
+        if (!item) return;
+        item.size = Math.max(item.type === 'emoji' ? 16 : 30, item.size / 1.2);
+        render();
+      });
+      document.getElementById('delete-btn').addEventListener('click', () => {
+        items = items.filter(i => i.id !== selectedId);
+        selectedId = null;
+        render();
+      });
+      document.getElementById('clear-btn').addEventListener('click', () => {
+        items = []; selectedId = null; render();
+      });
+
+      // ── AI image generator ───────────────────────────────────
+      const aiBtn = document.getElementById('ai-btn');
+      const aiInput = document.getElementById('ai-input');
+      const aiStatus = document.getElementById('ai-status');
+      const genStrip = document.getElementById('gen-strip');
+
+      aiBtn.addEventListener('click', generateImage);
+      aiInput.addEventListener('keydown', e => { if (e.key === 'Enter') generateImage(); });
+
+      function generateImage() {
+        const prompt = aiInput.value.trim();
+        if (!prompt) return;
+        aiBtn.disabled = true;
+        aiStatus.innerHTML = '<span class="spinner"></span> generating... this might take a few seconds!';
+
+        const seed = Math.floor(Math.random() * 99999);
+        const fullPrompt = 'cute cartoon illustration, colorful, kid friendly, ' + prompt;
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=256&height=256&nologo=true&seed=${seed}`;
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          aiStatus.textContent = '✅ done! added to your scene!';
+          aiBtn.disabled = false;
+
+          // add to strip
+          const thumb = document.createElement('img');
+          thumb.className = 'gen-thumb';
+          thumb.src = url;
+          thumb.title = 'click to add again!';
+          thumb.addEventListener('click', () => addImage(url));
+          genStrip.appendChild(thumb);
+
+          addImage(url);
+          aiInput.value = '';
+          setTimeout(() => aiStatus.textContent = '', 2000);
+        };
+        img.onerror = () => {
+          aiStatus.textContent = '😅 oops! try again or try a different description!';
+          aiBtn.disabled = false;
+        };
+        img.src = url;
+      }
+    </script>
+  </body>
+</html>
