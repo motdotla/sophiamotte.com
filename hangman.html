@@ -60,6 +60,28 @@
       .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
       #message { font-size: 1rem; letter-spacing: 0.05em; min-height: 1.5rem; text-align: center; }
 
+      /* vs computer screen */
+      #vs-screen {
+        background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1rem;
+        box-shadow: 0 0 14px #ffb6d9; padding: 1.5rem;
+        width: min(360px, 94vw); display: flex; flex-direction: column;
+        align-items: center; gap: 1rem; text-align: center;
+      }
+      #vs-screen h2 { font-size: 1.1rem; font-weight: normal; letter-spacing: 0.1em; }
+      #vs-screen p { font-size: 0.8rem; color: #e91e8c99; }
+      #vs-word-input {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1.2rem; padding: 0.5rem 1rem;
+        border: 2px solid #e91e8c; border-radius: 0.5rem;
+        color: #c2185b; background: #fff0f5;
+        text-align: center; width: 100%; outline: none;
+        letter-spacing: 0.2em; text-transform: uppercase;
+      }
+      #computer-thinking {
+        font-size: 0.9rem; color: #e91e8c; min-height: 1.5rem;
+        letter-spacing: 0.05em; text-align: center; font-weight: bold;
+      }
+
       /* friend mode screen */
       #friend-screen {
         background: #fff0f5; border: 3px solid #e91e8c; border-radius: 1rem;
@@ -83,6 +105,15 @@
     <a class="back-tab" href="index.html">💕 GO BACK</a>
     <h1>✏️ hangman!</h1>
 
+    <!-- vs computer word entry screen -->
+    <div id="vs-screen" style="display:none;">
+      <h2>🤖 vs computer!</h2>
+      <p>you pick a word and the computer tries to guess it! 👀</p>
+      <input id="vs-word-input" type="password" maxlength="20" placeholder="type your word..." autocomplete="off" />
+      <p id="vs-word-error" style="color:#e91e8c; min-height:1rem;"></p>
+      <button class="btn" id="start-vs-btn">✅ done! let the computer guess!</button>
+    </div>
+
     <!-- friend word entry screen -->
     <div id="friend-screen" style="display:none;">
       <h2>👫 with friends!</h2>
@@ -102,6 +133,7 @@
       <div class="btn-row">
         <button class="btn" id="new-btn">🔄 random word</button>
         <button class="btn" id="friend-btn">👫 with friends!</button>
+        <button class="btn" id="vs-btn">🤖 vs computer!</button>
       </div>
     </div>
 
@@ -165,9 +197,11 @@
         guessed = new Set();
         wrong = 0;
         over = false;
+        if (vsTimer) { clearTimeout(vsTimer); vsTimer = null; }
         document.getElementById('wrong').textContent = '';
         document.getElementById('message').textContent = '';
         document.getElementById('friend-screen').style.display = 'none';
+        document.getElementById('vs-screen').style.display = 'none';
         document.getElementById('game-screen').style.display = 'flex';
         document.getElementById('game-screen').style.flexDirection = 'column';
         document.getElementById('game-screen').style.alignItems = 'center';
@@ -177,6 +211,9 @@
       }
 
       function newGame() {
+        vsMode = false;
+        const thinkEl = document.getElementById('computer-thinking');
+        if (thinkEl) thinkEl.textContent = '';
         startGame(words[Math.floor(Math.random() * words.length)]);
       }
 
@@ -199,6 +236,7 @@
           const btn = document.createElement('button');
           btn.className = 'key';
           btn.textContent = l;
+          btn.disabled = vsMode;
           btn.addEventListener('click', () => guess(l, btn));
           kb.appendChild(btn);
         });
@@ -242,6 +280,87 @@
         document.getElementById('word-input').value = '';
         document.getElementById('word-error').textContent = '';
       });
+
+      // vs computer mode
+      const COMPUTER_ORDER = 'ETAOINSRHLDCUMFPGWYBVKXJQZ';
+      let vsMode = false;
+      let vsGuessIndex = 0;
+      let vsTimer = null;
+
+      document.getElementById('vs-btn').addEventListener('click', () => {
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('vs-screen').style.display = 'flex';
+        document.getElementById('vs-word-input').value = '';
+        document.getElementById('vs-word-error').textContent = '';
+      });
+
+      document.getElementById('start-vs-btn').addEventListener('click', () => {
+        const val = document.getElementById('vs-word-input').value.trim().replace(/[^a-zA-Z]/g, '');
+        if (val.length < 2) {
+          document.getElementById('vs-word-error').textContent = 'please type at least 2 letters!';
+          return;
+        }
+        startVsGame(val);
+      });
+
+      function startVsGame(w) {
+        vsMode = true;
+        vsGuessIndex = 0;
+        if (vsTimer) clearTimeout(vsTimer);
+        startGame(w);
+        // add thinking label above keyboard
+        let thinkEl = document.getElementById('computer-thinking');
+        if (!thinkEl) {
+          thinkEl = document.createElement('div');
+          thinkEl.id = 'computer-thinking';
+          document.getElementById('keyboard').before(thinkEl);
+        }
+        thinkEl.textContent = '🤖 computer is thinking...';
+        // disable keyboard (computer plays)
+        document.querySelectorAll('.key').forEach(b => b.disabled = true);
+        scheduleComputerGuess();
+      }
+
+      function scheduleComputerGuess() {
+        vsTimer = setTimeout(doComputerGuess, 1200);
+      }
+
+      function doComputerGuess() {
+        if (over) return;
+        // find next unguessed letter in order
+        while (vsGuessIndex < COMPUTER_ORDER.length && guessed.has(COMPUTER_ORDER[vsGuessIndex])) {
+          vsGuessIndex++;
+        }
+        if (vsGuessIndex >= COMPUTER_ORDER.length) return;
+        const letter = COMPUTER_ORDER[vsGuessIndex];
+        vsGuessIndex++;
+
+        const thinkEl = document.getElementById('computer-thinking');
+        thinkEl.textContent = `🤖 computer guesses... ${letter}!`;
+
+        // apply guess manually
+        guessed.add(letter);
+        if (word.includes(letter)) {
+          render();
+          if ([...word].every(l => guessed.has(l))) {
+            over = true;
+            thinkEl.textContent = '';
+            document.getElementById('message').textContent = '🤖 computer figured it out!! better luck next time! 😄';
+            return;
+          }
+        } else {
+          wrong++;
+          document.getElementById('wrong').textContent = [...guessed].filter(l => !word.includes(l)).join(' ');
+          render();
+          if (wrong >= 6) {
+            over = true;
+            thinkEl.textContent = '';
+            document.getElementById('message').textContent = `🎉 you beat the computer!! it couldn't guess "${word}"!! amazing!!`;
+            return;
+          }
+        }
+        scheduleComputerGuess();
+      }
 
       document.getElementById('start-friend-btn').addEventListener('click', () => {
         const val = document.getElementById('word-input').value.trim().replace(/[^a-zA-Z]/g, '');
