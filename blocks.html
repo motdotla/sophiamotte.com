@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Block Builder! ⛏️</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #1a1a2e; font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 0.7rem; padding: 0.7rem 0.7rem 2rem; min-height: 100vh; color: #fff;
+      }
+      .back-tab {
+        position: fixed; top: 1rem; left: 1rem; background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace; font-size: 0.85rem; font-weight: bold;
+        letter-spacing: 0.1em; padding: 0.5rem 1rem; border-radius: 0.5rem;
+        text-decoration: none; border: 2px solid #e91e8c; box-shadow: 0 0 10px #ffb6d9; z-index: 10;
+      }
+      .back-tab:hover { background: #e91e8c; color: #fff; }
+      h1 { font-size: 1.5rem; font-weight: bold; letter-spacing: 0.12em; margin-top: 3.5rem; color: #f5c800; text-shadow: 0 0 10px #f5c800aa; }
+      .subtitle { font-size: 0.75rem; color: #aaa; letter-spacing: 0.1em; }
+
+      #game-canvas {
+        image-rendering: pixelated;
+        border: 3px solid #f5c800;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 20px #f5c80066;
+        cursor: crosshair;
+        touch-action: none;
+        max-width: 94vw;
+      }
+
+      /* palette */
+      .palette-wrap {
+        background: #16213e; border: 2px solid #f5c800; border-radius: 0.75rem;
+        padding: 0.6rem; width: min(540px, 94vw);
+        box-shadow: 0 0 10px #f5c80033;
+      }
+      .palette-title { font-size: 0.7rem; color: #f5c800; letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+      .palette {
+        display: flex; flex-wrap: wrap; gap: 0.3rem;
+      }
+      .block-btn {
+        display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+        cursor: pointer; padding: 0.25rem; border-radius: 0.4rem;
+        border: 2px solid transparent; transition: border-color 0.1s, transform 0.1s;
+      }
+      .block-btn:hover { transform: scale(1.1); border-color: #fff4; }
+      .block-btn.active { border-color: #f5c800; background: #f5c80022; }
+      .block-preview {
+        width: 36px; height: 36px; image-rendering: pixelated;
+        border-radius: 3px; border: 1px solid #fff2;
+      }
+      .block-label { font-size: 0.55rem; color: #ccc; letter-spacing: 0.03em; text-align: center; }
+
+      /* controls */
+      .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+      .ctrl-btn {
+        background: #16213e; border: 2px solid #f5c800; border-radius: 0.5rem;
+        color: #f5c800; font-family: "Courier New", Courier, monospace;
+        font-size: 0.8rem; font-weight: bold; padding: 0.4rem 0.9rem;
+        cursor: pointer; letter-spacing: 0.06em;
+      }
+      .ctrl-btn:hover { background: #f5c800; color: #1a1a2e; }
+
+      #selected-label { font-size: 0.8rem; color: #f5c800; letter-spacing: 0.06em; }
+    </style>
+  </head>
+  <body>
+    <a class="back-tab" href="index.html">💕 GO BACK</a>
+    <h1>⛏️ block builder!</h1>
+    <p class="subtitle">~ build anything you can imagine! ~</p>
+
+    <canvas id="game-canvas"></canvas>
+    <div id="selected-label">selected: 🌿 grass</div>
+
+    <div class="palette-wrap">
+      <div class="palette-title">BLOCKS — tap to select, then click on the world to place!</div>
+      <div class="palette" id="palette"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="ctrl-btn" id="clear-btn">🗑️ clear</button>
+      <button class="ctrl-btn" id="flat-btn">🌍 new world</button>
+      <button class="ctrl-btn" id="save-btn">💾 save image</button>
+    </div>
+
+    <script>
+      const COLS = 22, ROWS = 14, CELL = 28;
+      const W = COLS * CELL, H = ROWS * CELL;
+
+      const canvas = document.getElementById('game-canvas');
+      canvas.width = W; canvas.height = H;
+      // scale to fit screen
+      const maxW = Math.min(W, window.innerWidth * 0.94);
+      canvas.style.width = maxW + 'px';
+      canvas.style.height = (maxW / W * H) + 'px';
+
+      const ctx = canvas.getContext('2d');
+
+      // ── block definitions ──────────────────────────────────
+      const BLOCKS = {
+        eraser: { name: 'eraser',   emoji: '🧹' },
+        grass:  { name: 'grass',    emoji: '🌿' },
+        dirt:   { name: 'dirt',     emoji: '🟫' },
+        stone:  { name: 'stone',    emoji: '🪨' },
+        wood:   { name: 'wood',     emoji: '🪵' },
+        leaves: { name: 'leaves',   emoji: '🍃' },
+        sand:   { name: 'sand',     emoji: '🏖️' },
+        water:  { name: 'water',    emoji: '💧' },
+        lava:   { name: 'lava',     emoji: '🌋' },
+        snow:   { name: 'snow',     emoji: '❄️' },
+        brick:  { name: 'brick',    emoji: '🧱' },
+        diamond:{ name: 'diamond',  emoji: '💎' },
+        gold:   { name: 'gold',     emoji: '✨' },
+        obsidian:{name: 'obsidian', emoji: '🌑' },
+        glass:  { name: 'glass',    emoji: '🪟' },
+        tnt:    { name: 'TNT',      emoji: '🔥' },
+        cloud:  { name: 'cloud',    emoji: '☁️' },
+        flower: { name: 'flower',   emoji: '🌸' },
+      };
+
+      // draw a block onto any ctx at (px, py) with size s
+      function drawBlockAt(ctx, type, px, py, s) {
+        const s2 = s / 2, s4 = s / 4, s8 = s / 8;
+        ctx.save();
+        ctx.translate(px, py);
+
+        switch(type) {
+          case 'grass':
+            ctx.fillStyle = '#5d8a3c'; ctx.fillRect(0, 0, s, s4);
+            ctx.fillStyle = '#795548'; ctx.fillRect(0, s4, s, s - s4);
+            // grass tufts
+            ctx.fillStyle = '#4caf50';
+            for (let i = 2; i < s-2; i += 4) { ctx.fillRect(i, 1, 2, s4-2); }
+            break;
+          case 'dirt':
+            ctx.fillStyle = '#795548'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#6d4c41';
+            for (let i = 0; i < 6; i++) {
+              ctx.fillRect(3 + (i*5)%s, 3 + (i*7)%s, 3, 2);
+            }
+            break;
+          case 'stone':
+            ctx.fillStyle = '#9e9e9e'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#757575';
+            ctx.fillRect(s2, 0, 1, s); ctx.fillRect(0, s2, s, 1);
+            ctx.fillRect(0, 0, s2, 1); ctx.fillRect(s2, s2, s2, 1);
+            break;
+          case 'wood':
+            ctx.fillStyle = '#8d6e63'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#6d4c41';
+            for (let i = s4; i < s; i += s4) { ctx.fillRect(i, 0, 2, s); }
+            ctx.fillStyle = '#a1887f';
+            ctx.fillRect(0, s4, s, 2); ctx.fillRect(0, s - s4, s, 2);
+            break;
+          case 'leaves':
+            ctx.fillStyle = '#388e3c'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#4caf50';
+            for (let i = 0; i < 5; i++) {
+              ctx.fillRect(2 + (i*6)%s, 2 + (i*5)%s, 4, 4);
+            }
+            ctx.fillStyle = '#2e7d32';
+            for (let i = 0; i < 4; i++) {
+              ctx.fillRect(4 + (i*7)%s, 4 + (i*6)%s, 3, 3);
+            }
+            break;
+          case 'sand':
+            ctx.fillStyle = '#fdd835'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#f9a825';
+            for (let i = 0; i < 8; i++) {
+              ctx.fillRect(2 + (i*4)%(s-4), 2 + (i*5)%(s-4), 2, 2);
+            }
+            break;
+          case 'water':
+            ctx.fillStyle = '#1565c0'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#1e88e5';
+            for (let i = 0; i < 3; i++) { ctx.fillRect(0, s4 + i*s4, s, 2); }
+            ctx.fillStyle = '#64b5f680';
+            ctx.fillRect(2, 2, s-4, s4-2);
+            break;
+          case 'lava':
+            ctx.fillStyle = '#bf360c'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#e64a19';
+            ctx.fillRect(s4, 0, s2, s); ctx.fillRect(0, s4, s, s2);
+            ctx.fillStyle = '#ffcc02';
+            for (let i = 0; i < 3; i++) {
+              ctx.fillRect(3 + (i*8)%(s-6), 3 + (i*9)%(s-6), 4, 4);
+            }
+            break;
+          case 'snow':
+            ctx.fillStyle = '#e3f2fd'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#bbdefb'; ctx.fillRect(0, s-s4, s, s4);
+            ctx.fillStyle = '#fff';
+            for (let i = 0; i < 5; i++) {
+              ctx.fillRect(2 + (i*5)%(s-4), 2 + (i*4)%(s/2), 2, 2);
+            }
+            break;
+          case 'brick':
+            ctx.fillStyle = '#c62828'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#8d6e63';
+            ctx.fillRect(0, s2-1, s, 2);
+            ctx.fillRect(s4, 0, 2, s2); ctx.fillRect(s4*3, s2, 2, s2);
+            break;
+          case 'diamond':
+            ctx.fillStyle = '#006064'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#00bcd4'; ctx.fillRect(s4, s4, s2, s2);
+            ctx.fillStyle = '#80deea';
+            ctx.fillRect(s4, s4, 3, 3); ctx.fillRect(s-s4-3, s-s4-3, 3, 3);
+            ctx.fillRect(s2-1, s4, 2, s2);
+            break;
+          case 'gold':
+            ctx.fillStyle = '#e65100'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#f9a825'; ctx.fillRect(s8, s8, s-s4, s-s4);
+            ctx.fillStyle = '#ffee58';
+            ctx.fillRect(s8+2, s8+2, s4, s4);
+            break;
+          case 'obsidian':
+            ctx.fillStyle = '#0d0020'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#311b92'; ctx.fillRect(s4, s4, s2, s2);
+            ctx.fillStyle = '#4a148c';
+            ctx.fillRect(s4, s4, 3, s2); ctx.fillRect(s4, s4, s2, 3);
+            break;
+          case 'glass':
+            ctx.fillStyle = '#b3e5fc44'; ctx.fillRect(0, 0, s, s);
+            ctx.strokeStyle = '#b3e5fc'; ctx.lineWidth = 2;
+            ctx.strokeRect(1, 1, s-2, s-2);
+            ctx.fillStyle = '#fff8';
+            ctx.fillRect(s4, s4, s8, s8);
+            break;
+          case 'tnt':
+            ctx.fillStyle = '#c62828'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, s4, s, s2);
+            ctx.fillStyle = '#c62828';
+            ctx.font = `bold ${s4}px Courier New`;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('TNT', s2, s2);
+            break;
+          case 'cloud':
+            ctx.fillStyle = '#eceff1'; ctx.fillRect(0, 0, s, s);
+            ctx.fillStyle = '#fff'; ctx.fillRect(s8, 0, s-s4, s);
+            ctx.fillStyle = '#cfd8dc'; ctx.fillRect(0, s-s4, s, s4);
+            break;
+          case 'flower':
+            // stem
+            ctx.fillStyle = '#4caf50'; ctx.fillRect(s2-1, s4*2, 3, s2);
+            // petals
+            const pc = ['#e91e8c','#f5c800','#e91e8c','#fff'];
+            const pos = [[0,-1],[1,0],[0,1],[-1,0]];
+            pos.forEach(([dx,dy],i) => {
+              ctx.fillStyle = pc[i];
+              ctx.fillRect(s2-2+dx*s4, s4-2+dy*s4, 5, 5);
+            });
+            ctx.fillStyle = '#ffee58'; ctx.fillRect(s2-2, s4-2, 5, 5);
+            break;
+        }
+
+        // subtle border
+        ctx.strokeStyle = '#0005'; ctx.lineWidth = 0.5;
+        ctx.strokeRect(0.25, 0.25, s-0.5, s-0.5);
+        ctx.restore();
+      }
+
+      // ── grid ───────────────────────────────────────────────
+      let grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
+
+      function generateWorld() {
+        grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
+        // sky = nothing, clouds at row 1-2
+        for (let c = 0; c < COLS; c++) {
+          if (Math.random() < 0.25) grid[1][c] = 'cloud';
+          if (Math.random() < 0.15 && c > 0 && grid[1][c-1] === 'cloud') grid[1][c] = 'cloud';
+        }
+        // terrain - slight variation
+        const groundRow = 8;
+        for (let c = 0; c < COLS; c++) {
+          const bump = Math.random() < 0.2 ? (Math.random() < 0.5 ? -1 : 0) : 0;
+          const gl = groundRow + bump;
+          grid[gl][c] = 'grass';
+          grid[gl+1] && (grid[gl+1][c] = 'dirt');
+          grid[gl+2] && (grid[gl+2][c] = 'dirt');
+          for (let r = gl+3; r < ROWS; r++) grid[r][c] = 'stone';
+          // flowers on surface
+          if (Math.random() < 0.12 && gl > 0) grid[gl-1][c] = 'flower';
+        }
+        // hidden diamond/gold veins underground
+        for (let i = 0; i < 4; i++) {
+          const r = 11 + Math.floor(Math.random()*2);
+          const c = Math.floor(Math.random() * COLS);
+          if (grid[r] && grid[r][c] === 'stone') grid[r][c] = 'diamond';
+        }
+        for (let i = 0; i < 4; i++) {
+          const r = 10 + Math.floor(Math.random()*2);
+          const c = Math.floor(Math.random() * COLS);
+          if (grid[r] && grid[r][c] === 'stone') grid[r][c] = 'gold';
+        }
+        drawWorld();
+      }
+
+      function drawWorld() {
+        // sky gradient
+        const sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#1565c0'); sky.addColorStop(1, '#42a5f5');
+        ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            if (grid[r][c]) drawBlockAt(ctx, grid[r][c], c*CELL, r*CELL, CELL);
+          }
+        }
+      }
+
+      // ── palette ─────────────────────────────────────────────
+      let selectedBlock = 'grass';
+
+      const palEl = document.getElementById('palette');
+      const previewCanvas = document.createElement('canvas');
+      previewCanvas.width = 36; previewCanvas.height = 36;
+      const previewCtx = previewCanvas.getContext('2d');
+
+      function makePreview(type) {
+        const pc = document.createElement('canvas');
+        pc.width = 36; pc.height = 36;
+        const pctx = pc.getContext('2d');
+        if (type === 'eraser') {
+          pctx.fillStyle = '#333'; pctx.fillRect(0,0,36,36);
+          pctx.font = '22px serif'; pctx.textAlign='center'; pctx.textBaseline='middle';
+          pctx.fillText('🧹', 18, 18);
+        } else {
+          drawBlockAt(pctx, type, 0, 0, 36);
+        }
+        return pc.toDataURL();
+      }
+
+      Object.entries(BLOCKS).forEach(([key, info]) => {
+        const btn = document.createElement('div');
+        btn.className = 'block-btn' + (key === selectedBlock ? ' active' : '');
+        btn.dataset.key = key;
+        const img = document.createElement('img');
+        img.className = 'block-preview';
+        img.src = makePreview(key);
+        const label = document.createElement('div');
+        label.className = 'block-label';
+        label.textContent = info.name;
+        btn.appendChild(img); btn.appendChild(label);
+        btn.addEventListener('click', () => {
+          selectedBlock = key;
+          document.querySelectorAll('.block-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById('selected-label').textContent =
+            `selected: ${info.emoji} ${info.name}`;
+        });
+        palEl.appendChild(btn);
+      });
+
+      // ── painting ─────────────────────────────────────────────
+      let painting = false;
+
+      function getCellFromEvent(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = W / rect.width, scaleY = H / rect.height;
+        const cx = e.clientX ?? e.touches[0].clientX;
+        const cy = e.clientY ?? e.touches[0].clientY;
+        const c = Math.floor((cx - rect.left) * scaleX / CELL);
+        const r = Math.floor((cy - rect.top) * scaleY / CELL);
+        return { r, c };
+      }
+
+      function paint(e) {
+        const { r, c } = getCellFromEvent(e);
+        if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+        const newVal = selectedBlock === 'eraser' ? null : selectedBlock;
+        if (grid[r][c] === newVal) return;
+        grid[r][c] = newVal;
+        // redraw just that cell
+        if (newVal === null) {
+          const sky = ctx.createLinearGradient(0, 0, 0, H);
+          sky.addColorStop(0, '#1565c0'); sky.addColorStop(1, '#42a5f5');
+          ctx.fillStyle = sky; ctx.fillRect(c*CELL, r*CELL, CELL, CELL);
+        } else {
+          drawBlockAt(ctx, newVal, c*CELL, r*CELL, CELL);
+        }
+      }
+
+      canvas.addEventListener('mousedown', e => { painting = true; paint(e); });
+      window.addEventListener('mouseup', () => painting = false);
+      canvas.addEventListener('mousemove', e => { if (painting) paint(e); });
+      canvas.addEventListener('touchstart', e => { e.preventDefault(); painting = true; paint(e); }, { passive: false });
+      canvas.addEventListener('touchmove', e => { e.preventDefault(); if (painting) paint(e); }, { passive: false });
+      canvas.addEventListener('touchend', () => painting = false);
+
+      // ── controls ─────────────────────────────────────────────
+      document.getElementById('clear-btn').addEventListener('click', () => {
+        grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
+        const sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#1565c0'); sky.addColorStop(1, '#42a5f5');
+        ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+      });
+
+      document.getElementById('flat-btn').addEventListener('click', generateWorld);
+
+      document.getElementById('save-btn').addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = 'my-world.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+
+      generateWorld();
+    </script>
+  </body>
+</html>
