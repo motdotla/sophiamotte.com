@@ -295,29 +295,41 @@
       stage.addEventListener('click', () => { selectedId = null; render(); });
 
       function makeDraggable(el, item) {
-        let dragging = false, ox, oy, sr, st;
+        let dragging = false, ox, oy;
         function startDrag(cx, cy) {
           dragging = true;
           const rect = stage.getBoundingClientRect();
           ox = cx - rect.left - (item.x / 100) * rect.width;
           oy = cy - rect.top - (item.y / 100) * rect.height;
-          selectedId = item.id;
-          render();
+          // update selection visually without full re-render
+          if (selectedId !== item.id) {
+            selectedId = item.id;
+            stage.querySelectorAll('.stage-item').forEach(e2 => {
+              e2.classList.toggle('selected', e2.dataset.id == item.id);
+            });
+            updateHint();
+          }
+          el.style.zIndex = 999;
         }
         function moveDrag(cx, cy) {
           if (!dragging) return;
           const rect = stage.getBoundingClientRect();
-          item.x = Math.max(0, Math.min(90, ((cx - rect.left - ox) / rect.width) * 100));
-          item.y = Math.max(0, Math.min(90, ((cy - rect.top - oy) / rect.height) * 100));
+          item.x = Math.max(0, Math.min(92, ((cx - rect.left - ox) / rect.width) * 100));
+          item.y = Math.max(0, Math.min(92, ((cy - rect.top - oy) / rect.height) * 100));
           el.style.left = item.x + '%';
           el.style.top = item.y + '%';
         }
+        function endDrag() {
+          if (!dragging) return;
+          dragging = false;
+          el.style.zIndex = '';
+        }
         el.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); startDrag(e.clientX, e.clientY); });
         window.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
-        window.addEventListener('mouseup', () => { dragging = false; });
+        window.addEventListener('mouseup', endDrag);
         el.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
         el.addEventListener('touchmove', e => { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
-        el.addEventListener('touchend', () => { dragging = false; });
+        el.addEventListener('touchend', endDrag);
       }
 
       function updateHint() {
