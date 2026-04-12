@@ -120,6 +120,18 @@
         tnt:    { name: 'TNT',      emoji: '🔥' },
         cloud:  { name: 'cloud',    emoji: '☁️' },
         flower: { name: 'flower',   emoji: '🌸' },
+        // characters
+        steve:    { name: 'Steve',    emoji: '🧑' },
+        creeper:  { name: 'Creeper',  emoji: '💚' },
+        zombie:   { name: 'Zombie',   emoji: '🧟' },
+        skeleton: { name: 'Skeleton', emoji: '💀' },
+        pig:      { name: 'Pig',      emoji: '🐷' },
+        cow:      { name: 'Cow',      emoji: '🐄' },
+        chicken:  { name: 'Chicken',  emoji: '🐔' },
+        spider:   { name: 'Spider',   emoji: '🕷️' },
+        enderman: { name: 'Enderman', emoji: '👁️' },
+        cat:      { name: 'Cat',      emoji: '🐱' },
+        dog:      { name: 'Dog',      emoji: '🐶' },
       };
 
       // draw a block onto any ctx at (px, py) with size s
@@ -255,6 +267,235 @@
               ctx.fillRect(s2-2+dx*s4, s4-2+dy*s4, 5, 5);
             });
             ctx.fillStyle = '#ffee58'; ctx.fillRect(s2-2, s4-2, 5, 5);
+            break;
+
+          // ── characters ──────────────────────────────────────
+          case 'steve':
+            // head
+            ctx.fillStyle = '#f5cba7'; ctx.fillRect(s4, 0, s2, s2-2);
+            // hair
+            ctx.fillStyle = '#795548'; ctx.fillRect(s4, 0, s2, s4);
+            // eyes
+            ctx.fillStyle = '#1565c0'; ctx.fillRect(s4+2, s4+1, 3, 3);
+            ctx.fillRect(s2+1, s4+1, 3, 3);
+            // mouth
+            ctx.fillStyle = '#a0522d'; ctx.fillRect(s4+3, s4+5, s4-2, 2);
+            // body (blue shirt)
+            ctx.fillStyle = '#1565c0'; ctx.fillRect(s4+1, s2-1, s2-2, s4+2);
+            // legs
+            ctx.fillStyle = '#5d4037'; ctx.fillRect(s4+1, s2+s4, s4-2, s4);
+            ctx.fillRect(s2+1, s2+s4, s4-2, s4);
+            // arms
+            ctx.fillStyle = '#1565c0'; ctx.fillRect(s4-3, s2-1, 3, s4);
+            ctx.fillRect(s2+s8+2, s2-1, 3, s4);
+            break;
+
+          case 'creeper':
+            // body (dark green)
+            ctx.fillStyle = '#2e7d32'; ctx.fillRect(s4+1, 0, s2-2, s);
+            // creeper face pixels
+            ctx.fillStyle = '#1b5e20';
+            // eyes
+            ctx.fillRect(s4+2, s4, 4, 4); ctx.fillRect(s2, s4, 4, 4);
+            // nose
+            ctx.fillRect(s2-1, s4+5, 4, 3);
+            // mouth
+            ctx.fillRect(s4+2, s2, 4, 3); ctx.fillRect(s2, s2, 4, 3);
+            ctx.fillRect(s4+5, s2+3, 3, 3); ctx.fillRect(s2-2, s2+3, 3, 3);
+            // legs
+            ctx.fillStyle = '#388e3c';
+            ctx.fillRect(s4+1, s2+s8*2, s4-2, s4+2);
+            ctx.fillRect(s2+1, s2+s8*2, s4-2, s4+2);
+            break;
+
+          case 'zombie':
+            // head (green skin)
+            ctx.fillStyle = '#4caf50'; ctx.fillRect(s4, 0, s2, s2-2);
+            // eyes (dark)
+            ctx.fillStyle = '#1b5e20'; ctx.fillRect(s4+2, s4, 4, 3);
+            ctx.fillRect(s2, s4, 4, 3);
+            // mouth (open groaning)
+            ctx.fillStyle = '#1b5e20'; ctx.fillRect(s4+2, s4+5, s4-2, 4);
+            ctx.fillStyle = '#000'; ctx.fillRect(s4+3, s4+6, s4-4, 2);
+            // torn shirt (blue-gray)
+            ctx.fillStyle = '#455a64'; ctx.fillRect(s4+1, s2-1, s2-2, s4+2);
+            // arms stretched out
+            ctx.fillStyle = '#4caf50';
+            ctx.fillRect(2, s2, s4-2, 3);
+            ctx.fillRect(s2+s4, s2, s4-2, 3);
+            // legs
+            ctx.fillStyle = '#37474f'; ctx.fillRect(s4+1, s2+s4, s4-2, s4);
+            ctx.fillRect(s2+1, s2+s4, s4-2, s4);
+            break;
+
+          case 'skeleton':
+            // skull
+            ctx.fillStyle = '#eeeeee'; ctx.fillRect(s4, 1, s2, s2-2);
+            // eye sockets
+            ctx.fillStyle = '#212121'; ctx.fillRect(s4+2, s4, 4, 4);
+            ctx.fillRect(s2, s4, 4, 4);
+            // nose hole
+            ctx.fillRect(s2-1, s4+4, 3, 2);
+            // teeth
+            ctx.fillStyle = '#fff'; ctx.fillRect(s4+2, s4+7, 3, 3);
+            ctx.fillRect(s4+6, s4+7, 3, 3);
+            ctx.fillRect(s4+10, s4+7, 3, 3);
+            ctx.fillStyle = '#212121'; ctx.fillRect(s4+5, s4+7, 1, 3);
+            ctx.fillRect(s4+9, s4+7, 1, 3);
+            // rib cage
+            ctx.fillStyle = '#e0e0e0';
+            for (let i = 0; i < 3; i++) {
+              ctx.fillRect(s4+1, s2+i*3, s2-2, 2);
+            }
+            // arms (bones)
+            ctx.fillStyle = '#e0e0e0'; ctx.fillRect(s4-3, s2, 3, s4);
+            ctx.fillRect(s2+s8*2, s2, 3, s4);
+            // legs
+            ctx.fillRect(s4+1, s2+s4, 3, s4); ctx.fillRect(s2+1, s2+s4, 3, s4);
+            break;
+
+          case 'pig':
+            // pink body
+            ctx.fillStyle = '#f48fb1'; ctx.fillRect(s4-2, s4, s2+4, s2);
+            // head
+            ctx.fillStyle = '#f48fb1'; ctx.fillRect(s4, 0, s2, s2+2);
+            // snout
+            ctx.fillStyle = '#f06292'; ctx.fillRect(s4+2, s4+4, s2-4, s4);
+            ctx.fillStyle = '#ad1457'; ctx.fillRect(s4+4, s4+6, 3, 3);
+            ctx.fillRect(s2-1, s4+6, 3, 3);
+            // eyes
+            ctx.fillStyle = '#212121'; ctx.fillRect(s4+2, s4, 3, 3);
+            ctx.fillRect(s2+1, s4, 3, 3);
+            // ears
+            ctx.fillStyle = '#f06292'; ctx.fillRect(s4, 0, 4, 4);
+            ctx.fillRect(s2, 0, 4, 4);
+            // legs
+            ctx.fillStyle = '#f48fb1'; ctx.fillRect(s4, s2+s4, 4, s4);
+            ctx.fillRect(s2, s2+s4, 4, s4);
+            break;
+
+          case 'cow':
+            // white body
+            ctx.fillStyle = '#fafafa'; ctx.fillRect(s4-2, s4, s2+4, s2);
+            // head
+            ctx.fillStyle = '#fafafa'; ctx.fillRect(s4, 0, s2, s2+2);
+            // black patches
+            ctx.fillStyle = '#212121';
+            ctx.fillRect(s4+1, s4-1, s4, s4+1);
+            ctx.fillRect(s2+1, s2, s4-1, s4);
+            // snout
+            ctx.fillStyle = '#f48fb1'; ctx.fillRect(s4+2, s4+4, s2-4, s4);
+            ctx.fillStyle = '#212121'; ctx.fillRect(s4+4, s4+6, 2, 2); ctx.fillRect(s2, s4+6, 2, 2);
+            // eyes
+            ctx.fillStyle = '#212121'; ctx.fillRect(s4+2, s8+1, 3, 3); ctx.fillRect(s2+1, s8+1, 3, 3);
+            // horns
+            ctx.fillStyle = '#f5c800'; ctx.fillRect(s4+1, 0, 3, 3); ctx.fillRect(s2+2, 0, 3, 3);
+            // legs
+            ctx.fillStyle = '#fafafa'; ctx.fillRect(s4, s2+s4, 4, s4);
+            ctx.fillRect(s2, s2+s4, 4, s4);
+            break;
+
+          case 'chicken':
+            // white body
+            ctx.fillStyle = '#fafafa'; ctx.fillRect(s4, s4, s2, s2+s4);
+            // head
+            ctx.fillStyle = '#fafafa'; ctx.fillRect(s4+2, 0, s2-4, s4+2);
+            // red comb
+            ctx.fillStyle = '#e91e8c'; ctx.fillRect(s4+4, 0, 3, 4);
+            ctx.fillRect(s4+7, 1, 3, 3);
+            // beak
+            ctx.fillStyle = '#f5c800'; ctx.fillRect(s4+2, s4-1, 4, 3);
+            // eye
+            ctx.fillStyle = '#212121'; ctx.fillRect(s4+5, s8+1, 3, 3);
+            // wattle
+            ctx.fillStyle = '#e91e8c'; ctx.fillRect(s4+2, s4+2, 3, 3);
+            // wings
+            ctx.fillStyle = '#e0e0e0'; ctx.fillRect(s4-1, s4+2, 3, s4);
+            ctx.fillRect(s2+s8, s4+2, 3, s4);
+            // feet
+            ctx.fillStyle = '#f5c800'; ctx.fillRect(s4+2, s2+s4, 3, s4); ctx.fillRect(s4+2, s-3, 5, 2);
+            ctx.fillRect(s2+1, s2+s4, 3, s4); ctx.fillRect(s2+1, s-3, 5, 2);
+            break;
+
+          case 'spider':
+            // legs
+            ctx.fillStyle = '#212121';
+            ctx.fillRect(2, s4+2, s4-2, 3); ctx.fillRect(2, s2-2, s4-2, 3);
+            ctx.fillRect(s2+s4, s4+2, s4-2, 3); ctx.fillRect(s2+s4, s2-2, s4-2, 3);
+            ctx.fillRect(4, s8, s4-4, 3); ctx.fillRect(s2+s4+2, s8, s4-4, 3);
+            ctx.fillRect(4, s2+s4, s4-4, 3); ctx.fillRect(s2+s4+2, s2+s4, s4-4, 3);
+            // body
+            ctx.fillStyle = '#4e342e'; ctx.fillRect(s4+2, s4, s2-4, s2+s4);
+            // head (slightly bigger round)
+            ctx.fillStyle = '#3e2723'; ctx.fillRect(s4, s8+2, s2, s2-2);
+            // red eyes (multiple!)
+            ctx.fillStyle = '#f44336';
+            ctx.fillRect(s4+1, s8+3, 4, 4); ctx.fillRect(s2-1, s8+3, 4, 4);
+            ctx.fillRect(s4+5, s8+6, 3, 3); ctx.fillRect(s2-3, s8+6, 3, 3);
+            break;
+
+          case 'enderman':
+            // very dark purple/black tall body
+            ctx.fillStyle = '#0d001a'; ctx.fillRect(s4+2, 0, s2-4, s);
+            // head (slightly wider)
+            ctx.fillStyle = '#1a0030'; ctx.fillRect(s4, s8, s2, s4+s8);
+            // purple eyes
+            ctx.fillStyle = '#9c27b0';
+            ctx.fillRect(s4+2, s8+3, 4, 4); ctx.fillRect(s2, s8+3, 4, 4);
+            // glow effect
+            ctx.fillStyle = '#e040fb44';
+            ctx.fillRect(s4+1, s8+2, 4, 5); ctx.fillRect(s2-1, s8+2, 4, 5);
+            // long arms
+            ctx.fillStyle = '#0d001a'; ctx.fillRect(s8, s4+s8, 3, s2+s8);
+            ctx.fillRect(s2+s4+1, s4+s8, 3, s2+s8);
+            break;
+
+          case 'cat':
+            // body (orange tabby)
+            ctx.fillStyle = '#ff8f00'; ctx.fillRect(s4, s4, s2, s2+s4);
+            // head
+            ctx.fillStyle = '#ff8f00'; ctx.fillRect(s4+1, 0, s2-2, s2+2);
+            // ears
+            ctx.fillStyle = '#ff8f00'; ctx.fillRect(s4+1, 0, 5, 5);
+            ctx.fillRect(s2, 0, 5, 5);
+            ctx.fillStyle = '#e91e8c'; ctx.fillRect(s4+2, 1, 3, 3); ctx.fillRect(s2+1, 1, 3, 3);
+            // stripes
+            ctx.fillStyle = '#e65100'; ctx.fillRect(s4+2, s4, s2-4, 2);
+            ctx.fillRect(s4+2, s4+4, s2-4, 2);
+            // eyes
+            ctx.fillStyle = '#00e676'; ctx.fillRect(s4+2, s8+2, 4, 4); ctx.fillRect(s2, s8+2, 4, 4);
+            ctx.fillStyle = '#212121'; ctx.fillRect(s4+4, s8+3, 2, 3); ctx.fillRect(s2+2, s8+3, 2, 3);
+            // nose
+            ctx.fillStyle = '#e91e8c'; ctx.fillRect(s2-1, s4+1, 3, 2);
+            // whiskers
+            ctx.fillStyle = '#fff8'; ctx.fillRect(s4-2, s4+2, s4, 1); ctx.fillRect(s2+s8, s4+2, s4, 1);
+            // tail
+            ctx.fillStyle = '#ff8f00'; ctx.fillRect(s4-3, s2, 4, s2+s4);
+            ctx.fillRect(s4-6, s2+s4, 4, s4);
+            // paws
+            ctx.fillRect(s4, s2+s4, s4-2, s4); ctx.fillRect(s2+1, s2+s4, s4-2, s4);
+            break;
+
+          case 'dog':
+            // golden body
+            ctx.fillStyle = '#f9a825'; ctx.fillRect(s4-1, s4, s2+2, s2);
+            // head
+            ctx.fillStyle = '#f9a825'; ctx.fillRect(s4, 0, s2, s2+2);
+            // ears (floppy)
+            ctx.fillStyle = '#e65100'; ctx.fillRect(s4-1, s4-1, 5, s4+2);
+            ctx.fillRect(s2+2, s4-1, 5, s4+2);
+            // snout
+            ctx.fillStyle = '#fff8e1'; ctx.fillRect(s4+2, s4+3, s2-4, s4+1);
+            // nose
+            ctx.fillStyle = '#212121'; ctx.fillRect(s2-2, s4+3, 5, 4);
+            // eyes
+            ctx.fillStyle = '#4e342e'; ctx.fillRect(s4+2, s8+1, 4, 4); ctx.fillRect(s2, s8+1, 4, 4);
+            ctx.fillStyle = '#fff'; ctx.fillRect(s4+2, s8+1, 2, 2); ctx.fillRect(s2, s8+1, 2, 2);
+            // tail (wagging)
+            ctx.fillStyle = '#f9a825'; ctx.fillRect(s2+s4, s4+2, s4, 4);
+            ctx.fillRect(s2+s4+s8, s8, 4, s4);
+            // paws
+            ctx.fillRect(s4, s2+s4, s4-2, s4); ctx.fillRect(s2+1, s2+s4, s4-2, s4);
             break;
         }
 
