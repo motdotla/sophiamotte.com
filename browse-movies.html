@@ -162,6 +162,10 @@
 
     <div class="filter-row" id="filters"></div>
 
+    <button onclick="pickRandom()" style="font-family:'Courier New',monospace;font-size:1rem;font-weight:bold;padding:0.6rem 1.5rem;border-radius:0.75rem;border:2px solid #e91e8c;background:#e91e8c;color:#fff;cursor:pointer;box-shadow:0 0 12px #ffb6d9;">🎲 pick a random movie!</button>
+
+    <div id="random-card" style="display:none;width:min(320px,92vw);background:#fff0f7;border:2px solid #f5c800;border-radius:1rem;box-shadow:0 0 20px #ffb6d9;padding:1.2rem;text-align:center;"></div>
+
     <div class="watchlist-banner" id="watchlist-banner">
       <h2>💕 my watch list!</h2>
       <div class="watchlist-items" id="watchlist-items"></div>
@@ -440,6 +444,25 @@
           });
           grid.appendChild(card);
         });
+      }
+
+      function pickRandom() {
+        const movie = MOVIES[Math.floor(Math.random() * MOVIES.length)];
+        const saved = watchlist.includes(movie.title);
+        const card = document.getElementById('random-card');
+        card.style.display = 'block';
+        card.innerHTML = `
+          <div style="font-size:0.75rem;color:#e91e8c99;margin-bottom:0.4rem;">🎲 tonight you should watch...</div>
+          <div style="font-size:4rem;margin-bottom:0.4rem;">${movie.emoji}</div>
+          <div style="font-size:1.2rem;font-weight:bold;margin-bottom:0.2rem;">${movie.title}</div>
+          <div style="font-size:0.8rem;color:#e91e8c99;margin-bottom:0.5rem;">${movie.year}</div>
+          <div style="font-size:0.8rem;color:#c2185b99;margin-bottom:0.8rem;line-height:1.4;">${movie.desc}</div>
+          <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;">
+            <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(movie.title + ' ' + movie.year + ' official trailer')}" target="_blank" rel="noopener" style="font-family:'Courier New',monospace;font-size:0.85rem;font-weight:bold;padding:0.4rem 0.9rem;border-radius:0.5rem;border:2px solid #e91e8c;background:#f5c800;color:#c2185b;text-decoration:none;">▶️ watch trailer</a>
+            <button onclick="pickRandom()" style="font-family:'Courier New',monospace;font-size:0.85rem;font-weight:bold;padding:0.4rem 0.9rem;border-radius:0.5rem;border:2px solid #e91e8c;background:#fff0f7;color:#c2185b;cursor:pointer;">🎲 pick again!</button>
+          </div>
+        `;
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
 
       renderWatchlist();
