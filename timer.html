@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sophia's timer 💕</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        background-color: #fde8f0;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 5rem 1rem 2rem;
+        gap: 1.5rem;
+      }
+
+      .tabs {
+        position: fixed;
+        top: 0.5rem;
+        left: 0.5rem;
+        right: 0.5rem;
+        z-index: 10;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
+      .play-tab {
+        background: #f5c800;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem;
+        font-weight: bold;
+        letter-spacing: 0.1em;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        border: 2px solid #e91e8c;
+        box-shadow: 0 0 10px #ffb6d9;
+      }
+
+      .play-tab:hover { background: #e91e8c; color: #fff; }
+
+      h1 {
+        font-size: 1.8rem;
+        letter-spacing: 0.15em;
+        font-weight: normal;
+        text-align: center;
+      }
+
+      .section-tabs {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .section-tab {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1rem;
+        font-weight: bold;
+        padding: 0.5rem 1.2rem;
+        border-radius: 0.5rem;
+        border: 2px solid #e91e8c;
+        background: #fff0f7;
+        color: #c2185b;
+        cursor: pointer;
+      }
+
+      .section-tab.active {
+        background: #e91e8c;
+        color: #fff;
+      }
+
+      .panel { display: none; }
+      .panel.active { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+
+      .card {
+        background: #fff0f7;
+        border: 2px solid #f5c800;
+        border-radius: 1rem;
+        box-shadow: 0 0 16px #ffb6d9;
+        padding: 1.5rem;
+        width: min(420px, 92vw);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .big-time {
+        font-size: 4rem;
+        letter-spacing: 0.1em;
+        color: #c2185b;
+        text-shadow: 0 0 12px #ffb6d9;
+      }
+
+      .big-time.running { color: #e91e8c; }
+      .big-time.done { animation: pulse 0.5s infinite alternate; }
+
+      @keyframes pulse {
+        from { transform: scale(1); }
+        to { transform: scale(1.06); }
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      button.btn {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.95rem;
+        font-weight: bold;
+        padding: 0.5rem 1.2rem;
+        border-radius: 0.5rem;
+        border: 2px solid #e91e8c;
+        background: #f5c800;
+        color: #c2185b;
+        cursor: pointer;
+      }
+
+      button.btn:hover { background: #e91e8c; color: #fff; }
+      button.btn.red { background: #e91e8c; color: #fff; }
+      button.btn.red:hover { background: #c2185b; }
+
+      .time-inputs {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        font-size: 1rem;
+      }
+
+      .time-inputs input {
+        width: 3.5rem;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1.2rem;
+        text-align: center;
+        padding: 0.4rem;
+        border: 2px solid #f5c800;
+        border-radius: 0.5rem;
+        color: #c2185b;
+        background: #fff;
+        outline: none;
+      }
+
+      .time-inputs input:focus { border-color: #e91e8c; }
+
+      .label { font-size: 0.8rem; color: #e91e8c99; }
+
+      /* alarms */
+      .alarm-add-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .alarm-add-row input[type="time"] {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1.1rem;
+        padding: 0.4rem 0.6rem;
+        border: 2px solid #f5c800;
+        border-radius: 0.5rem;
+        color: #c2185b;
+        background: #fff;
+        outline: none;
+      }
+
+      .alarm-add-row input[type="text"] {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1rem;
+        padding: 0.4rem 0.6rem;
+        border: 2px solid #f5c800;
+        border-radius: 0.5rem;
+        color: #c2185b;
+        background: #fff;
+        outline: none;
+        width: 10rem;
+      }
+
+      #alarm-list {
+        list-style: none;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .alarm-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.5rem 0.7rem;
+        background: #fff;
+        border: 2px solid #ffb6d9;
+        border-radius: 0.5rem;
+      }
+
+      .alarm-item.ringing {
+        border-color: #e91e8c;
+        animation: pulse 0.4s infinite alternate;
+      }
+
+      .alarm-toggle {
+        font-size: 1.3rem;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #e91e8c;
+      }
+
+      .alarm-info { flex: 1; }
+      .alarm-time { font-size: 1.1rem; font-weight: bold; }
+      .alarm-label { font-size: 0.8rem; color: #e91e8c99; }
+
+      .alarm-del {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        color: #e91e8c66;
+      }
+
+      .alarm-del:hover { color: #e91e8c; }
+
+      .empty-msg { color: #e91e8c66; font-size: 0.9rem; }
+
+      .snooze-bar {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        background: #fff0f7;
+        border: 2px solid #e91e8c;
+        border-radius: 1rem;
+        padding: 1rem;
+        width: min(420px, 92vw);
+        animation: pulse 0.5s infinite alternate;
+      }
+
+      .snooze-bar.visible { display: flex; }
+      .snooze-bar p { font-size: 1.1rem; font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <div class="tabs">
+      <a class="play-tab" href="index.html">🏠 HOME</a>
+      <a class="play-tab" href="todo.html">💕 TO-DO</a>
+      <a class="play-tab" href="snake.html">🐍 SNAKE</a>
+      <a class="play-tab" href="draw.html">🎨 DRAW</a>
+    </div>
+
+    <h1>sophia's timer 💕</h1>
+
+    <div class="section-tabs">
+      <button class="section-tab active" onclick="showPanel('countdown')">⏳ countdown</button>
+      <button class="section-tab" onclick="showPanel('stopwatch')">⏱ stopwatch</button>
+      <button class="section-tab" onclick="showPanel('alarms')">⏰ alarms</button>
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div class="panel active" id="panel-countdown">
+      <div class="card">
+        <div class="time-inputs">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem">
+            <input type="number" id="cd-h" min="0" max="23" value="0" />
+            <span class="label">hours</span>
+          </div>
+          <span style="font-size:1.5rem;padding-bottom:1rem">:</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem">
+            <input type="number" id="cd-m" min="0" max="59" value="5" />
+            <span class="label">min</span>
+          </div>
+          <span style="font-size:1.5rem;padding-bottom:1rem">:</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem">
+            <input type="number" id="cd-s" min="0" max="59" value="0" />
+            <span class="label">sec</span>
+          </div>
+        </div>
+        <div class="big-time" id="cd-display">05:00</div>
+        <div class="btn-row">
+          <button class="btn" onclick="cdStart()">▶ start</button>
+          <button class="btn" onclick="cdPause()">⏸ pause</button>
+          <button class="btn red" onclick="cdReset()">↺ reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STOPWATCH -->
+    <div class="panel" id="panel-stopwatch">
+      <div class="card">
+        <div class="big-time" id="sw-display">00:00.0</div>
+        <div class="btn-row">
+          <button class="btn" onclick="swStart()">▶ start</button>
+          <button class="btn" onclick="swPause()">⏸ pause</button>
+          <button class="btn red" onclick="swReset()">↺ reset</button>
+          <button class="btn" onclick="swLap()">🏁 lap</button>
+        </div>
+        <ul id="lap-list" style="width:100%;list-style:none;display:flex;flex-direction:column;gap:0.3rem;max-height:200px;overflow-y:auto;"></ul>
+      </div>
+    </div>
+
+    <!-- ALARMS -->
+    <div class="panel" id="panel-alarms">
+      <div class="snooze-bar" id="snooze-bar">
+        <p id="snooze-msg">⏰ alarm!</p>
+        <div class="btn-row">
+          <button class="btn" onclick="snoozeAlarm()">💤 snooze 5 min</button>
+          <button class="btn red" onclick="dismissAlarm()">✕ dismiss</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="alarm-add-row">
+          <input type="time" id="alarm-time" />
+          <input type="text" id="alarm-label" placeholder="label (optional)" maxlength="30" />
+          <button class="btn" onclick="addAlarm()">+ add</button>
+        </div>
+        <ul id="alarm-list">
+          <li class="empty-msg" id="alarm-empty">no alarms yet!</li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      // ── panel switching ──────────────────────────────────────────
+      function showPanel(name) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('panel-' + name).classList.add('active');
+        event.target.classList.add('active');
+      }
+
+      // ── beep ─────────────────────────────────────────────────────
+      let audioCtx = null;
+      function beep(times) {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let t = audioCtx.currentTime;
+        for (let i = 0; i < times; i++) {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.frequency.value = 880;
+          gain.gain.setValueAtTime(0.4, t + i * 0.35);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.35 + 0.3);
+          osc.start(t + i * 0.35);
+          osc.stop(t + i * 0.35 + 0.3);
+        }
+      }
+
+      // ── COUNTDOWN ────────────────────────────────────────────────
+      let cdInterval = null;
+      let cdRemaining = 0;
+      let cdRunning = false;
+
+      function cdTotal() {
+        const h = parseInt(document.getElementById('cd-h').value) || 0;
+        const m = parseInt(document.getElementById('cd-m').value) || 0;
+        const s = parseInt(document.getElementById('cd-s').value) || 0;
+        return h * 3600 + m * 60 + s;
+      }
+
+      function cdFmt(sec) {
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = sec % 60;
+        if (h > 0) return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      }
+
+      function cdStart() {
+        if (cdRunning) return;
+        if (cdRemaining === 0) cdRemaining = cdTotal();
+        if (cdRemaining <= 0) return;
+        cdRunning = true;
+        const disp = document.getElementById('cd-display');
+        disp.classList.remove('done');
+        disp.classList.add('running');
+        cdInterval = setInterval(() => {
+          cdRemaining--;
+          disp.textContent = cdFmt(cdRemaining);
+          if (cdRemaining <= 0) {
+            clearInterval(cdInterval);
+            cdRunning = false;
+            disp.classList.remove('running');
+            disp.classList.add('done');
+            disp.textContent = '00:00';
+            beep(3);
+          }
+        }, 1000);
+      }
+
+      function cdPause() {
+        clearInterval(cdInterval);
+        cdRunning = false;
+        document.getElementById('cd-display').classList.remove('running');
+      }
+
+      function cdReset() {
+        clearInterval(cdInterval);
+        cdRunning = false;
+        cdRemaining = 0;
+        const disp = document.getElementById('cd-display');
+        disp.classList.remove('running', 'done');
+        const m = parseInt(document.getElementById('cd-m').value) || 0;
+        const s = parseInt(document.getElementById('cd-s').value) || 0;
+        const h = parseInt(document.getElementById('cd-h').value) || 0;
+        disp.textContent = cdFmt(h * 3600 + m * 60 + s);
+      }
+
+      // update display when inputs change
+      ['cd-h','cd-m','cd-s'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+          if (!cdRunning) {
+            cdRemaining = 0;
+            document.getElementById('cd-display').textContent = cdFmt(cdTotal());
+          }
+        });
+      });
+
+      // ── STOPWATCH ────────────────────────────────────────────────
+      let swInterval = null;
+      let swRunning = false;
+      let swMs = 0;
+      let swLaps = [];
+
+      function swFmt(ms) {
+        const totalSec = Math.floor(ms / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        const tenth = Math.floor((ms % 1000) / 100);
+        return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${tenth}`;
+      }
+
+      function swStart() {
+        if (swRunning) return;
+        swRunning = true;
+        const disp = document.getElementById('sw-display');
+        disp.classList.add('running');
+        let last = performance.now();
+        swInterval = setInterval(() => {
+          const now = performance.now();
+          swMs += now - last;
+          last = now;
+          disp.textContent = swFmt(swMs);
+        }, 100);
+      }
+
+      function swPause() {
+        clearInterval(swInterval);
+        swRunning = false;
+        document.getElementById('sw-display').classList.remove('running');
+      }
+
+      function swReset() {
+        clearInterval(swInterval);
+        swRunning = false;
+        swMs = 0;
+        swLaps = [];
+        document.getElementById('sw-display').textContent = '00:00.0';
+        document.getElementById('sw-display').classList.remove('running');
+        document.getElementById('lap-list').innerHTML = '';
+      }
+
+      function swLap() {
+        if (!swRunning && swMs === 0) return;
+        swLaps.push(swFmt(swMs));
+        const li = document.createElement('li');
+        li.style.cssText = 'padding:0.3rem 0.5rem;background:#fff;border:1px solid #ffb6d9;border-radius:0.4rem;font-size:0.9rem;color:#c2185b;';
+        li.textContent = `lap ${swLaps.length}: ${swLaps[swLaps.length-1]}`;
+        document.getElementById('lap-list').prepend(li);
+      }
+
+      // ── ALARMS ───────────────────────────────────────────────────
+      let alarms = JSON.parse(localStorage.getItem('sophia-alarms') || '[]');
+      let ringId = null;
+      let ringInterval = null;
+
+      function saveAlarms() {
+        localStorage.setItem('sophia-alarms', JSON.stringify(alarms));
+      }
+
+      function renderAlarms() {
+        const list = document.getElementById('alarm-list');
+        const empty = document.getElementById('alarm-empty');
+        list.innerHTML = '';
+        if (alarms.length === 0) { list.appendChild(empty); return; }
+        alarms.forEach((a, i) => {
+          const li = document.createElement('li');
+          li.className = 'alarm-item' + (a.ringing ? ' ringing' : '');
+          li.dataset.i = i;
+
+          const tog = document.createElement('button');
+          tog.className = 'alarm-toggle';
+          tog.textContent = a.on ? '♥' : '♡';
+          tog.onclick = () => { alarms[i].on = !alarms[i].on; saveAlarms(); renderAlarms(); };
+
+          const info = document.createElement('div');
+          info.className = 'alarm-info';
+          info.innerHTML = `<div class="alarm-time">${a.time}</div>${a.label ? `<div class="alarm-label">${a.label}</div>` : ''}`;
+
+          const del = document.createElement('button');
+          del.className = 'alarm-del';
+          del.textContent = '✕';
+          del.onclick = () => { alarms.splice(i, 1); saveAlarms(); renderAlarms(); };
+
+          li.appendChild(tog); li.appendChild(info); li.appendChild(del);
+          list.appendChild(li);
+        });
+      }
+
+      function addAlarm() {
+        const t = document.getElementById('alarm-time').value;
+        if (!t) return;
+        const lbl = document.getElementById('alarm-label').value.trim();
+        alarms.push({ time: t, label: lbl, on: true, ringing: false });
+        saveAlarms();
+        renderAlarms();
+        document.getElementById('alarm-label').value = '';
+      }
+
+      function snoozeAlarm() {
+        if (ringId === null) return;
+        const now = new Date();
+        now.setMinutes(now.getMinutes() + 5);
+        const hh = String(now.getHours()).padStart(2,'0');
+        const mm = String(now.getMinutes()).padStart(2,'0');
+        alarms[ringId].time = `${hh}:${mm}`;
+        alarms[ringId].ringing = false;
+        alarms[ringId].on = true;
+        ringId = null;
+        clearInterval(ringInterval); ringInterval = null;
+        document.getElementById('snooze-bar').classList.remove('visible');
+        saveAlarms(); renderAlarms();
+      }
+
+      function dismissAlarm() {
+        if (ringId === null) return;
+        alarms[ringId].ringing = false;
+        alarms[ringId].on = false;
+        ringId = null;
+        clearInterval(ringInterval); ringInterval = null;
+        document.getElementById('snooze-bar').classList.remove('visible');
+        saveAlarms(); renderAlarms();
+      }
+
+      // check alarms every 5 seconds
+      setInterval(() => {
+        if (ringId !== null) return;
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2,'0');
+        const mm = String(now.getMinutes()).padStart(2,'0');
+        const curTime = `${hh}:${mm}`;
+        alarms.forEach((a, i) => {
+          if (a.on && !a.ringing && a.time === curTime) {
+            a.ringing = true; ringId = i;
+            saveAlarms(); renderAlarms();
+            const bar = document.getElementById('snooze-bar');
+            document.getElementById('snooze-msg').textContent = `⏰ alarm! ${a.label ? '— ' + a.label : ''}`;
+            bar.classList.add('visible');
+            beep(5);
+            ringInterval = setInterval(() => beep(3), 4000);
+          }
+        });
+      }, 5000);
+
+      renderAlarms();
+    </script>
+  </body>
+</html>
