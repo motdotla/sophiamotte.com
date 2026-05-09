@@ -133,6 +133,17 @@
       .heart-btn:hover { transform: scale(1.3); }
       .heart-btn.saved { color: #e91e8c; }
 
+      .trailer-btn {
+        display: block; width: 100%;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.8rem; font-weight: bold;
+        padding: 0.35rem 0.5rem; border-radius: 0.5rem;
+        border: 2px solid #e91e8c; background: #f5c800;
+        color: #c2185b; cursor: pointer; text-align: center;
+        text-decoration: none; margin-top: 0.2rem;
+      }
+      .trailer-btn:hover { background: #e91e8c; color: #fff; }
+
       .no-results {
         color: #e91e8c66; font-size: 0.9rem; text-align: center;
         grid-column: 1/-1; padding: 2rem 0;
@@ -414,6 +425,7 @@
             <div class="card-year">${movie.year}</div>
             <div class="card-tags">${movie.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
             <div class="card-desc">${movie.desc}</div>
+            <a class="trailer-btn" href="https://www.youtube.com/results?search_query=${encodeURIComponent(movie.title + ' ' + movie.year + ' official trailer')}" target="_blank" rel="noopener">▶️ watch trailer</a>
           `;
           card.querySelector('.heart-btn').addEventListener('click', function() {
             const t = this.dataset.title;
