@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sophia's movie browser 🎬</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        background-color: #fde8f0;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 5rem 1rem 2rem;
+        gap: 1.2rem;
+      }
+
+      .tabs {
+        position: fixed;
+        top: 0.5rem; left: 0.5rem; right: 0.5rem;
+        z-index: 10;
+        display: flex; flex-wrap: wrap; gap: 0.4rem;
+      }
+
+      .play-tab {
+        background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; letter-spacing: 0.1em;
+        padding: 0.5rem 1rem; border-radius: 0.5rem;
+        text-decoration: none; border: 2px solid #e91e8c;
+        box-shadow: 0 0 10px #ffb6d9;
+      }
+      .play-tab:hover { background: #e91e8c; color: #fff; }
+
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; text-align: center; }
+
+      .search-bar {
+        width: min(560px, 92vw);
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1rem; padding: 0.6rem 1rem;
+        border: 2px solid #e91e8c; border-radius: 0.75rem;
+        color: #c2185b; background: #fff0f7; outline: none;
+      }
+      .search-bar:focus { border-color: #c2185b; }
+
+      .filter-row {
+        display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center;
+        width: min(700px, 92vw);
+      }
+
+      .filter-btn {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.8rem; font-weight: bold;
+        padding: 0.35rem 0.8rem; border-radius: 0.5rem;
+        border: 2px solid #e91e8c; background: #fff0f7;
+        color: #c2185b; cursor: pointer;
+      }
+      .filter-btn:hover, .filter-btn.active { background: #e91e8c; color: #fff; }
+
+      .watchlist-banner {
+        display: none;
+        width: min(700px, 92vw);
+        background: #fff0f7; border: 2px solid #f5c800;
+        border-radius: 0.75rem; padding: 0.8rem 1rem;
+        box-shadow: 0 0 10px #ffb6d9;
+      }
+      .watchlist-banner.visible { display: block; }
+      .watchlist-banner h2 { font-size: 1rem; font-weight: bold; margin-bottom: 0.5rem; }
+      .watchlist-items { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+      .watchlist-chip {
+        background: #f5c800; color: #c2185b;
+        border: 2px solid #e91e8c; border-radius: 0.4rem;
+        font-size: 0.75rem; font-weight: bold; padding: 0.2rem 0.5rem;
+        display: flex; align-items: center; gap: 0.3rem;
+      }
+      .watchlist-chip button {
+        background: none; border: none; cursor: pointer;
+        color: #c2185b; font-size: 0.8rem; padding: 0; line-height: 1;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+        width: min(700px, 92vw);
+      }
+
+      .card {
+        background: #fff0f7;
+        border: 2px solid #f5c800;
+        border-radius: 1rem;
+        box-shadow: 0 0 10px #ffb6d9;
+        padding: 0.8rem;
+        display: flex; flex-direction: column; gap: 0.4rem;
+        position: relative;
+      }
+
+      .card-poster {
+        font-size: 3.5rem; text-align: center;
+        background: #fde8f0; border-radius: 0.6rem;
+        padding: 0.5rem; line-height: 1;
+      }
+
+      .card-title {
+        font-size: 0.9rem; font-weight: bold;
+        color: #c2185b; line-height: 1.3;
+      }
+
+      .card-year { font-size: 0.75rem; color: #e91e8c99; }
+
+      .card-desc {
+        font-size: 0.75rem; color: #c2185b99;
+        line-height: 1.4; flex: 1;
+      }
+
+      .card-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+      .tag {
+        font-size: 0.65rem; padding: 0.15rem 0.4rem;
+        border-radius: 0.3rem; background: #fde8f0;
+        border: 1px solid #e91e8c66; color: #e91e8c;
+      }
+
+      .heart-btn {
+        position: absolute; top: 0.5rem; right: 0.6rem;
+        font-size: 1.3rem; background: none; border: none;
+        cursor: pointer; color: #e91e8c; transition: transform 0.15s;
+        line-height: 1;
+      }
+      .heart-btn:hover { transform: scale(1.3); }
+      .heart-btn.saved { color: #e91e8c; }
+
+      .no-results {
+        color: #e91e8c66; font-size: 0.9rem; text-align: center;
+        grid-column: 1/-1; padding: 2rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tabs">
+      <a class="play-tab" href="index.html">🏠 HOME</a>
+      <a class="play-tab" href="movies.html">🎬 MOVIE MAKER</a>
+    </div>
+
+    <h1>🎬 browse movies!</h1>
+
+    <input class="search-bar" id="search" type="text" placeholder="🔍 search movies..." />
+
+    <div class="filter-row" id="filters"></div>
+
+    <div class="watchlist-banner" id="watchlist-banner">
+      <h2>💕 my watch list!</h2>
+      <div class="watchlist-items" id="watchlist-items"></div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <script>
+      const MOVIES = [
+        { title: "Matilda", year: 1996, emoji: "📚", tags: ["comedy","fantasy","classic"], desc: "A super smart girl with magical powers stands up to her mean headmistress and horrible parents." },
+        { title: "Matilda the Musical", year: 2022, emoji: "🎶", tags: ["musical","fantasy","comedy"], desc: "The beloved story of Matilda — now with amazing songs and dancing!" },
+        { title: "Bookworm", year: 2024, emoji: "🐛", tags: ["adventure","comedy"], desc: "A girl who loves books teams up with her dad on a wild scavenger hunt adventure." },
+        { title: "Clueless", year: 1995, emoji: "👗", tags: ["comedy","classic"], desc: "A popular and fashionable high schooler tries to help everyone around her — with hilarious results." },
+        { title: "The Princess Diaries", year: 2001, emoji: "👑", tags: ["comedy","romance"], desc: "A clumsy teenager discovers she's actually a princess of a small European country!" },
+        { title: "Moana", year: 2016, emoji: "🌊", tags: ["animation","adventure","musical"], desc: "A brave island girl sets sail across the ocean to save her people and discover who she is." },
+        { title: "Encanto", year: 2021, emoji: "🕯️", tags: ["animation","musical","fantasy"], desc: "The Madrigal family has magical gifts — except Mirabel. But she might be the key to saving them all." },
+        { title: "Frozen", year: 2013, emoji: "❄️", tags: ["animation","musical","adventure"], desc: "Two royal sisters must work together to break a magical eternal winter." },
+        { title: "Frozen II", year: 2019, emoji: "🍂", tags: ["animation","musical","adventure"], desc: "Elsa hears a mysterious voice calling her north on a new adventure." },
+        { title: "Brave", year: 2012, emoji: "🏹", tags: ["animation","adventure","fantasy"], desc: "A Scottish princess defies tradition and accidentally turns her mom into a bear!" },
+        { title: "Tangled", year: 2010, emoji: "🌟", tags: ["animation","adventure","musical"], desc: "Rapunzel escapes her tower with a charming thief to see the floating lanterns she's dreamed of." },
+        { title: "Ratatouille", year: 2007, emoji: "🐀", tags: ["animation","comedy"], desc: "A rat in Paris dreams of becoming a great chef — and secretly controls a boy to cook!" },
+        { title: "Up", year: 2009, emoji: "🎈", tags: ["animation","adventure"], desc: "A grumpy old man ties thousands of balloons to his house and flies to South America." },
+        { title: "Inside Out", year: 2015, emoji: "🧠", tags: ["animation","comedy"], desc: "Meet the emotions living inside an 11-year-old girl's head as she navigates a big move." },
+        { title: "Inside Out 2", year: 2024, emoji: "😰", tags: ["animation","comedy"], desc: "Riley is now a teenager and brand new emotions move in — including very loud Anxiety!" },
+        { title: "Coco", year: 2017, emoji: "🎸", tags: ["animation","musical","adventure"], desc: "A boy travels to the Land of the Dead to find his great-great-grandfather and follow his dream of music." },
+        { title: "The Little Mermaid", year: 1989, emoji: "🧜", tags: ["animation","musical","classic"], desc: "Ariel the mermaid longs to live on land and falls in love with a human prince." },
+        { title: "Beauty and the Beast", year: 1991, emoji: "🌹", tags: ["animation","musical","classic"], desc: "A young woman befriends a fearsome beast and discovers the gentle prince inside." },
+        { title: "Aladdin", year: 1992, emoji: "🧞", tags: ["animation","musical","classic"], desc: "A street kid finds a magic lamp with a hilarious genie who grants three wishes." },
+        { title: "The Lion King", year: 1994, emoji: "🦁", tags: ["animation","musical","classic"], desc: "Young lion cub Simba must grow up and take his rightful place as king." },
+        { title: "Finding Nemo", year: 2003, emoji: "🐠", tags: ["animation","adventure"], desc: "A clownfish crosses the entire ocean to find his son Nemo." },
+        { title: "Toy Story", year: 1995, emoji: "🤠", tags: ["animation","comedy","classic"], desc: "Toys come to life when kids aren't watching — and Woody is very jealous of new toy Buzz." },
+        { title: "The Incredibles", year: 2004, emoji: "🦸", tags: ["animation","adventure","comedy"], desc: "A family of superheroes has to hide their powers — until the world needs them again." },
+        { title: "Zootopia", year: 2016, emoji: "🦊", tags: ["animation","adventure","comedy"], desc: "A bunny cop and a fox team up to solve a mystery in a city of animals." },
+        { title: "Turning Red", year: 2022, emoji: "🐼", tags: ["animation","comedy"], desc: "A 13-year-old girl turns into a giant red panda whenever she gets too excited!" },
+        { title: "Luca", year: 2021, emoji: "🌊", tags: ["animation","adventure"], desc: "A sea monster boy spends a summer on the Italian coast with a new best friend." },
+        { title: "Wish", year: 2023, emoji: "⭐", tags: ["animation","musical","fantasy"], desc: "A girl makes a wish so powerful that a star comes down from the sky to help her." },
+        { title: "Kung Fu Panda", year: 2008, emoji: "🐼", tags: ["animation","adventure","comedy"], desc: "A clumsy panda who loves kung fu is chosen as the legendary Dragon Warrior." },
+        { title: "How to Train Your Dragon", year: 2010, emoji: "🐉", tags: ["animation","adventure"], desc: "A Viking boy befriends a rare dragon and changes his entire world." },
+        { title: "Paddington", year: 2014, emoji: "🐻", tags: ["comedy","adventure"], desc: "A polite bear from Peru moves to London and charms everyone he meets." },
+        { title: "Paddington 2", year: 2017, emoji: "🎩", tags: ["comedy","adventure"], desc: "Paddington goes to great lengths to buy a special pop-up book as a gift." },
+        { title: "Mary Poppins", year: 1964, emoji: "☂️", tags: ["musical","fantasy","classic"], desc: "A magical nanny floats down from the sky and takes two children on wonderful adventures." },
+        { title: "Willy Wonka & the Chocolate Factory", year: 1971, emoji: "🍫", tags: ["fantasy","musical","classic"], desc: "A lucky boy wins a golden ticket to tour the most magical chocolate factory ever." },
+        { title: "Charlie and the Chocolate Factory", year: 2005, emoji: "🍭", tags: ["fantasy","comedy"], desc: "Charlie Bucket wins a golden ticket to Willy Wonka's extraordinary factory." },
+        { title: "The BFG", year: 2016, emoji: "👂", tags: ["fantasy","adventure"], desc: "A little orphan girl is taken to Giant Country by the Big Friendly Giant." },
+        { title: "Harriet the Spy", year: 1996, emoji: "🔍", tags: ["comedy","classic"], desc: "An 11-year-old aspiring spy writes everything she observes in her secret notebook." },
+        { title: "Home Alone", year: 1990, emoji: "🏠", tags: ["comedy","classic"], desc: "An 8-year-old is accidentally left behind when his family goes on vacation — and must outsmart two burglars!" },
+        { title: "The Parent Trap", year: 1998, emoji: "🏕️", tags: ["comedy","classic"], desc: "Twin sisters who were separated at birth meet at summer camp and scheme to get their parents back together." },
+        { title: "Freaky Friday", year: 2003, emoji: "🔄", tags: ["comedy"], desc: "A mom and daughter magically swap bodies and have to live each other's lives for a day!" },
+        { title: "Spy Kids", year: 2001, emoji: "🕵️", tags: ["adventure","comedy"], desc: "Two kids discover their parents are secret agents — and have to rescue them!" },
+        { title: "Nanny McPhee", year: 2005, emoji: "🌂", tags: ["fantasy","comedy"], desc: "A magical nanny with a rather unusual appearance teaches five wild children important lessons." },
+        { title: "Annie", year: 2014, emoji: "🌞", tags: ["musical","comedy"], desc: "A bright and optimistic orphan girl wins over a grumpy billionaire with her endless cheerfulness." },
+        { title: "My Neighbor Totoro", year: 1988, emoji: "🌳", tags: ["animation","fantasy","classic"], desc: "Two sisters discover magical forest spirits including the giant fluffy Totoro." },
+        { title: "Spirited Away", year: 2001, emoji: "🏮", tags: ["animation","fantasy"], desc: "A girl gets lost in a magical spirit world and must work to find her way home." },
+        { title: "Kiki's Delivery Service", year: 1989, emoji: "🧹", tags: ["animation","fantasy"], desc: "A young witch moves to a new city and starts a flying delivery service on her broomstick." },
+        { title: "Coraline", year: 2009, emoji: "🪡", tags: ["animation","fantasy"], desc: "A girl finds a secret door to a world that seems perfect — but something is very off. (A little spooky!)" },
+        { title: "The Wizard of Oz", year: 1939, emoji: "🌈", tags: ["musical","fantasy","classic"], desc: "Dorothy and her dog Toto get swept away to the magical Land of Oz by a tornado." },
+        { title: "Shrek", year: 2001, emoji: "🧅", tags: ["animation","comedy","fantasy"], desc: "A grumpy ogre goes on a quest to rescue a princess and make a most unlikely best friend." },
+        { title: "Despicable Me", year: 2010, emoji: "🍌", tags: ["animation","comedy"], desc: "A supervillain adopts three little girls and discovers he might actually have a heart." },
+        { title: "Trolls", year: 2016, emoji: "🌈", tags: ["animation","musical","comedy"], desc: "Happy, glittery trolls must rescue their friends from grumpy creatures who want to eat them." },
+        { title: "Soul", year: 2020, emoji: "🎹", tags: ["animation","musical"], desc: "A jazz musician goes on an adventure to the place where souls get their personalities." },
+        { title: "The Sound of Music", year: 1965, emoji: "🎵", tags: ["musical","classic"], desc: "A lively governess brings music and joy to a strict captain's family in Austria." },
+        { title: "Mamma Mia!", year: 2008, emoji: "🎤", tags: ["musical","comedy"], desc: "A girl invites three men who might be her dad to her wedding — with ABBA songs throughout!" },
+        { title: "Grease", year: 1978, emoji: "🎸", tags: ["musical","classic"], desc: "Two summer sweethearts reunite at high school — but they run in very different crowds." },
+        { title: "Legally Blonde", year: 2001, emoji: "👛", tags: ["comedy"], desc: "A bubbly fashionista follows her ex to Harvard Law School and ends up being the best student there." },
+        { title: "Hocus Pocus", year: 1993, emoji: "🕯️", tags: ["comedy","fantasy"], desc: "Three witch sisters are accidentally brought back to life on Halloween in Salem. (Silly, not really scary!)" },
+        { title: "The Secret Garden", year: 1993, emoji: "🌷", tags: ["fantasy","classic"], desc: "An orphaned girl discovers a magical hidden garden that changes everyone around her." },
+        { title: "A Little Princess", year: 1995, emoji: "👸", tags: ["fantasy","classic"], desc: "A girl at a boarding school falls on hard times but never loses her imagination or kindness." },
+        { title: "Holes", year: 2003, emoji: "⛏️", tags: ["adventure","comedy"], desc: "A boy is sent to a strange camp where everyone has to dig holes every day — but why?" },
+        { title: "Tuck Everlasting", year: 2002, emoji: "🌿", tags: ["fantasy","romance"], desc: "A girl discovers a family with a magical secret: they never grow old." },
+        { title: "Beethoven", year: 1992, emoji: "🐕", tags: ["comedy","classic"], desc: "A huge and lovable St. Bernard causes chaos for a family — and the kids absolutely love him." },
+        { title: "Lilo & Stitch", year: 2002, emoji: "👽", tags: ["animation","comedy","adventure"], desc: "A lonely Hawaiian girl adopts what she thinks is a dog — but is actually a mischievous alien." },
+        { title: "Mulan", year: 1998, emoji: "⚔️", tags: ["animation","musical","adventure"], desc: "A girl secretly takes her father's place in the army and becomes a legendary warrior." },
+        { title: "Pocahontas", year: 1995, emoji: "🍃", tags: ["animation","musical","classic"], desc: "A Native American princess and an English explorer fall in love despite their different worlds." },
+        { title: "Anastasia", year: 1997, emoji: "👒", tags: ["animation","musical"], desc: "An amnesiac orphan girl might be the lost Russian princess Anastasia." },
+        { title: "The Princess and the Frog", year: 2009, emoji: "🐸", tags: ["animation","musical"], desc: "An ambitious New Orleans girl gets turned into a frog and must break the spell." },
+        { title: "Big Hero 6", year: 2014, emoji: "🤖", tags: ["animation","adventure"], desc: "A boy and his inflatable robot nurse Baymax form a superhero team in a high-tech city." },
+        { title: "Raya and the Last Dragon", year: 2021, emoji: "🐲", tags: ["animation","adventure"], desc: "A warrior searches a divided land to find the last dragon and save her people." },
+        { title: "Strange World", year: 2022, emoji: "🌍", tags: ["animation","adventure"], desc: "Three generations of an explorer family discover a strange world beneath their own." },
+      ];
+
+      const ALL_TAGS = [...new Set(MOVIES.flatMap(m => m.tags))].sort();
+      let watchlist = JSON.parse(localStorage.getItem('sophia-watchlist') || '[]');
+      let activeFilter = 'all';
+      let searchTerm = '';
+
+      // build filters
+      const filterRow = document.getElementById('filters');
+      const allBtn = document.createElement('button');
+      allBtn.className = 'filter-btn active'; allBtn.textContent = '💕 all';
+      allBtn.onclick = () => setFilter('all', allBtn);
+      filterRow.appendChild(allBtn);
+
+      const watchBtn = document.createElement('button');
+      watchBtn.className = 'filter-btn'; watchBtn.textContent = '♥ my watchlist';
+      watchBtn.onclick = () => setFilter('watchlist', watchBtn);
+      filterRow.appendChild(watchBtn);
+
+      ALL_TAGS.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn'; btn.textContent = tag;
+        btn.onclick = () => setFilter(tag, btn);
+        filterRow.appendChild(btn);
+      });
+
+      function setFilter(f, btn) {
+        activeFilter = f;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+      }
+
+      document.getElementById('search').addEventListener('input', function() {
+        searchTerm = this.value.toLowerCase();
+        render();
+      });
+
+      function saveWatchlist() {
+        localStorage.setItem('sophia-watchlist', JSON.stringify(watchlist));
+      }
+
+      function renderWatchlist() {
+        const banner = document.getElementById('watchlist-banner');
+        const items = document.getElementById('watchlist-items');
+        items.innerHTML = '';
+        if (watchlist.length === 0) { banner.classList.remove('visible'); return; }
+        banner.classList.add('visible');
+        watchlist.forEach(title => {
+          const chip = document.createElement('div');
+          chip.className = 'watchlist-chip';
+          chip.innerHTML = `${title} <button onclick="removeFromWatchlist('${title.replace(/'/g,"\\'")}')">✕</button>`;
+          items.appendChild(chip);
+        });
+      }
+
+      function removeFromWatchlist(title) {
+        watchlist = watchlist.filter(t => t !== title);
+        saveWatchlist(); renderWatchlist(); render();
+      }
+
+      function render() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+
+        let movies = MOVIES;
+
+        if (searchTerm) {
+          movies = movies.filter(m =>
+            m.title.toLowerCase().includes(searchTerm) ||
+            m.desc.toLowerCase().includes(searchTerm) ||
+            m.tags.some(t => t.includes(searchTerm))
+          );
+        }
+
+        if (activeFilter === 'watchlist') {
+          movies = movies.filter(m => watchlist.includes(m.title));
+        } else if (activeFilter !== 'all') {
+          movies = movies.filter(m => m.tags.includes(activeFilter));
+        }
+
+        if (movies.length === 0) {
+          const msg = document.createElement('div');
+          msg.className = 'no-results';
+          msg.textContent = activeFilter === 'watchlist' ? 'no movies on your watchlist yet! tap ♡ on any movie to save it.' : 'no movies found!';
+          grid.appendChild(msg);
+          return;
+        }
+
+        movies.forEach(movie => {
+          const saved = watchlist.includes(movie.title);
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <button class="heart-btn ${saved ? 'saved' : ''}" data-title="${movie.title}">${saved ? '♥' : '♡'}</button>
+            <div class="card-poster">${movie.emoji}</div>
+            <div class="card-title">${movie.title}</div>
+            <div class="card-year">${movie.year}</div>
+            <div class="card-tags">${movie.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+            <div class="card-desc">${movie.desc}</div>
+          `;
+          card.querySelector('.heart-btn').addEventListener('click', function() {
+            const t = this.dataset.title;
+            if (watchlist.includes(t)) {
+              watchlist = watchlist.filter(x => x !== t);
+              this.textContent = '♡'; this.classList.remove('saved');
+            } else {
+              watchlist.push(t);
+              this.textContent = '♥'; this.classList.add('saved');
+            }
+            saveWatchlist(); renderWatchlist();
+          });
+          grid.appendChild(card);
+        });
+      }
+
+      renderWatchlist();
+      render();
+    </script>
+  </body>
+</html>
