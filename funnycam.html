@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sophia's funny face cam 📸</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        background-color: #fde8f0;
+        color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        display: flex; flex-direction: column; align-items: center;
+        min-height: 100vh; padding: 5rem 1rem 2rem; gap: 1rem;
+      }
+
+      .tabs {
+        position: fixed; top: 0.5rem; left: 0.5rem; right: 0.5rem;
+        z-index: 10; display: flex; flex-wrap: wrap; gap: 0.4rem;
+      }
+
+      .play-tab {
+        background: #f5c800; color: #c2185b;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85rem; font-weight: bold; letter-spacing: 0.1em;
+        padding: 0.5rem 1rem; border-radius: 0.5rem;
+        text-decoration: none; border: 2px solid #e91e8c;
+        box-shadow: 0 0 10px #ffb6d9;
+      }
+      .play-tab:hover { background: #e91e8c; color: #fff; }
+
+      h1 { font-size: 1.8rem; font-weight: normal; letter-spacing: 0.15em; text-align: center; }
+
+      .cam-wrap {
+        position: relative;
+        width: min(400px, 92vw);
+        border: 3px solid #e91e8c;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 0 20px #ffb6d9;
+        background: #111;
+        aspect-ratio: 4/3;
+      }
+
+      #video {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        display: block;
+        transform: scaleX(-1); /* mirror */
+      }
+
+      #photo-canvas {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        display: none;
+      }
+
+      #draw-canvas {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        cursor: crosshair;
+        touch-action: none;
+        display: none;
+      }
+
+      .btn-row {
+        display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+        width: min(400px, 92vw);
+      }
+
+      .btn {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.9rem; font-weight: bold;
+        padding: 0.5rem 1.1rem; border-radius: 0.5rem;
+        border: 2px solid #e91e8c; background: #f5c800;
+        color: #c2185b; cursor: pointer;
+      }
+      .btn:hover { background: #e91e8c; color: #fff; }
+      .btn.pink { background: #e91e8c; color: #fff; }
+      .btn.pink:hover { background: #c2185b; }
+
+      .tools-card {
+        background: #fff0f7; border: 2px solid #f5c800;
+        border-radius: 1rem; padding: 0.8rem;
+        box-shadow: 0 0 12px #ffb6d9;
+        width: min(400px, 92vw);
+        display: flex; flex-direction: column; gap: 0.7rem;
+        display: none;
+      }
+      .tools-card.visible { display: flex; }
+
+      .tool-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+      .tool-label { font-size: 0.8rem; color: #e91e8c99; min-width: 3rem; }
+
+      /* color swatches */
+      .swatch {
+        width: 1.6rem; height: 1.6rem; border-radius: 50%;
+        border: 3px solid transparent; cursor: pointer;
+        flex-shrink: 0;
+      }
+      .swatch.active { border-color: #c2185b; transform: scale(1.2); }
+
+      /* brush size */
+      .size-btn {
+        background: #fde8f0; border: 2px solid #e91e8c;
+        border-radius: 50%; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+      }
+      .size-btn.active { background: #e91e8c; }
+      .size-btn .dot { background: #c2185b; border-radius: 50%; }
+      .size-btn.active .dot { background: #fff; }
+
+      /* stamps */
+      .stamp {
+        font-size: 1.5rem; cursor: pointer; padding: 0.1rem;
+        border-radius: 0.3rem; border: 2px solid transparent;
+        transition: transform 0.1s;
+      }
+      .stamp:hover { transform: scale(1.2); }
+      .stamp.active { border-color: #e91e8c; background: #fde8f0; }
+
+      #no-cam-msg {
+        color: #e91e8c99; font-size: 0.85rem; text-align: center;
+        padding: 2rem; display: none;
+      }
+
+      #countdown {
+        position: absolute; inset: 0;
+        display: none; align-items: center; justify-content: center;
+        font-size: 6rem; color: #fff;
+        text-shadow: 0 0 20px #e91e8c;
+        font-family: "Courier New", monospace; font-weight: bold;
+        pointer-events: none;
+      }
+      #countdown.active { display: flex; }
+
+      .flash {
+        position: absolute; inset: 0;
+        background: #fff; opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.1s;
+      }
+      .flash.go { opacity: 1; }
+    </style>
+  </head>
+  <body>
+    <div class="tabs">
+      <a class="play-tab" href="index.html">🏠 HOME</a>
+      <a class="play-tab" href="draw.html">🎨 DRAW</a>
+    </div>
+
+    <h1>📸 funny face cam!</h1>
+
+    <div class="cam-wrap" id="cam-wrap">
+      <video id="video" autoplay playsinline></video>
+      <canvas id="photo-canvas"></canvas>
+      <canvas id="draw-canvas"></canvas>
+      <div id="countdown"></div>
+      <div class="flash" id="flash"></div>
+    </div>
+
+    <div id="no-cam-msg">📷 camera not available — please allow camera access!</div>
+
+    <!-- camera buttons -->
+    <div class="btn-row" id="camera-btns">
+      <button class="btn pink" id="snap-btn">📸 take photo!</button>
+    </div>
+
+    <!-- drawing buttons (shown after photo) -->
+    <div class="btn-row" id="photo-btns" style="display:none;">
+      <button class="btn" id="undo-btn">↩ undo</button>
+      <button class="btn" id="clear-draw-btn">🗑️ clear drawing</button>
+      <button class="btn" id="retake-btn">🔄 retake</button>
+      <button class="btn pink" id="save-btn">💾 save photo!</button>
+    </div>
+
+    <!-- drawing tools -->
+    <div class="tools-card" id="tools-card">
+
+      <div class="tool-row">
+        <span class="tool-label">colors</span>
+        <div id="swatches"></div>
+      </div>
+
+      <div class="tool-row">
+        <span class="tool-label">size</span>
+        <div id="sizes"></div>
+      </div>
+
+      <div class="tool-row">
+        <span class="tool-label">mode</span>
+        <button class="btn" id="pen-btn" style="font-size:0.8rem;padding:0.3rem 0.7rem;">✏️ pen</button>
+        <button class="btn" id="eraser-btn" style="font-size:0.8rem;padding:0.3rem 0.7rem;">🧹 eraser</button>
+      </div>
+
+      <div class="tool-row" style="flex-wrap:wrap;">
+        <span class="tool-label">stamps</span>
+        <div id="stamps"></div>
+      </div>
+
+    </div>
+
+    <script>
+      const video = document.getElementById('video');
+      const photoCanvas = document.getElementById('photo-canvas');
+      const drawCanvas = document.getElementById('draw-canvas');
+      const pCtx = photoCanvas.getContext('2d');
+      const dCtx = drawCanvas.getContext('2d');
+      const camWrap = document.getElementById('cam-wrap');
+
+      const COLORS = ['#e91e8c','#f5c800','#ff5722','#4caf50','#2196f3','#9c27b0','#ffffff','#000000','#ff80ab','#80d8ff','#ccff90','#ffd180'];
+      const SIZES = [4, 10, 20, 36];
+      const STAMPS = ['😂','😎','🤪','👓','🕶️','🥸','🎩','👑','🌈','⭐','💕','🔥','🌸','🦋','🤡','🥳','🐽','👅','🫦','💋','🐸','🤓'];
+
+      let drawColor = '#e91e8c';
+      let drawSize = 10;
+      let drawMode = 'pen'; // pen | eraser | stamp
+      let stampEmoji = '';
+      let painting = false;
+      let lastX = 0, lastY = 0;
+      let history = [];
+
+      // start camera
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+        .then(stream => { video.srcObject = stream; })
+        .catch(() => {
+          document.getElementById('no-cam-msg').style.display = 'block';
+          video.style.display = 'none';
+        });
+
+      // build swatches
+      const swatchContainer = document.getElementById('swatches');
+      swatchContainer.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.3rem;';
+      COLORS.forEach(col => {
+        const s = document.createElement('div');
+        s.className = 'swatch' + (col === drawColor ? ' active' : '');
+        s.style.background = col;
+        if (col === '#ffffff') s.style.border = '3px solid #e91e8c44';
+        s.onclick = () => {
+          drawColor = col; drawMode = 'pen';
+          document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
+          s.classList.add('active');
+          document.getElementById('pen-btn').style.background = '#f5c800';
+          document.getElementById('pen-btn').style.color = '#c2185b';
+        };
+        swatchContainer.appendChild(s);
+      });
+      // custom color
+      const customColor = document.createElement('input');
+      customColor.type = 'color'; customColor.value = '#ff80ab';
+      customColor.style.cssText = 'width:1.6rem;height:1.6rem;border-radius:50%;border:2px solid #e91e8c;cursor:pointer;padding:0;';
+      customColor.oninput = () => { drawColor = customColor.value; drawMode = 'pen'; document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active')); };
+      swatchContainer.appendChild(customColor);
+
+      // build sizes
+      const sizeContainer = document.getElementById('sizes');
+      sizeContainer.style.cssText = 'display:flex;align-items:center;gap:0.5rem;';
+      SIZES.forEach(sz => {
+        const btn = document.createElement('div');
+        btn.className = 'size-btn' + (sz === drawSize ? ' active' : '');
+        btn.style.width = btn.style.height = (sz > 20 ? 2.4 : sz > 10 ? 2 : sz > 4 ? 1.6 : 1.2) + 'rem';
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        const dotSize = Math.min(sz * 0.6, sz > 20 ? 18 : sz);
+        dot.style.width = dot.style.height = dotSize + 'px';
+        btn.appendChild(dot);
+        btn.onclick = () => {
+          drawSize = sz;
+          document.querySelectorAll('.size-btn').forEach(x => x.classList.remove('active'));
+          btn.classList.add('active');
+        };
+        sizeContainer.appendChild(btn);
+      });
+
+      // pen / eraser mode
+      document.getElementById('pen-btn').onclick = () => {
+        drawMode = 'pen'; stampEmoji = '';
+        document.querySelectorAll('.stamp').forEach(x => x.classList.remove('active'));
+        document.getElementById('pen-btn').style.background = '#e91e8c';
+        document.getElementById('pen-btn').style.color = '#fff';
+        document.getElementById('eraser-btn').style.background = '#f5c800';
+        document.getElementById('eraser-btn').style.color = '#c2185b';
+      };
+      document.getElementById('eraser-btn').onclick = () => {
+        drawMode = 'eraser'; stampEmoji = '';
+        document.querySelectorAll('.stamp').forEach(x => x.classList.remove('active'));
+        document.getElementById('eraser-btn').style.background = '#e91e8c';
+        document.getElementById('eraser-btn').style.color = '#fff';
+        document.getElementById('pen-btn').style.background = '#f5c800';
+        document.getElementById('pen-btn').style.color = '#c2185b';
+      };
+
+      // build stamps
+      const stampContainer = document.getElementById('stamps');
+      stampContainer.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.2rem;';
+      STAMPS.forEach(emoji => {
+        const s = document.createElement('span');
+        s.className = 'stamp'; s.textContent = emoji;
+        s.onclick = () => {
+          stampEmoji = emoji; drawMode = 'stamp';
+          document.querySelectorAll('.stamp').forEach(x => x.classList.remove('active'));
+          s.classList.add('active');
+          document.getElementById('pen-btn').style.background = '#f5c800';
+          document.getElementById('pen-btn').style.color = '#c2185b';
+          document.getElementById('eraser-btn').style.background = '#f5c800';
+          document.getElementById('eraser-btn').style.color = '#c2185b';
+        };
+        stampContainer.appendChild(s);
+      });
+
+      // take photo with countdown
+      document.getElementById('snap-btn').onclick = () => {
+        const cd = document.getElementById('countdown');
+        let n = 3;
+        cd.textContent = n; cd.classList.add('active');
+        const iv = setInterval(() => {
+          n--;
+          if (n > 0) { cd.textContent = n; }
+          else {
+            clearInterval(iv);
+            cd.classList.remove('active');
+            doSnap();
+          }
+        }, 800);
+      };
+
+      function doSnap() {
+        const w = camWrap.offsetWidth;
+        const h = camWrap.offsetHeight;
+        photoCanvas.width = w; photoCanvas.height = h;
+        drawCanvas.width = w; drawCanvas.height = h;
+
+        // flash
+        const flash = document.getElementById('flash');
+        flash.classList.add('go');
+        setTimeout(() => flash.classList.remove('go'), 150);
+
+        // draw mirrored video frame
+        pCtx.save();
+        pCtx.translate(w, 0); pCtx.scale(-1, 1);
+        pCtx.drawImage(video, 0, 0, w, h);
+        pCtx.restore();
+
+        video.style.display = 'none';
+        photoCanvas.style.display = 'block';
+        drawCanvas.style.display = 'block';
+
+        document.getElementById('camera-btns').style.display = 'none';
+        document.getElementById('photo-btns').style.display = 'flex';
+        document.getElementById('tools-card').classList.add('visible');
+
+        history = [];
+        saveHistory();
+      }
+
+      function saveHistory() {
+        history.push(dCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height));
+        if (history.length > 30) history.shift();
+      }
+
+      // drawing
+      function getPos(e) {
+        const rect = drawCanvas.getBoundingClientRect();
+        const scaleX = drawCanvas.width / rect.width;
+        const scaleY = drawCanvas.height / rect.height;
+        const src = e.touches ? e.touches[0] : e;
+        return [(src.clientX - rect.left) * scaleX, (src.clientY - rect.top) * scaleY];
+      }
+
+      function startDraw(e) {
+        e.preventDefault();
+        const [x, y] = getPos(e);
+        if (drawMode === 'stamp') {
+          saveHistory();
+          dCtx.font = drawSize * 2.5 + 'px serif';
+          dCtx.textAlign = 'center'; dCtx.textBaseline = 'middle';
+          dCtx.fillText(stampEmoji, x, y);
+          return;
+        }
+        painting = true; lastX = x; lastY = y;
+        dCtx.beginPath(); dCtx.moveTo(x, y);
+      }
+
+      function draw(e) {
+        e.preventDefault();
+        if (!painting) return;
+        const [x, y] = getPos(e);
+        if (drawMode === 'eraser') {
+          dCtx.globalCompositeOperation = 'destination-out';
+          dCtx.lineWidth = drawSize * 3;
+        } else {
+          dCtx.globalCompositeOperation = 'source-over';
+          dCtx.strokeStyle = drawColor;
+          dCtx.lineWidth = drawSize;
+        }
+        dCtx.lineCap = 'round'; dCtx.lineJoin = 'round';
+        dCtx.lineTo(x, y); dCtx.stroke();
+        dCtx.beginPath(); dCtx.moveTo(x, y);
+        lastX = x; lastY = y;
+      }
+
+      function endDraw(e) {
+        if (painting) { painting = false; saveHistory(); }
+      }
+
+      drawCanvas.addEventListener('mousedown', startDraw);
+      drawCanvas.addEventListener('mousemove', draw);
+      window.addEventListener('mouseup', endDraw);
+      drawCanvas.addEventListener('touchstart', startDraw, { passive: false });
+      drawCanvas.addEventListener('touchmove', draw, { passive: false });
+      drawCanvas.addEventListener('touchend', endDraw);
+
+      // undo
+      document.getElementById('undo-btn').onclick = () => {
+        if (history.length <= 1) return;
+        history.pop();
+        dCtx.putImageData(history[history.length - 1], 0, 0);
+      };
+
+      // clear drawing
+      document.getElementById('clear-draw-btn').onclick = () => {
+        dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        history = []; saveHistory();
+      };
+
+      // retake
+      document.getElementById('retake-btn').onclick = () => {
+        video.style.display = 'block';
+        photoCanvas.style.display = 'none';
+        drawCanvas.style.display = 'none';
+        dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        document.getElementById('camera-btns').style.display = 'flex';
+        document.getElementById('photo-btns').style.display = 'none';
+        document.getElementById('tools-card').classList.remove('visible');
+        history = [];
+      };
+
+      // save / download
+      document.getElementById('save-btn').onclick = () => {
+        const out = document.createElement('canvas');
+        out.width = photoCanvas.width; out.height = photoCanvas.height;
+        const ctx = out.getContext('2d');
+        ctx.drawImage(photoCanvas, 0, 0);
+        ctx.drawImage(drawCanvas, 0, 0);
+        const link = document.createElement('a');
+        link.download = 'funny-face.png';
+        link.href = out.toDataURL('image/png');
+        link.click();
+      };
+    </script>
+  </body>
+</html>
