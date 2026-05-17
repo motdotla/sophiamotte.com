@@ -125,18 +125,21 @@
         box-shadow: 0 0 28px #ffb6d9;
         padding: 1.4rem;
         z-index: 99;
-        width: min(420px, 92vw);
+        width: min(480px, 92vw);
         display: none;
-        flex-direction: column;
+        flex-wrap: wrap;
         gap: 0.6rem;
+        max-height: 85vh;
+        overflow-y: auto;
       }
       #games-panel.open { display: flex; }
       #games-panel a {
         font-family: "Courier New", Courier, monospace;
-        font-size: 1.2rem; font-weight: bold;
-        padding: 0.75rem 1.2rem; border-radius: 0.7rem;
+        font-size: 1.1rem; font-weight: bold;
+        padding: 0.75rem 1rem; border-radius: 0.7rem;
         text-decoration: none; color: #c2185b;
         background: #fde8f0; border: 2px solid transparent;
+        width: calc(50% - 0.3rem);
       }
       #games-panel a:hover { background: #e91e8c; color: #fff; border-color: #e91e8c; }
 
