@@ -125,21 +125,20 @@
         box-shadow: 0 0 28px #ffb6d9;
         padding: 1.4rem;
         z-index: 99;
-        width: min(480px, 92vw);
+        width: min(600px, 92vw);
         display: none;
-        flex-direction: column;
+        flex-wrap: wrap;
         gap: 0.6rem;
-        max-height: 80vh;
-        overflow-y: auto;
       }
       #games-panel.open { display: flex; }
       #games-panel a {
         font-family: "Courier New", Courier, monospace;
-        font-size: 1.2rem; font-weight: bold;
-        padding: 0.8rem 1.2rem; border-radius: 0.7rem;
+        font-size: 1.1rem; font-weight: bold;
+        padding: 0.7rem 1rem; border-radius: 0.7rem;
         text-decoration: none; color: #c2185b;
         background: #fde8f0; border: 2px solid transparent;
-        display: block;
+        width: calc(33% - 0.4rem);
+        text-align: center;
       }
       #games-panel a:hover { background: #e91e8c; color: #fff; border-color: #e91e8c; }
 
@@ -244,11 +243,9 @@
     </div>
 
     <div class="tabs" style="padding-left: 12rem;">
-      <a class="play-tab" href="draw.html">🎨 DRAW</a>
       <a class="play-tab" href="sophia.html">💕 SOPHIA</a>
       <a class="play-tab" href="wally.html">🐶 WALLY</a>
       <a class="play-tab" href="travel.html">✈️ TRAVELS</a>
-      <a class="play-tab" href="movies.html">🎬 MOVIE MAKER</a>
       <a class="play-tab" href="browse-movies.html">🍿 BROWSE MOVIES</a>
       <a class="play-tab" href="compliments.html">💌 COMPLIMENTS</a>
       <a class="play-tab" href="recipes.html">👩‍🍳 RECIPES</a>
@@ -257,7 +254,6 @@
       <a class="play-tab" href="claude.html">🤖 CLAUDE'S FAVES</a>
       <a class="play-tab" href="todo.html">💕 TO-DO LIST</a>
       <a class="play-tab" href="timer.html">⏰ TIMER</a>
-      <a class="play-tab" href="funnycam.html">📸 FUNNY CAM</a>
     </div>
     <div class="still-hearts" aria-hidden="true">
       <span class="still-heart" style="top:5%;  left:5%;">♥</span>
