@@ -229,26 +229,26 @@
 
       #games-panel {
         position: fixed;
-        bottom: 4.5rem; left: 0.5rem;
+        top: 4.5rem; left: 0.5rem;
         background: #fff0f7;
         border: 3px solid #e91e8c;
         border-radius: 1.2rem;
         box-shadow: 0 0 28px #ffb6d9;
-        padding: 1.4rem;
+        padding: 1.6rem;
         z-index: 99;
-        width: min(600px, 92vw);
-        display: none;
-        flex-wrap: wrap;
-        gap: 0.6rem;
+        width: min(700px, 92vw);
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.7rem;
       }
-      #games-panel.open { display: flex; }
+      #games-panel { display: none; }
+      #games-panel.open { display: grid; }
       #games-panel a {
         font-family: "Courier New", Courier, monospace;
         font-size: 1.1rem; font-weight: bold;
-        padding: 0.7rem 1rem; border-radius: 0.7rem;
+        padding: 0.9rem 0.5rem; border-radius: 0.7rem;
         text-decoration: none; color: #c2185b;
         background: #fde8f0; border: 2px solid transparent;
-        width: calc(33% - 0.4rem);
         text-align: center;
       }
       #games-panel a:hover { background: #e91e8c; color: #fff; border-color: #e91e8c; }
