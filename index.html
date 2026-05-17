@@ -116,6 +116,43 @@
       }
       #games-btn:hover { background: #c2185b; }
 
+      #about-btn {
+        background: #e91e8c; color: #fff;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1.3rem; font-weight: bold; letter-spacing: 0.1em;
+        padding: 0.8rem 1.8rem; border-radius: 0.8rem;
+        border: 3px solid #c2185b; box-shadow: 0 0 16px #ffb6d9;
+        cursor: pointer; position: fixed;
+        top: 0.5rem; left: 13rem; z-index: 100;
+      }
+      #about-btn:hover { background: #c2185b; }
+
+      #about-panel {
+        position: fixed;
+        top: 4.5rem; left: 13rem;
+        background: #fff0f7;
+        border: 3px solid #e91e8c;
+        border-radius: 1.2rem;
+        box-shadow: 0 0 28px #ffb6d9;
+        padding: 1.4rem;
+        z-index: 99;
+        width: min(400px, 80vw);
+        display: none;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+      }
+      #about-panel.open { display: flex; }
+      #about-panel a {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1.1rem; font-weight: bold;
+        padding: 0.7rem 1rem; border-radius: 0.7rem;
+        text-decoration: none; color: #c2185b;
+        background: #fde8f0; border: 2px solid transparent;
+        width: calc(50% - 0.3rem);
+        text-align: center;
+      }
+      #about-panel a:hover { background: #e91e8c; color: #fff; border-color: #e91e8c; }
+
       #games-panel {
         position: fixed;
         top: 4.5rem; left: 0.5rem;
@@ -222,6 +259,13 @@
   </head>
   <body>
     <button id="games-btn" onclick="toggleGames(event)">🎮 GAMES</button>
+    <button id="about-btn" onclick="toggleAbout(event)">💕 ABOUT ME</button>
+    <div id="about-panel">
+      <a href="travel.html">✈️ travels</a>
+      <a href="wally.html">🐶 wally</a>
+      <a href="sophia.html">💕 sophia</a>
+      <a href="bubbles.html">🫧 bubbles</a>
+    </div>
     <div id="games-panel">
       <a href="snake.html">🐍 snake</a>
       <a href="match.html">💕 match</a>
@@ -243,14 +287,10 @@
     </div>
 
     <div class="tabs" style="padding-left: 12rem;">
-      <a class="play-tab" href="sophia.html">💕 SOPHIA</a>
-      <a class="play-tab" href="wally.html">🐶 WALLY</a>
-      <a class="play-tab" href="travel.html">✈️ TRAVELS</a>
       <a class="play-tab" href="browse-movies.html">🍿 BROWSE MOVIES</a>
       <a class="play-tab" href="compliments.html">💌 COMPLIMENTS</a>
       <a class="play-tab" href="recipes.html">👩‍🍳 RECIPES</a>
       <a class="play-tab" href="mood.html">🌈 MOOD</a>
-      <a class="play-tab" href="bubbles.html">🫧 BUBBLES</a>
       <a class="play-tab" href="claude.html">🤖 CLAUDE'S FAVES</a>
       <a class="play-tab" href="todo.html">💕 TO-DO LIST</a>
       <a class="play-tab" href="timer.html">⏰ TIMER</a>
@@ -428,15 +468,21 @@
   <script>
     function toggleGames(e) {
       e.stopPropagation();
-      const panel = document.getElementById('games-panel');
-      panel.classList.toggle('open');
+      document.getElementById('about-panel').classList.remove('open');
+      document.getElementById('games-panel').classList.toggle('open');
+    }
+    function toggleAbout(e) {
+      e.stopPropagation();
+      document.getElementById('games-panel').classList.remove('open');
+      document.getElementById('about-panel').classList.toggle('open');
     }
     document.addEventListener('click', function(e) {
-      const panel = document.getElementById('games-panel');
-      const btn = document.getElementById('games-btn');
-      if (!panel.contains(e.target) && !btn.contains(e.target)) {
-        panel.classList.remove('open');
-      }
+      const gPanel = document.getElementById('games-panel');
+      const gBtn = document.getElementById('games-btn');
+      const aPanel = document.getElementById('about-panel');
+      const aBtn = document.getElementById('about-btn');
+      if (!gPanel.contains(e.target) && !gBtn.contains(e.target)) gPanel.classList.remove('open');
+      if (!aPanel.contains(e.target) && !aBtn.contains(e.target)) aPanel.classList.remove('open');
     });
   </script>
   <script>
