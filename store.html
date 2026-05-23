@@ -133,23 +133,44 @@
       z-index: 999;
       align-items: center;
       justify-content: center;
+      padding: 1rem;
     }
     .modal-bg.open { display: flex; }
     .modal {
       background: #fff;
       border: 4px solid #ff69b4;
       border-radius: 1.6rem;
-      padding: 2rem 2.5rem;
+      padding: 1.8rem 2rem;
       text-align: center;
-      max-width: 360px;
-      width: 90%;
+      max-width: 400px;
+      width: 100%;
       box-shadow: 0 8px 40px #ffb6d9;
     }
-    .modal h2 { font-size: 1.8rem; color: #ff1493; margin-bottom: 0.6rem; }
-    .modal p { font-size: 1rem; color: #666; line-height: 1.5; }
-    .modal-close {
-      margin-top: 1.4rem;
-      padding: 0.6rem 1.8rem;
+    .modal h2 { font-size: 1.6rem; color: #ff1493; margin-bottom: 0.4rem; }
+    .modal p { font-size: 0.95rem; color: #666; line-height: 1.5; }
+    .modal label {
+      display: block;
+      text-align: left;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #c2185b;
+      margin: 1rem 0 0.3rem;
+    }
+    .modal input, .modal textarea {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border: 2px solid #ffb6d9;
+      border-radius: 0.8rem;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.95rem;
+      color: #333;
+      outline: none;
+    }
+    .modal input:focus, .modal textarea:focus { border-color: #ff69b4; }
+    .modal textarea { resize: vertical; min-height: 70px; }
+    .modal-btn {
+      margin-top: 1.2rem;
+      padding: 0.7rem 1.6rem;
       background: #ff69b4;
       color: #fff;
       border: none;
@@ -158,8 +179,30 @@
       font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
+      width: 100%;
     }
-    .modal-close:hover { background: #ff1493; }
+    .modal-btn:hover { background: #ff1493; }
+    .modal-btn.secondary {
+      background: #fff;
+      color: #ff69b4;
+      border: 2px solid #ff69b4;
+      margin-top: 0.5rem;
+    }
+    .modal-btn.secondary:hover { background: #fff0f7; }
+    .note-box {
+      background: #fff0f7;
+      border: 2px dashed #ff69b4;
+      border-radius: 0.8rem;
+      padding: 0.8rem 1rem;
+      margin: 0.8rem 0;
+      font-size: 1rem;
+      color: #c2185b;
+      font-weight: bold;
+      word-break: break-word;
+      text-align: left;
+    }
+    .step { display: none; }
+    .step.active { display: block; }
 
     footer {
       text-align: center;
@@ -184,9 +227,31 @@
 
   <div class="modal-bg" id="modal-bg">
     <div class="modal">
-      <h2>yay!! 🎉</h2>
-      <p>thank you so much for wanting to buy this!! 💕<br><br>ask a grown-up to contact sophia to get your item!!</p>
-      <button class="modal-close" onclick="closeModal()">okay!! 💖</button>
+
+      <!-- step 1: form -->
+      <div class="step active" id="step1">
+        <h2>yay!! 🎉</h2>
+        <p>fill in your details and we'll get <strong id="item-name-display"></strong> shipped to you!!</p>
+        <label for="buyer-name">your name</label>
+        <input type="text" id="buyer-name" placeholder="e.g. emma" />
+        <label for="buyer-address">your shipping address</label>
+        <textarea id="buyer-address" placeholder="e.g. 123 maple street, new york, ny 10001"></textarea>
+        <button class="modal-btn" onclick="goToStep2()">next → 💖</button>
+        <button class="modal-btn secondary" onclick="closeModal()">never mind</button>
+      </div>
+
+      <!-- step 2: interstitial with pay button -->
+      <div class="step" id="step2">
+        <h2>almost done!! 💕</h2>
+        <p>on the next page, fill in your name and paste this into the <strong>note</strong> field:</p>
+        <div class="note-box" id="note-preview"></div>
+        <p style="font-size:0.85rem;color:#aaa;margin-bottom:0.3rem;">also check the goods/services box!!</p>
+        <a id="pay-link" href="https://gl.me/u/wG5tJVnHmGWN" target="_blank">
+          <button class="modal-btn" onclick="closeModal()">pay $5 now 💳</button>
+        </a>
+        <button class="modal-btn secondary" onclick="goToStep1()">← go back</button>
+      </div>
+
     </div>
   </div>
 
@@ -355,8 +420,33 @@
       `).join('');
     }
 
+    let currentItem = null;
+
     function buy(i) {
+      currentItem = items[i];
+      document.getElementById('item-name-display').textContent = currentItem.name;
+      document.getElementById('buyer-name').value = '';
+      document.getElementById('buyer-address').value = '';
+      goToStep1();
       document.getElementById('modal-bg').classList.add('open');
+    }
+
+    function goToStep1() {
+      document.getElementById('step1').classList.add('active');
+      document.getElementById('step2').classList.remove('active');
+    }
+
+    function goToStep2() {
+      const name = document.getElementById('buyer-name').value.trim();
+      const address = document.getElementById('buyer-address').value.trim();
+      if (!name || !address) {
+        alert('please fill in your name and address!! 💕');
+        return;
+      }
+      const note = `buying: ${currentItem.name} | ship to: ${name}, ${address}`;
+      document.getElementById('note-preview').textContent = note;
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step2').classList.add('active');
     }
 
     function closeModal() {
