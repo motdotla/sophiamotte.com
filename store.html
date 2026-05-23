@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sophia's store 🛍️</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #fff5fb;
+      font-family: "Courier New", Courier, monospace;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #ff69b4, #ff1493);
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: 0 4px 16px #ffb6d9;
+    }
+    header h1 {
+      font-size: 2.8rem;
+      color: #fff;
+      text-shadow: 2px 2px 0 #c2185b;
+      letter-spacing: 2px;
+    }
+    header p {
+      color: #ffe0f0;
+      font-size: 1.1rem;
+      margin-top: 0.4rem;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin: 1.2rem 1.5rem;
+      padding: 0.5rem 1.2rem;
+      background: #ff69b4;
+      color: #fff;
+      border-radius: 2rem;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1rem;
+    }
+    .back-btn:hover { background: #ff1493; }
+
+    .shop-intro {
+      text-align: center;
+      padding: 0.5rem 1rem 1rem;
+      font-size: 1.15rem;
+      color: #c2185b;
+      font-weight: bold;
+    }
+
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.6rem;
+      padding: 1rem 2rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .item-card {
+      background: #fff;
+      border: 3px solid #ffb6d9;
+      border-radius: 1.4rem;
+      overflow: hidden;
+      box-shadow: 0 4px 18px #ffd6ef;
+      transition: transform 0.15s, box-shadow 0.15s;
+      display: flex;
+      flex-direction: column;
+    }
+    .item-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 28px #ffb6d9;
+    }
+
+    .item-card img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      background: #fff5fb;
+    }
+
+    .item-info {
+      padding: 1rem 1.2rem 1.3rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .item-name {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #c2185b;
+    }
+
+    .item-desc {
+      font-size: 0.9rem;
+      color: #666;
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .item-price {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #ff1493;
+    }
+
+    .buy-btn {
+      margin-top: 0.5rem;
+      padding: 0.6rem 1rem;
+      background: #ff69b4;
+      color: #fff;
+      border: none;
+      border-radius: 2rem;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .buy-btn:hover { background: #ff1493; }
+
+    /* modal */
+    .modal-bg {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-bg.open { display: flex; }
+    .modal {
+      background: #fff;
+      border: 4px solid #ff69b4;
+      border-radius: 1.6rem;
+      padding: 2rem 2.5rem;
+      text-align: center;
+      max-width: 360px;
+      width: 90%;
+      box-shadow: 0 8px 40px #ffb6d9;
+    }
+    .modal h2 { font-size: 1.8rem; color: #ff1493; margin-bottom: 0.6rem; }
+    .modal p { font-size: 1rem; color: #666; line-height: 1.5; }
+    .modal-close {
+      margin-top: 1.4rem;
+      padding: 0.6rem 1.8rem;
+      background: #ff69b4;
+      color: #fff;
+      border: none;
+      border-radius: 2rem;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .modal-close:hover { background: #ff1493; }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: #ffb6d9;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🛍️ sophia's store</h1>
+    <p>handmade pipe cleaner creatures, made with love!! 💕</p>
+  </header>
+
+  <a class="back-btn" href="index.html">← back home</a>
+
+  <p class="shop-intro">every single one is made by me!! each one is totally one of a kind!! 🎨✨</p>
+
+  <div class="items-grid" id="items-grid"></div>
+
+  <div class="modal-bg" id="modal-bg">
+    <div class="modal">
+      <h2>yay!! 🎉</h2>
+      <p>thank you so much for wanting to buy this!! 💕<br><br>ask a grown-up to contact sophia to get your item!!</p>
+      <button class="modal-close" onclick="closeModal()">okay!! 💖</button>
+    </div>
+  </div>
+
+  <footer>made with 💕 by sophia</footer>
+
+  <script>
+    const items = [
+      {
+        img: 'assets/IMG_0079.jpeg',
+        name: 'little blue worm 🐛',
+        desc: 'a tiny curly blue pipe cleaner worm!! so small and cute, perfect to keep on your desk or in your pocket!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0080.jpeg',
+        name: 'rainbow fish 🐟',
+        desc: 'a bright and colorful fish made from red, green, and yellow pipe cleaners!! it looks like it came straight from a coral reef!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0081.jpeg',
+        name: 'neon caterpillar 🌈',
+        desc: 'a super bright caterpillar in neon green, yellow, and red!! this little guy is impossible to miss — he glows!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0082.jpeg',
+        name: 'christmas tangle ball 🎄',
+        desc: 'a big fluffy tangle of dark green, pink, red, and neon yellow pipe cleaners!! it looks like a wild christmas party in creature form!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0083.jpeg',
+        name: 'green flower wand 🌿',
+        desc: 'a neon green flower on a long stem — perfect to hold like a magic wand!! the flower on top is made from two shades of green twisted together!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0084.jpeg',
+        name: 'lavender butterfly bug 🦋',
+        desc: 'a soft purple and green caterpillar with little white butterfly wings on the side!! she looks like she is just about to fly away!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0085.jpeg',
+        name: 'christmas critter 🎅',
+        desc: 'a festive red and green critter with a little cream-colored head!! she looks like she got dressed up for the holidays and loves it!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0086.jpeg',
+        name: 'snowy caterpillar ❄️',
+        desc: 'a soft white and gray caterpillar with dark brown fuzzy ends!! she looks like she is covered in a little bit of snow!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0087.jpeg',
+        name: 'cloud caterpillar ☁️',
+        desc: 'a white and gray caterpillar with cute brown pom-pom ends!! fluffy like a little cloud with brown boots on!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0088.jpeg',
+        name: 'piglet caterpillar 🐷',
+        desc: 'a soft pink caterpillar with a hot pink loopy head that looks just like piglet ears!! the sweetest little creature!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0089.jpeg',
+        name: 'strawberry swirl 🍓',
+        desc: 'a cream-colored caterpillar wrapped tightly in hot pink pipe cleaner — like a strawberry wrapped in cream!! so pretty!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0090.jpeg',
+        name: 'green bow bracelet 💚',
+        desc: 'a wearable green pipe cleaner bracelet with a yellow bow on top!! you can actually put this on your wrist and wear it — how cool is that!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0091.jpeg',
+        name: 'cotton candy caterpillar 🩷',
+        desc: 'a light pink and hot pink caterpillar with sweet pink looped ears!! she looks just like fluffy cotton candy!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0092.jpeg',
+        name: 'midnight fluff ball 🖤',
+        desc: 'an all-black fluffy pipe cleaner creature!! mysterious and totally unique — perfect if you love dark and cozy things!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0093.jpeg',
+        name: 'berry smoothie bug 🫐',
+        desc: 'a soft pink and red caterpillar body with a cool gray head!! she looks like a strawberry and blueberry smoothie came to life!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0095.jpeg',
+        name: 'red rose stem 🌹',
+        desc: 'a long green pipe cleaner stem with a red rose flower at the bottom!! it even has little loopy leaves!! like a tiny handmade flower!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0096.jpeg',
+        name: 'blue octopus flower 🐙',
+        desc: 'a blue pipe cleaner creature with lots of arms looping out — it looks like a flower and an octopus at the same time!! totally unique!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0097.jpeg',
+        name: 'clownfish caterpillar 🐠',
+        desc: 'a big bold caterpillar in orange, blue, and neon green — just like a clownfish!! this is one of the biggest and most colorful ones!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0098.jpeg',
+        name: 'alien bug 👽',
+        desc: 'a blue and neon green caterpillar with curly bright green antennae on top!! she looks like she came from outer space and she is adorable!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0099.jpeg',
+        name: 'creamsicle critter 🍊',
+        desc: 'a soft cream and orange caterpillar — the colors remind you of a creamsicle ice cream!! sweet and tiny!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0100.jpeg',
+        name: 'dark rose bug 🌹',
+        desc: 'a deep red and black caterpillar with a bright pink head!! dark and dramatic and totally cool looking!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0101.jpeg',
+        name: 'black bow butterfly 🎀',
+        desc: 'an all-black fluffy creature with a bright pink stripe in the middle — like a bow!! it looks like a fancy little butterfly wearing a pink belt!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0102.jpeg',
+        name: 'ocean caterpillar 🌊',
+        desc: 'a blue and neon green caterpillar with brown fuzzy ends — the colors look just like the ocean with seaweed!! one of the most popular designs!!',
+        price: '$5.00',
+      },
+      {
+        img: 'assets/IMG_0103.jpeg',
+        name: 'valentine caterpillar 💝',
+        desc: 'a pink and lavender caterpillar with a cute red heart-shaped head!! she was made with extra love and is perfect for someone special!!',
+        price: '$5.00',
+      },
+    ];
+
+    function renderItems() {
+      const grid = document.getElementById('items-grid');
+      grid.innerHTML = items.map((item, i) => `
+        <div class="item-card">
+          <img src="${item.img}" alt="${item.name}" />
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            <div class="item-desc">${item.desc}</div>
+            <div class="item-price">${item.price}</div>
+            <button class="buy-btn" onclick="buy(${i})">💖 i want this!!</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function buy(i) {
+      document.getElementById('modal-bg').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-bg').classList.remove('open');
+    }
+
+    document.getElementById('modal-bg').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    renderItems();
+  </script>
+</body>
+</html>
