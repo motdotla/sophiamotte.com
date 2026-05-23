@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>marshi 🍡</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #fff5fb;
+      font-family: "Courier New", Courier, monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      background: linear-gradient(135deg, #ff69b4, #ffb6d9);
+      width: 100%;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 4px 16px #ffb6d9;
+    }
+    header h1 { font-size: 2rem; color: #fff; text-shadow: 2px 2px 0 #c2185b; }
+    header p { color: #ffe0f0; font-size: 0.9rem; }
+
+    .back-btn {
+      display: inline-block;
+      margin: 1rem 0 0 1rem;
+      align-self: flex-start;
+      padding: 0.4rem 1rem;
+      background: #ff69b4;
+      color: #fff;
+      border-radius: 2rem;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .back-btn:hover { background: #ff1493; }
+
+    /* ── MARSHI SCENE ── */
+    .scene {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      margin: 0.5rem auto 0;
+    }
+
+    /* ground */
+    .ground {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(#ffb6d9, #ff69b4);
+      border-radius: 0 0 1rem 1rem;
+    }
+
+    /* marshi body */
+    .marshi {
+      position: absolute;
+      bottom: 45px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 130px;
+      transition: transform 0.3s;
+      cursor: pointer;
+      user-select: none;
+    }
+    .marshi:active { transform: translateX(-50%) scale(0.92); }
+
+    .marshi-body {
+      position: absolute;
+      width: 110px;
+      height: 120px;
+      background: white;
+      border-radius: 50% 50% 45% 45% / 55% 55% 45% 45%;
+      box-shadow: 0 4px 20px #ffb6d955, inset 0 -8px 20px #ffcce844;
+      border: 3px solid #ffcce8;
+      transition: background 0.4s;
+      overflow: hidden;
+    }
+
+    /* outfit layer inside body */
+    .outfit-layer {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 55%;
+      border-radius: 0 0 50% 50%;
+      transition: background 0.4s;
+      opacity: 0;
+    }
+
+    /* hat */
+    .hat {
+      position: absolute;
+      top: -38px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+    }
+
+    /* face */
+    .face {
+      position: absolute;
+      top: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      text-align: center;
+    }
+    .eyes {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    .eye {
+      width: 14px; height: 14px;
+      background: #333;
+      border-radius: 50%;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .eye::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 5px; height: 5px;
+      background: white;
+      border-radius: 50%;
+    }
+    .mouth {
+      font-size: 22px;
+      line-height: 1;
+      transition: all 0.2s;
+    }
+    .cheeks {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 4px;
+      margin-top: 4px;
+    }
+    .cheek {
+      width: 18px; height: 10px;
+      background: #ffb6d9;
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+
+    /* arms */
+    .arm {
+      position: absolute;
+      width: 28px; height: 14px;
+      background: white;
+      border: 3px solid #ffcce8;
+      border-radius: 2rem;
+      top: 65px;
+      transition: all 0.3s, background 0.4s;
+    }
+    .arm-left  { left: -20px; transform: rotate(30deg); }
+    .arm-right { right: -20px; transform: rotate(-30deg); }
+
+    /* feet */
+    .feet {
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 14px;
+    }
+    .foot {
+      width: 26px; height: 14px;
+      background: white;
+      border: 3px solid #ffcce8;
+      border-radius: 2rem;
+      transition: background 0.4s;
+    }
+
+    /* accessories */
+    .accessory {
+      position: absolute;
+      font-size: 1.4rem;
+      display: none;
+    }
+
+    /* speech bubble */
+    .bubble {
+      position: absolute;
+      top: 10px; right: -10px;
+      background: white;
+      border: 2px solid #ff69b4;
+      border-radius: 1rem 1rem 1rem 0;
+      padding: 0.4rem 0.7rem;
+      font-size: 0.8rem;
+      color: #c2185b;
+      font-weight: bold;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      max-width: 160px;
+      white-space: normal;
+      text-align: center;
+    }
+    .bubble.show { opacity: 1; }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin: 0.8rem auto;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 380px;
+      padding: 0 1rem;
+    }
+    .tab {
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      border: 2px solid #ffb6d9;
+      background: white;
+      color: #c2185b;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab:hover, .tab.active { background: #ff69b4; color: white; border-color: #ff69b4; }
+
+    /* ── PANELS ── */
+    .panel {
+      display: none;
+      width: 100%;
+      max-width: 380px;
+      padding: 0 1rem 2rem;
+    }
+    .panel.active { display: block; }
+
+    .panel h3 {
+      text-align: center;
+      color: #c2185b;
+      font-size: 1.1rem;
+      margin-bottom: 0.8rem;
+    }
+
+    /* play panel */
+    .play-btns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.6rem;
+    }
+    .play-btn {
+      padding: 0.7rem 0.5rem;
+      border-radius: 1rem;
+      border: 2px solid #ffb6d9;
+      background: white;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #c2185b;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .play-btn:hover { background: #ff69b4; color: white; border-color: #ff69b4; }
+
+    /* dress up panel */
+    .section-label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #ff69b4;
+      margin: 0.8rem 0 0.4rem;
+    }
+    .color-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .color-swatch {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .color-swatch:hover { transform: scale(1.2); }
+    .color-swatch.selected { border-color: #c2185b; }
+
+    .hat-row, .acc-row {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .hat-btn, .acc-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: 1rem;
+      border: 2px solid #ffb6d9;
+      background: white;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .hat-btn:hover, .acc-btn:hover,
+    .hat-btn.selected, .acc-btn.selected {
+      background: #ff69b4;
+      border-color: #ff69b4;
+    }
+
+    /* make clothes panel */
+    .clothes-area {
+      background: white;
+      border: 2px solid #ffb6d9;
+      border-radius: 1rem;
+      padding: 1rem;
+    }
+    .clothes-area label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #c2185b;
+      margin: 0.6rem 0 0.3rem;
+    }
+    .clothes-area input[type=range] {
+      width: 100%;
+      accent-color: #ff69b4;
+    }
+    .clothes-area input[type=color] {
+      width: 50px; height: 34px;
+      border: 2px solid #ffb6d9;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      padding: 2px;
+    }
+    .clothes-preview {
+      width: 80px; height: 50px;
+      border-radius: 0.5rem;
+      margin: 0.5rem auto;
+      border: 2px solid #ffb6d9;
+    }
+    .apply-btn {
+      width: 100%;
+      margin-top: 0.8rem;
+      padding: 0.6rem;
+      background: #ff69b4;
+      color: white;
+      border: none;
+      border-radius: 2rem;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .apply-btn:hover { background: #ff1493; }
+
+    /* timer panel */
+    .timer-display {
+      text-align: center;
+      font-size: 3.5rem;
+      font-weight: bold;
+      color: #ff1493;
+      margin: 0.5rem 0;
+      letter-spacing: 2px;
+    }
+    .timer-controls {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: center;
+      margin-bottom: 0.8rem;
+    }
+    .timer-btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 2rem;
+      border: none;
+      background: #ff69b4;
+      color: white;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .timer-btn:hover { background: #ff1493; }
+    .timer-btn.stop { background: #aaa; }
+    .timer-btn.stop:hover { background: #888; }
+    .timer-presets {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .preset {
+      padding: 0.4rem 0.9rem;
+      border-radius: 2rem;
+      border: 2px solid #ffb6d9;
+      background: white;
+      color: #c2185b;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .preset:hover { background: #ffb6d9; }
+    .mode-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 0.7rem;
+    }
+
+    /* moods */
+    @keyframes bounce {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-18px); }
+    }
+    @keyframes wiggle {
+      0%,100% { transform: translateX(-50%) rotate(0deg); }
+      25% { transform: translateX(-50%) rotate(-8deg); }
+      75% { transform: translateX(-50%) rotate(8deg); }
+    }
+    @keyframes spin {
+      from { transform: translateX(-50%) rotate(0deg); }
+      to { transform: translateX(-50%) rotate(360deg); }
+    }
+    .marshi.bouncing { animation: bounce 0.5s ease-in-out 3; }
+    .marshi.wiggling { animation: wiggle 0.3s ease-in-out 4; }
+    .marshi.spinning { animation: spin 0.5s linear 2; }
+
+    footer { color: #ffb6d9; font-size: 0.8rem; padding: 1rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🍡 marshi</h1>
+  <p>your very own marshmallow friend!!</p>
+</header>
+
+<a class="back-btn" href="index.html">← back home</a>
+
+<!-- SCENE -->
+<div class="scene">
+  <div class="bubble" id="bubble">hi!! i'm marshi!! 💕</div>
+
+  <div class="marshi" id="marshi" onclick="petMarshi()">
+    <div class="marshi-body" id="marshi-body">
+      <div class="outfit-layer" id="outfit-layer"></div>
+    </div>
+
+    <!-- hat slot -->
+    <div class="hat" id="hat-slot"></div>
+
+    <!-- face -->
+    <div class="face">
+      <div class="eyes">
+        <div class="eye" id="eye-left"></div>
+        <div class="eye" id="eye-right"></div>
+      </div>
+      <div class="mouth" id="mouth">🙂</div>
+      <div class="cheeks">
+        <div class="cheek"></div>
+        <div class="cheek"></div>
+      </div>
+    </div>
+
+    <!-- accessory slot -->
+    <div class="accessory" id="acc-slot" style="top:10px;right:5px;"></div>
+
+    <!-- arms -->
+    <div class="arm arm-left"  id="arm-left"></div>
+    <div class="arm arm-right" id="arm-right"></div>
+
+    <!-- feet -->
+    <div class="feet">
+      <div class="foot" id="foot-left"></div>
+      <div class="foot" id="foot-right"></div>
+    </div>
+  </div>
+
+  <div class="ground"></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('play')">🎮 play</button>
+  <button class="tab" onclick="showTab('dressup')">👗 dress up</button>
+  <button class="tab" onclick="showTab('clothes')">✂️ make clothes</button>
+  <button class="tab" onclick="showTab('timer')">⏱️ timer</button>
+</div>
+
+<!-- PLAY PANEL -->
+<div class="panel active" id="panel-play">
+  <h3>play with marshi!!</h3>
+  <div class="play-btns">
+    <button class="play-btn" onclick="action('hug')">🤗 hug</button>
+    <button class="play-btn" onclick="action('tickle')">😂 tickle</button>
+    <button class="play-btn" onclick="action('feed')">🍬 feed</button>
+    <button class="play-btn" onclick="action('dance')">💃 dance</button>
+    <button class="play-btn" onclick="action('sleep')">😴 sleep</button>
+    <button class="play-btn" onclick="action('surprise')">😮 surprise</button>
+    <button class="play-btn" onclick="action('spin')">🌀 spin</button>
+    <button class="play-btn" onclick="action('wave')">👋 wave</button>
+    <button class="play-btn" onclick="action('cry')">😢 sad</button>
+  </div>
+</div>
+
+<!-- DRESS UP PANEL -->
+<div class="panel" id="panel-dressup">
+  <h3>dress up marshi!!</h3>
+
+  <div class="section-label">🎨 body color</div>
+  <div class="color-row" id="body-colors"></div>
+
+  <div class="section-label">🎩 hats</div>
+  <div class="hat-row" id="hat-row"></div>
+
+  <div class="section-label">✨ accessories</div>
+  <div class="acc-row" id="acc-row"></div>
+</div>
+
+<!-- MAKE CLOTHES PANEL -->
+<div class="panel" id="panel-clothes">
+  <h3>make marshi's outfit!!</h3>
+  <div class="clothes-area">
+    <label>outfit color</label>
+    <input type="color" id="outfit-color" value="#ff69b4" oninput="previewOutfit()" />
+
+    <label>pattern</label>
+    <div class="color-row" id="pattern-row"></div>
+
+    <div class="clothes-preview" id="clothes-preview"></div>
+    <button class="apply-btn" onclick="applyOutfit()">✨ put it on marshi!!</button>
+  </div>
+</div>
+
+<!-- TIMER PANEL -->
+<div class="panel" id="panel-timer">
+  <h3>marshi's timer!!</h3>
+  <div class="mode-toggle">
+    <button class="preset" id="mode-countdown" onclick="setMode('countdown')" style="background:#ff69b4;color:white">countdown</button>
+    <button class="preset" id="mode-stopwatch" onclick="setMode('stopwatch')">stopwatch</button>
+  </div>
+  <div class="timer-display" id="timer-display">00:00</div>
+  <div class="timer-controls">
+    <button class="timer-btn" id="start-btn" onclick="startTimer()">▶ start</button>
+    <button class="timer-btn stop" onclick="stopTimer()">⏹ stop</button>
+    <button class="timer-btn stop" onclick="resetTimer()">↺ reset</button>
+  </div>
+  <div class="timer-presets" id="timer-presets">
+    <button class="preset" onclick="setCountdown(60)">1 min</button>
+    <button class="preset" onclick="setCountdown(180)">3 min</button>
+    <button class="preset" onclick="setCountdown(300)">5 min</button>
+    <button class="preset" onclick="setCountdown(600)">10 min</button>
+    <button class="preset" onclick="setCountdown(1800)">30 min</button>
+  </div>
+</div>
+
+<footer>made with 💕 by sophia</footer>
+
+<script>
+  // ── TABS ──
+  function showTab(name) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // ── BUBBLE ──
+  let bubbleTimer;
+  function showBubble(msg, duration = 2000) {
+    const b = document.getElementById('bubble');
+    b.textContent = msg;
+    b.classList.add('show');
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(() => b.classList.remove('show'), duration);
+  }
+
+  // ── PET ──
+  function petMarshi() {
+    const msgs = ['hehe!! 🥰','that tickles!!','yay!! 💕','i love you!!','heehee!!','you are so nice!!'];
+    showBubble(msgs[Math.floor(Math.random() * msgs.length)]);
+    setMood('happy');
+    animateMarshi('bouncing');
+  }
+
+  // ── MOODS ──
+  function setMood(mood) {
+    const mouth = document.getElementById('mouth');
+    const eyeL = document.getElementById('eye-left');
+    const eyeR = document.getElementById('eye-right');
+    const moods = {
+      happy:    { m: '😊', eyes: 'normal' },
+      love:     { m: '🥰', eyes: 'heart'  },
+      laugh:    { m: '😂', eyes: 'closed' },
+      sleep:    { m: '😴', eyes: 'closed' },
+      surprise: { m: '😮', eyes: 'wide'   },
+      sad:      { m: '😢', eyes: 'sad'    },
+      yum:      { m: '😋', eyes: 'normal' },
+      cool:     { m: '😎', eyes: 'normal' },
+      dizzy:    { m: '😵', eyes: 'dizzy'  },
+    };
+    const m = moods[mood] || moods.happy;
+    mouth.textContent = m.m;
+    const size = m.eyes === 'wide' ? '18px' : m.eyes === 'closed' ? '4px' : '14px';
+    eyeL.style.height = size;
+    eyeR.style.height = size;
+  }
+
+  // ── ANIMATIONS ──
+  function animateMarshi(cls) {
+    const el = document.getElementById('marshi');
+    el.classList.remove('bouncing','wiggling','spinning');
+    void el.offsetWidth;
+    el.classList.add(cls);
+    el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
+  }
+
+  // ── ACTIONS ──
+  const actions = {
+    hug:      { mood: 'love',     anim: 'bouncing', msg: 'aww i love hugs!! 🤗' },
+    tickle:   { mood: 'laugh',    anim: 'wiggling', msg: 'hahaha stop!! 😂' },
+    feed:     { mood: 'yum',      anim: 'bouncing', msg: 'yum yum yum!! 🍬' },
+    dance:    { mood: 'happy',    anim: 'wiggling', msg: 'dance party!! 💃' },
+    sleep:    { mood: 'sleep',    anim: null,       msg: 'zzz... 😴' },
+    surprise: { mood: 'surprise', anim: 'bouncing', msg: 'WOAH!! 😮' },
+    spin:     { mood: 'dizzy',    anim: 'spinning', msg: 'wheeeee!! 🌀' },
+    wave:     { mood: 'happy',    anim: 'wiggling', msg: 'hiii!! 👋' },
+    cry:      { mood: 'sad',      anim: null,       msg: 'i miss you already... 😢' },
+  };
+  function action(name) {
+    const a = actions[name];
+    setMood(a.mood);
+    if (a.anim) animateMarshi(a.anim);
+    showBubble(a.msg, 2500);
+  }
+
+  // ── DRESS UP ──
+  const bodyColors = [
+    { color: '#ffffff', label: 'classic' },
+    { color: '#ffcce8', label: 'pink'    },
+    { color: '#cce8ff', label: 'blue'    },
+    { color: '#ccffcc', label: 'mint'    },
+    { color: '#ffe4cc', label: 'peach'   },
+    { color: '#e8ccff', label: 'lavender'},
+    { color: '#fff5cc', label: 'yellow'  },
+    { color: '#ffcccc', label: 'red'     },
+  ];
+  const hats = [
+    { emoji: '🎩', label: 'top hat'  },
+    { emoji: '👒', label: 'sun hat'  },
+    { emoji: '🎓', label: 'grad cap' },
+    { emoji: '👑', label: 'crown'    },
+    { emoji: '🎀', label: 'bow'      },
+    { emoji: '⛑️', label: 'helmet'   },
+    { emoji: '🧢', label: 'cap'      },
+  ];
+  const accessories = [
+    { emoji: '🕶️', label: 'glasses' },
+    { emoji: '💎', label: 'gem'     },
+    { emoji: '🌸', label: 'flower'  },
+    { emoji: '⭐', label: 'star'    },
+    { emoji: '🎵', label: 'music'   },
+    { emoji: '🌈', label: 'rainbow' },
+  ];
+
+  let selectedHat = null;
+  let selectedAcc = null;
+
+  function buildDressUp() {
+    // body colors
+    const bc = document.getElementById('body-colors');
+    bodyColors.forEach(c => {
+      const s = document.createElement('div');
+      s.className = 'color-swatch';
+      s.style.background = c.color;
+      s.style.border = '3px solid #ffb6d9';
+      s.title = c.label;
+      s.onclick = () => {
+        document.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('selected'));
+        s.classList.add('selected');
+        document.getElementById('marshi-body').style.background = c.color;
+        document.getElementById('arm-left').style.background = c.color;
+        document.getElementById('arm-right').style.background = c.color;
+        document.getElementById('foot-left').style.background = c.color;
+        document.getElementById('foot-right').style.background = c.color;
+        showBubble('ooh i love this color!! 💕');
+      };
+      bc.appendChild(s);
+    });
+
+    // hats
+    const hr = document.getElementById('hat-row');
+    const noneH = document.createElement('button');
+    noneH.className = 'hat-btn selected';
+    noneH.textContent = '❌';
+    noneH.title = 'none';
+    noneH.onclick = () => {
+      document.querySelectorAll('.hat-btn').forEach(x => x.classList.remove('selected'));
+      noneH.classList.add('selected');
+      const slot = document.getElementById('hat-slot');
+      slot.style.display = 'none';
+      selectedHat = null;
+    };
+    hr.appendChild(noneH);
+    hats.forEach(h => {
+      const b = document.createElement('button');
+      b.className = 'hat-btn';
+      b.textContent = h.emoji;
+      b.title = h.label;
+      b.onclick = () => {
+        document.querySelectorAll('.hat-btn').forEach(x => x.classList.remove('selected'));
+        b.classList.add('selected');
+        const slot = document.getElementById('hat-slot');
+        slot.innerHTML = `<span style="font-size:2rem">${h.emoji}</span>`;
+        slot.style.display = 'block';
+        selectedHat = h;
+        showBubble('i love my new hat!! 🎩');
+      };
+      hr.appendChild(b);
+    });
+
+    // accessories
+    const ar = document.getElementById('acc-row');
+    const noneA = document.createElement('button');
+    noneA.className = 'acc-btn selected';
+    noneA.textContent = '❌';
+    noneA.onclick = () => {
+      document.querySelectorAll('.acc-btn').forEach(x => x.classList.remove('selected'));
+      noneA.classList.add('selected');
+      document.getElementById('acc-slot').style.display = 'none';
+      selectedAcc = null;
+    };
+    ar.appendChild(noneA);
+    accessories.forEach(a => {
+      const b = document.createElement('button');
+      b.className = 'acc-btn';
+      b.textContent = a.emoji;
+      b.title = a.label;
+      b.onclick = () => {
+        document.querySelectorAll('.acc-btn').forEach(x => x.classList.remove('selected'));
+        b.classList.add('selected');
+        const slot = document.getElementById('acc-slot');
+        slot.textContent = a.emoji;
+        slot.style.display = 'block';
+        selectedAcc = a;
+        showBubble('so fancy!! ✨');
+      };
+      ar.appendChild(b);
+    });
+  }
+
+  // ── MAKE CLOTHES ──
+  const patterns = [
+    { name: 'solid',   style: (c) => c },
+    { name: 'stripes', style: (c) => `repeating-linear-gradient(45deg, ${c}, ${c} 6px, white 6px, white 12px)` },
+    { name: 'dots',    style: (c) => `radial-gradient(circle, white 3px, transparent 3px) 0 0 / 12px 12px, ${c}` },
+    { name: 'heart ❤️', style: (c) => c },
+  ];
+  let selectedPattern = 0;
+
+  function buildClothes() {
+    const pr = document.getElementById('pattern-row');
+    patterns.forEach((p, i) => {
+      const b = document.createElement('button');
+      b.className = 'play-btn' + (i === 0 ? ' selected' : '');
+      b.style.fontSize = '0.8rem';
+      b.textContent = p.name;
+      b.onclick = () => {
+        document.querySelectorAll('#pattern-row .play-btn').forEach(x => x.classList.remove('selected'));
+        b.classList.add('selected');
+        selectedPattern = i;
+        previewOutfit();
+      };
+      pr.appendChild(b);
+    });
+    previewOutfit();
+  }
+
+  function previewOutfit() {
+    const color = document.getElementById('outfit-color').value;
+    const preview = document.getElementById('clothes-preview');
+    preview.style.background = patterns[selectedPattern].style(color);
+  }
+
+  function applyOutfit() {
+    const color = document.getElementById('outfit-color').value;
+    const layer = document.getElementById('outfit-layer');
+    layer.style.background = patterns[selectedPattern].style(color);
+    layer.style.opacity = '1';
+    showBubble('i love my new outfit!! 💃');
+    setMood('happy');
+    animateMarshi('bouncing');
+  }
+
+  // ── TIMER ──
+  let timerInterval = null;
+  let timerSeconds = 0;
+  let timerMode = 'countdown';
+  let countdownFrom = 60;
+  let running = false;
+
+  function setMode(mode) {
+    timerMode = mode;
+    document.getElementById('mode-countdown').style.background = mode === 'countdown' ? '#ff69b4' : '';
+    document.getElementById('mode-countdown').style.color = mode === 'countdown' ? 'white' : '';
+    document.getElementById('mode-stopwatch').style.background = mode === 'stopwatch' ? '#ff69b4' : '';
+    document.getElementById('mode-stopwatch').style.color = mode === 'stopwatch' ? 'white' : '';
+    document.getElementById('timer-presets').style.display = mode === 'countdown' ? 'flex' : 'none';
+    resetTimer();
+  }
+
+  function setCountdown(secs) {
+    countdownFrom = secs;
+    timerSeconds = secs;
+    updateTimerDisplay();
+  }
+
+  function updateTimerDisplay() {
+    const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+    const s = (timerSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('timer-display').textContent = m + ':' + s;
+  }
+
+  function startTimer() {
+    if (running) return;
+    running = true;
+    if (timerMode === 'countdown' && timerSeconds === 0) timerSeconds = countdownFrom;
+    showBubble('timing!! ⏱️');
+    setMood('happy');
+    timerInterval = setInterval(() => {
+      if (timerMode === 'stopwatch') {
+        timerSeconds++;
+      } else {
+        timerSeconds--;
+        if (timerSeconds <= 0) {
+          timerSeconds = 0;
+          updateTimerDisplay();
+          clearInterval(timerInterval);
+          running = false;
+          showBubble('DONE!! 🎉', 3000);
+          setMood('surprise');
+          animateMarshi('bouncing');
+          return;
+        }
+      }
+      updateTimerDisplay();
+      if (timerSeconds <= 10 && timerMode === 'countdown') animateMarshi('wiggling');
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    running = false;
+    showBubble('paused!! ⏸️');
+  }
+
+  function resetTimer() {
+    clearInterval(timerInterval);
+    running = false;
+    timerSeconds = timerMode === 'countdown' ? countdownFrom : 0;
+    updateTimerDisplay();
+  }
+
+  // ── INIT ──
+  buildDressUp();
+  buildClothes();
+  setTimeout(() => showBubble('hi!! tap me!! 💕', 3000), 800);
+</script>
+</body>
+</html>
