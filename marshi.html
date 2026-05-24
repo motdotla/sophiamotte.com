@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>marshi 🍡</title>
+  <title>marshi</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -132,10 +132,13 @@
       background: white;
       border-radius: 50%;
     }
-    .mouth {
-      font-size: 22px;
-      line-height: 1;
-      transition: all 0.2s;
+    .mouth-svg {
+      display: block;
+      margin: 0 auto;
+      overflow: visible;
+    }
+    .mouth-svg path {
+      transition: d 0.2s;
     }
     .cheeks {
       display: flex;
@@ -435,7 +438,7 @@
 <body>
 
 <header>
-  <h1>🍡 marshi</h1>
+  <h1>marshi</h1>
   <p>your very own marshmallow friend!!</p>
 </header>
 
@@ -443,7 +446,7 @@
 
 <!-- SCENE -->
 <div class="scene">
-  <div class="bubble" id="bubble">hi!! i'm marshi!! 💕</div>
+  <div class="bubble" id="bubble">hi!! i'm marshi!!</div>
 
   <div class="marshi" id="marshi" onclick="petMarshi()">
     <div class="marshi-body" id="marshi-body">
@@ -459,7 +462,9 @@
         <div class="eye" id="eye-left"></div>
         <div class="eye" id="eye-right"></div>
       </div>
-      <div class="mouth" id="mouth">🙂</div>
+      <svg class="mouth-svg" id="mouth" viewBox="0 0 40 22" width="40" height="22">
+        <path id="mouth-path" d="M5,6 Q20,20 35,6" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
       <div class="cheeks">
         <div class="cheek"></div>
         <div class="cheek"></div>
@@ -485,25 +490,25 @@
 
 <!-- TABS -->
 <div class="tabs">
-  <button class="tab active" onclick="showTab('play')">🎮 play</button>
-  <button class="tab" onclick="showTab('dressup')">👗 dress up</button>
-  <button class="tab" onclick="showTab('clothes')">✂️ make clothes</button>
-  <button class="tab" onclick="showTab('timer')">⏱️ timer</button>
+  <button class="tab active" onclick="showTab('play')">play</button>
+  <button class="tab" onclick="showTab('dressup')">dress up</button>
+  <button class="tab" onclick="showTab('clothes')">make clothes</button>
+  <button class="tab" onclick="showTab('timer')">timer</button>
 </div>
 
 <!-- PLAY PANEL -->
 <div class="panel active" id="panel-play">
   <h3>play with marshi!!</h3>
   <div class="play-btns">
-    <button class="play-btn" onclick="action('hug')">🤗 hug</button>
-    <button class="play-btn" onclick="action('tickle')">😂 tickle</button>
-    <button class="play-btn" onclick="action('feed')">🍬 feed</button>
-    <button class="play-btn" onclick="action('dance')">💃 dance</button>
-    <button class="play-btn" onclick="action('sleep')">😴 sleep</button>
-    <button class="play-btn" onclick="action('surprise')">😮 surprise</button>
-    <button class="play-btn" onclick="action('spin')">🌀 spin</button>
-    <button class="play-btn" onclick="action('wave')">👋 wave</button>
-    <button class="play-btn" onclick="action('cry')">😢 sad</button>
+    <button class="play-btn" onclick="action('hug')">hug</button>
+    <button class="play-btn" onclick="action('tickle')">tickle</button>
+    <button class="play-btn" onclick="action('feed')">feed</button>
+    <button class="play-btn" onclick="action('dance')">dance</button>
+    <button class="play-btn" onclick="action('sleep')">sleep</button>
+    <button class="play-btn" onclick="action('surprise')">surprise</button>
+    <button class="play-btn" onclick="action('spin')">spin</button>
+    <button class="play-btn" onclick="action('wave')">wave</button>
+    <button class="play-btn" onclick="action('cry')">sad</button>
   </div>
 </div>
 
@@ -511,13 +516,13 @@
 <div class="panel" id="panel-dressup">
   <h3>dress up marshi!!</h3>
 
-  <div class="section-label">🎨 body color</div>
+  <div class="section-label">body color</div>
   <div class="color-row" id="body-colors"></div>
 
-  <div class="section-label">🎩 hats</div>
+  <div class="section-label">hats</div>
   <div class="hat-row" id="hat-row"></div>
 
-  <div class="section-label">✨ accessories</div>
+  <div class="section-label">accessories</div>
   <div class="acc-row" id="acc-row"></div>
 </div>
 
@@ -532,7 +537,7 @@
     <div class="color-row" id="pattern-row"></div>
 
     <div class="clothes-preview" id="clothes-preview"></div>
-    <button class="apply-btn" onclick="applyOutfit()">✨ put it on marshi!!</button>
+    <button class="apply-btn" onclick="applyOutfit()">put it on marshi!!</button>
   </div>
 </div>
 
@@ -558,7 +563,7 @@
   </div>
 </div>
 
-<footer>made with 💕 by sophia</footer>
+<footer>made with love by sophia</footer>
 
 <script>
   // ── TABS ──
@@ -581,7 +586,7 @@
 
   // ── PET ──
   function petMarshi() {
-    const msgs = ['hehe!! 🥰','that tickles!!','yay!! 💕','i love you!!','heehee!!','you are so nice!!'];
+    const msgs = ['hehe!!','that tickles!!','yay!!','i love you!!','heehee!!','you are so nice!!'];
     showBubble(msgs[Math.floor(Math.random() * msgs.length)]);
     setMood('happy');
     animateMarshi('bouncing');
@@ -589,22 +594,22 @@
 
   // ── MOODS ──
   function setMood(mood) {
-    const mouth = document.getElementById('mouth');
+    const path = document.getElementById('mouth-path');
     const eyeL = document.getElementById('eye-left');
     const eyeR = document.getElementById('eye-right');
     const moods = {
-      happy:    { m: '😊', eyes: 'normal' },
-      love:     { m: '🥰', eyes: 'heart'  },
-      laugh:    { m: '😂', eyes: 'closed' },
-      sleep:    { m: '😴', eyes: 'closed' },
-      surprise: { m: '😮', eyes: 'wide'   },
-      sad:      { m: '😢', eyes: 'sad'    },
-      yum:      { m: '😋', eyes: 'normal' },
-      cool:     { m: '😎', eyes: 'normal' },
-      dizzy:    { m: '😵', eyes: 'dizzy'  },
+      happy:    { d: 'M5,6 Q20,20 35,6',   eyes: 'normal' },
+      love:     { d: 'M5,4 Q20,22 35,4',   eyes: 'normal' },
+      laugh:    { d: 'M3,4 Q20,22 37,4',   eyes: 'closed' },
+      sleep:    { d: 'M8,11 L32,11',        eyes: 'closed' },
+      surprise: { d: 'M14,4 Q20,20 26,4',  eyes: 'wide'   },
+      sad:      { d: 'M5,16 Q20,4 35,16',  eyes: 'normal' },
+      yum:      { d: 'M5,6 Q20,20 35,6',   eyes: 'normal' },
+      cool:     { d: 'M5,6 Q20,18 35,6',   eyes: 'normal' },
+      dizzy:    { d: 'M5,11 Q13,4 20,11 Q27,18 35,11', eyes: 'normal' },
     };
     const m = moods[mood] || moods.happy;
-    mouth.textContent = m.m;
+    path.setAttribute('d', m.d);
     const size = m.eyes === 'wide' ? '18px' : m.eyes === 'closed' ? '4px' : '14px';
     eyeL.style.height = size;
     eyeR.style.height = size;
@@ -621,15 +626,15 @@
 
   // ── ACTIONS ──
   const actions = {
-    hug:      { mood: 'love',     anim: 'bouncing', msg: 'aww i love hugs!! 🤗' },
-    tickle:   { mood: 'laugh',    anim: 'wiggling', msg: 'hahaha stop!! 😂' },
-    feed:     { mood: 'yum',      anim: 'bouncing', msg: 'yum yum yum!! 🍬' },
-    dance:    { mood: 'happy',    anim: 'wiggling', msg: 'dance party!! 💃' },
-    sleep:    { mood: 'sleep',    anim: null,       msg: 'zzz... 😴' },
-    surprise: { mood: 'surprise', anim: 'bouncing', msg: 'WOAH!! 😮' },
-    spin:     { mood: 'dizzy',    anim: 'spinning', msg: 'wheeeee!! 🌀' },
-    wave:     { mood: 'happy',    anim: 'wiggling', msg: 'hiii!! 👋' },
-    cry:      { mood: 'sad',      anim: null,       msg: 'i miss you already... 😢' },
+    hug:      { mood: 'love',     anim: 'bouncing', msg: 'aww i love hugs!!' },
+    tickle:   { mood: 'laugh',    anim: 'wiggling', msg: 'hahaha stop!!' },
+    feed:     { mood: 'yum',      anim: 'bouncing', msg: 'yum yum yum!!' },
+    dance:    { mood: 'happy',    anim: 'wiggling', msg: 'dance party!!' },
+    sleep:    { mood: 'sleep',    anim: null,       msg: 'zzz...' },
+    surprise: { mood: 'surprise', anim: 'bouncing', msg: 'WOAH!!' },
+    spin:     { mood: 'dizzy',    anim: 'spinning', msg: 'wheeeee!!' },
+    wave:     { mood: 'happy',    anim: 'wiggling', msg: 'hiii!!' },
+    cry:      { mood: 'sad',      anim: null,       msg: 'i miss you already...' },
   };
   function action(name) {
     const a = actions[name];
@@ -687,7 +692,7 @@
         document.getElementById('arm-right').style.background = c.color;
         document.getElementById('foot-left').style.background = c.color;
         document.getElementById('foot-right').style.background = c.color;
-        showBubble('ooh i love this color!! 💕');
+        showBubble('ooh i love this color!!');
       };
       bc.appendChild(s);
     });
@@ -718,7 +723,7 @@
         slot.innerHTML = `<span style="font-size:2rem">${h.emoji}</span>`;
         slot.style.display = 'block';
         selectedHat = h;
-        showBubble('i love my new hat!! 🎩');
+        showBubble('i love my new hat!!');
       };
       hr.appendChild(b);
     });
@@ -747,7 +752,7 @@
         slot.textContent = a.emoji;
         slot.style.display = 'block';
         selectedAcc = a;
-        showBubble('so fancy!! ✨');
+        showBubble('so fancy!!');
       };
       ar.appendChild(b);
     });
@@ -758,7 +763,7 @@
     { name: 'solid',   style: (c) => c },
     { name: 'stripes', style: (c) => `repeating-linear-gradient(45deg, ${c}, ${c} 6px, white 6px, white 12px)` },
     { name: 'dots',    style: (c) => `radial-gradient(circle, white 3px, transparent 3px) 0 0 / 12px 12px, ${c}` },
-    { name: 'heart ❤️', style: (c) => c },
+    { name: 'heart', style: (c) => c },
   ];
   let selectedPattern = 0;
 
@@ -791,7 +796,7 @@
     const layer = document.getElementById('outfit-layer');
     layer.style.background = patterns[selectedPattern].style(color);
     layer.style.opacity = '1';
-    showBubble('i love my new outfit!! 💃');
+    showBubble('i love my new outfit!!');
     setMood('happy');
     animateMarshi('bouncing');
   }
@@ -829,7 +834,7 @@
     if (running) return;
     running = true;
     if (timerMode === 'countdown' && timerSeconds === 0) timerSeconds = countdownFrom;
-    showBubble('timing!! ⏱️');
+    showBubble('timing!!');
     setMood('happy');
     timerInterval = setInterval(() => {
       if (timerMode === 'stopwatch') {
@@ -841,7 +846,7 @@
           updateTimerDisplay();
           clearInterval(timerInterval);
           running = false;
-          showBubble('DONE!! 🎉', 3000);
+          showBubble('DONE!!', 3000);
           setMood('surprise');
           animateMarshi('bouncing');
           return;
@@ -855,7 +860,7 @@
   function stopTimer() {
     clearInterval(timerInterval);
     running = false;
-    showBubble('paused!! ⏸️');
+    showBubble('paused!!');
   }
 
   function resetTimer() {
@@ -868,7 +873,7 @@
   // ── INIT ──
   buildDressUp();
   buildClothes();
-  setTimeout(() => showBubble('hi!! tap me!! 💕', 3000), 800);
+  setTimeout(() => showBubble('hi!! tap me!!', 3000), 800);
 </script>
 </body>
 </html>
