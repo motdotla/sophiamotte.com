@@ -147,6 +147,27 @@
     }
     .buy-btn:hover { background: #ff1493; }
 
+    @keyframes flash-sold {
+      0%, 100% { color: #ff1493; text-shadow: 0 0 10px #ff69b4, 0 0 20px #ffb6d9; }
+      25% { color: #ff69b4; text-shadow: 0 0 10px #ff1493, 0 0 30px #ff1493; }
+      50% { color: #fff; text-shadow: 0 0 10px #ff1493, 0 0 20px #ff69b4, 0 0 40px #ffb6d9; }
+      75% { color: #ffb6d9; text-shadow: 0 0 10px #ff1493, 0 0 30px #ff1493; }
+    }
+    .sold-out-btn {
+      margin-top: 0.5rem;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 2rem;
+      background: #222;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.95rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      animation: flash-sold 0.8s infinite;
+      cursor: default;
+      width: 100%;
+    }
+
     /* modal */
     .modal-bg {
       display: none;
@@ -427,6 +448,13 @@
         price: '$5.00',
       },
       {
+        img: 'assets/IMG_0104.jpeg',
+        name: 'nemo 🐠',
+        desc: 'an orange and white striped fish with a long white tail — just like the real nemo!! one of the most realistic ones in the whole store!!',
+        price: '$5.00',
+        soldOut: true,
+      },
+      {
         img: 'assets/IMG_9498.jpeg',
         name: 'rex 🐻',
         desc: 'a fluffy blue bear with a bold red body and little red pom-pom feet!! he looks like he is ready for an adventure!!',
@@ -443,7 +471,10 @@
             <div class="item-name">${item.name}</div>
             <div class="item-desc">${item.desc}</div>
             <div class="item-price">${item.price}</div>
-            <button class="buy-btn" onclick="buy(${i})">💖 i want this!!</button>
+            ${item.soldOut
+              ? `<button class="sold-out-btn" disabled>SOLD OUT</button>`
+              : `<button class="buy-btn" onclick="buy(${i})">💖 i want this!!</button>`
+            }
           </div>
         </div>
       `).join('');
