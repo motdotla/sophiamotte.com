@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CubCall</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #fffdf0;
+      font-family: "Courier New", Courier, monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      background: linear-gradient(135deg, #f5c842, #f0a800);
+      width: 100%;
+      padding: 1.2rem 1rem;
+      text-align: center;
+      box-shadow: 0 4px 16px #f5c84255;
+    }
+    header h1 {
+      font-size: 2.4rem;
+      color: #fff;
+      text-shadow: 2px 2px 0 #b07d00;
+      letter-spacing: 2px;
+    }
+    header p {
+      color: #fff8dc;
+      font-size: 1rem;
+      margin-top: 0.3rem;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin: 1rem 0 0 1rem;
+      align-self: flex-start;
+      padding: 0.4rem 1rem;
+      background: #f5c842;
+      color: #fff;
+      border-radius: 2rem;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .back-btn:hover { background: #f0a800; }
+
+    .logo-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 1rem;
+    }
+
+    .logo-section img {
+      width: 220px;
+      height: 220px;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 24px #f5c84244);
+    }
+
+    .tagline {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #b07d00;
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    .sub-tagline {
+      font-size: 1rem;
+      color: #888;
+      margin-top: 0.4rem;
+      text-align: center;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.2rem;
+      padding: 2rem 1.5rem;
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .feature-card {
+      background: #fff;
+      border: 3px solid #f5e090;
+      border-radius: 1.4rem;
+      padding: 1.4rem 1.2rem;
+      text-align: center;
+      box-shadow: 0 4px 16px #f5c84222;
+      transition: transform 0.15s;
+    }
+    .feature-card:hover { transform: translateY(-4px); }
+
+    .feature-icon {
+      font-size: 2.8rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .feature-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #b07d00;
+      margin-bottom: 0.4rem;
+    }
+
+    .feature-desc {
+      font-size: 0.88rem;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    .coming-soon {
+      margin: 1rem auto 3rem;
+      padding: 1rem 2.5rem;
+      background: linear-gradient(135deg, #f5c842, #f0a800);
+      color: white;
+      border: none;
+      border-radius: 3rem;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 1.2rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      box-shadow: 0 4px 20px #f5c84266;
+      text-align: center;
+    }
+
+    footer {
+      color: #ccc;
+      font-size: 0.8rem;
+      padding: 1.5rem;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>CubCall</h1>
+  <p>the calling app made for kids, by kids</p>
+</header>
+
+<a class="back-btn" href="index.html">back home</a>
+
+<div class="logo-section">
+  <img src="assets/cubcall-logo.png" alt="CubCall logo" />
+  <div class="tagline">call your friends safely</div>
+  <div class="sub-tagline">made by kids, for kids</div>
+</div>
+
+<div class="features">
+  <div class="feature-card">
+    <div class="feature-icon">📞</div>
+    <div class="feature-title">call your friends</div>
+    <div class="feature-desc">call anyone on your friends list any time you want, super easy to use</div>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">🔒</div>
+    <div class="feature-title">safe and private</div>
+    <div class="feature-desc">only your real friends can call you — no strangers allowed</div>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">🐻</div>
+    <div class="feature-title">made for kids</div>
+    <div class="feature-desc">designed by an 8-year-old so it is actually fun to use</div>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">⭐</div>
+    <div class="feature-title">coming soon</div>
+    <div class="feature-desc">cubcall is in the works — get ready for the coolest kids app ever</div>
+  </div>
+</div>
+
+<div class="coming-soon">COMING SOON</div>
+
+<footer>made with love by sophia</footer>
+
+</body>
+</html>
